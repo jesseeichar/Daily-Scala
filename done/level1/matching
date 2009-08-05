@@ -1,0 +1,66 @@
+Matching is a powerful concept in scala that is similar to a switch in Java.  The difference is that matching takes it to another level.  We will start with basic switching in this entry.
+
+Note.  If a match is not found a scala.MatchError is thrown
+
+<pre><code>
+scala> val s = "sampleString"
+s: java.lang.String = sampleString
+
+scala> s match {
+     | case "sampleString" => "its a match!"
+     | case _ => "no match"
+     | }
+res0: java.lang.String = its a match!
+
+scala> s match {                            
+     | case m @ "sampleString" => "its a match!"
+     | case _ => "no match"
+     | }
+res1: java.lang.String = its a match!
+
+scala> s match {                                
+     | case m @ "sampleString" => "we found "+m+"!"
+     | case _ => "no match"
+     | }
+res2: java.lang.String = we found sampleString!
+
+scala>  s match {                                      
+     | case m if(m.startsWith("s") ) => "its a match!" 
+     | case _ => "no match"
+     | }
+res3: java.lang.String = its a match!
+
+scala>  s match {                                     
+     | case m => "this matches everything"
+     | }
+res4: java.lang.String = this matches everything
+
+
+scala> val obj:Any = s // I am assigning s to a variable whose type is Any (parent of all object).   
+obj: Any = sampleString
+
+scala>  obj match {                                                           
+     | case string:String => "we found a string"                              
+     | case integer:Int => "we found an integer"                              
+     | case _ => "hmmm don't know what it is"                                 
+     | }
+res6: java.lang.String = we found a string
+
+scala> // Now  we will see what happens when a match fails
+
+scala>  obj match {                                       
+     | case integer:Int => "we found an integer"          
+     | case double:Double => "we found an double"         
+     | }
+scala.MatchError: sampleString
+                  at .<init>(<console>:7)
+                  at .<clinit>(<console>)
+                  at RequestResult$.<init>(<console>:3)
+                  at RequestResult$.<clinit>(<console>)
+                  at RequestResult$result(<console>)
+                  at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+                  at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+                  at sun.reflect.DelegatingMethodAccessorImpl.i...
+scala> 
+
+</code></pre>

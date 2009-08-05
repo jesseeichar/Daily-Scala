@@ -1,0 +1,47 @@
+jeichar@lhotse:~/Projects/daily-scala$ scala28
+Welcome to Scala version 2.8.0.r18383-b20090724020219 (Java HotSpot(TM) 64-Bit Server VM, Java 1.6.0_13).
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala> val s = "hi"
+s: java.lang.String = hi
+
+scala> s.length 
+res0: Int = 2
+
+scala> s(1)
+res1: Char = i
+
+scala> s(0)
+res2: Char = h
+
+scala> s.r 
+res3: scala.util.matching.Regex = hi
+
+scala> s.drop(1)
+res4: scala.runtime.RichString = i
+
+scala> s.take(1)
+res5: scala.runtime.RichString = h
+
+scala> val longString = """
+     | second line
+     | third line
+     | """
+longString: java.lang.String = 
+
+       second line
+       third line
+       
+
+scala> longString.lines
+res6: Iterator[String] = non-empty iterator
+
+scala> longString.lines.toList
+res7: List[String] = List(,        second line,        third line,        )
+
+scala> longString.lines.map( _.length )
+res8: Iterator[Int] = non-empty iterator
+
+scala> longString.lines.toList.map( _.length ) 
+res9: List[Int] = List(0, 18, 17, 7)

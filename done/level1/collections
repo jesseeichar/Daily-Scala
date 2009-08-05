@@ -1,0 +1,36 @@
+In this example I show some common operations that can be performed on all collections.  The examples use list but any Iterable can be used.  
+
+
+
+scala> val list = List(1,2,3,4)
+list: List[Int] = List(1, 2, 3, 4)
+
+scala> list.mkString(",")
+res0: String = 1,2,3,4
+
+scala> list.mkString("(",",",")")
+res1: String = (1,2,3,4)
+
+scala> list.reduceLeft ( (next,cumulative) => cumulative + next ) 
+res2: Int = 10
+
+scala> for( e <- list ) println ( e )
+1
+2
+3
+4
+
+scala> for( e <- list ) { 
+     | println ( e )
+     | }
+1
+2
+3
+4
+
+scala> for( e <- list ) yield e+1      
+res5: List[Int] = List(2, 3, 4, 5)
+
+scala> for ( e <- list; if( e % 2 == 0 ) ) yield e
+res6: List[Int] = List(2, 4)
+
