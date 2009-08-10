@@ -1,0 +1,58 @@
+Scala classes are similar to java classes but are designed to work around some of the boiler plate code.  We will address multiple constructors another day.  But one thing to note is that normally the code that is in a Java constructor goes directly in the body of a Scala class or in a companion object (also covered later).
+
+<pre><code>
+scala> class NewClass( aPrivateInt:Int, val iAmPublic:Int, var iAmAlsoPublic:Int )
+defined class NewClass
+
+scala> val c = new NewClass(1,2,3)
+c: NewClass = NewClass@da99836
+
+scala> c.aPrivateInt
+<console>:7: error: value aPrivateInt is not a member of NewClass
+       c.aPrivateInt
+         ^
+
+scala> c.iAmPublic
+res2: Int = 2
+
+scala> c.iAmAlsoPublic
+res3: Int = 3
+
+scala> c.iAmPublic = 10 // not allowed because iAmPublic is a val
+<console>:6: error: reassignment to val
+       c.iAmPublic = 10
+                   ^
+
+scala> c.iAmAlsoPublic = 10 // iAmAlsoPublic is a var
+
+scala> c.iAmAlsoPublic
+res4: Int = 10
+
+scala> class c2( aPrivate:Int ) {
+     | val aPublic = aPrivate + 10
+     | }
+defined class c2
+
+scala> class c3(tmp:Int) extends c2(tmp){
+     | override val aPublic = tmp * 10 // can't access super.aPrivate because it is class private so use tmp
+     | }
+defined class c3
+
+scala> new c2(10).aPublic
+res5: Int = 20
+
+scala> new c3(10).aPublic
+res6: Int = 100
+
+scala> class c4( aPrivate:Int ) {
+     | println(aPrivate)
+     | private val private2 = aPrivate % 10
+     | println(private2)
+     | }
+defined class c4
+
+scala> new c4(22)
+22
+2
+res7: c4 = c4@64d90254
+</code></pre>

@@ -1,0 +1,47 @@
+One possibly surprising rule of matching is that lowercase identifiers in the case clause always have a value bound to them but if the identifier starts with an uppercase character the identifier is used as a value to match against.
+
+scala> val iWantToMatch = 10
+iWantToMatch: Int = 10
+
+scala> val iDontWantToMatch = 1 
+iDontWantToMatch: Int = 1
+
+scala> 10 match {                    
+     | case iDontWantToMatch => "boo"
+     | case iWantToMatch => "yay"    
+     | }
+<console>:7: error: unreachable code
+       case iWantToMatch => "yay"
+                            ^
+
+// we have an error because iDontWantToMatch is treated as a parameter to the iDontWantToMatch => "boo" function.  
+// Not as a value to match against.
+
+// in this example you can see how iDontWantToMatch is has 10 bound to it
+
+scala> 10 match {
+     | case iDontWantToMatch => iDontWantToMatch
+     | }
+res9: Int = 10
+
+// back tick forces the value to be matched against
+scala> 10 match {
+     | case `iDontWantToMatch` => "boo"
+     | case `iWantToMatch` => "yay"
+     | }
+res7: java.lang.String = yay
+
+scala> val IWantToMatch = 10
+IWantToMatch: Int = 10
+
+scala> val IDontWantToMatch = 1
+IDontWantToMatch: Int = 1
+
+// also if first character is upper case it is matched against.
+scala> 10 match {    
+     | case IDontWantToMatch => "boo"
+     | case IWantToMatch => "yay"
+     | }
+res8: java.lang.String = yay
+
+scala> 

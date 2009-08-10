@@ -1,0 +1,45 @@
+In scala all vars are properties.  When compiled to bytecode each var is instead compiled to a getter and a setter, although not a java bean style getter and setter.  You get that if you add the BeanProperty annotation (that is for another day).  The signature of the generated methods of an Int variable called property are:
+
+<pre><code>
+def property:Int
+def property_=( newVal:Int):Unit
+</code></pre>
+
+Because of this you can declare the public var and in the future if you decide that you need behaviour in a setter and getter you can introduce those two methods in place of the single var and no client code is broken.
+
+<pre><code>
+scala> class C1( var property:Int )                   
+defined class C1
+
+scala> class C2( dependency:C1 ){  
+     | println(dependency.property)
+     | dependency.property += 1    
+     | println(dependency.property)
+     | }
+defined class C2
+
+scala> new C2(new C1(10))          
+10
+11
+res0: C2 = C2@72e28a61
+
+scala>  class C1( private var p:Int) {
+     | def property = p
+     | def property_=(newVal:Int) = p = newVal * 100
+     | }
+defined class C1
+
+scala>  class C2( dependency:C1 ){
+     | println(dependency.property)
+     | dependency.property += 1
+     | println(dependency.property)
+     | }
+defined class C2
+
+scala> new C2(new C1(10))
+10
+1100
+res0: C2 = C2@62c639ce
+</code></pre>
+
+Notice C2 uses the same API to access C1.property.  

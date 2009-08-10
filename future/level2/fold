@@ -1,0 +1,29 @@
+// fold right processes from left to right
+scala> val m = Map(1 -> "one", 2 -> "two", 3 -> "three")
+m: scala.collection.immutable.Map[Int,java.lang.String] = Map(1 -> one, 2 -> two, 3 -> three)
+
+scala> m.foldRight(0)((kv: (Int, String), a : Int) => a+kv._2.length)
+res1: Int = 11
+
+scala> (m :\ 0)((kv: (Int, String), a : Int) => a+kv._2.length)
+res5: Int = 11
+
+scala> m.foldRight(0){ case ((key, value), a) => a+value.length}
+res7: Int = 11
+
+
+scala> m.foldRight(0){ case (kv, a) => a+kv._2.length}          }} 
+res8: Int = 11
+
+// fold left processes from right to left (usually slower than foldRight)
+scala> val m = Map("a" -> 1, "b" -> 2, "c" -> 3)                 
+m: scala.collection.immutable.Map[java.lang.String,Int] = Map(a -> 1, b -> 2, c -> 3)
+
+scala> m.foldLeft(0)( (accum, kv) => accum + kv._2 )
+res9: Int = 6
+
+scala> m.foldLeft(0){case (accum, (key, value)) => accum + value}
+res5: Int = 6
+
+scala> (0 /: m){case (accum, (key, value)) => accum + value}
+res4: Int = 6

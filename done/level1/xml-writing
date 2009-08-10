@@ -1,0 +1,28 @@
+Scala allows you to embed XML directly into a program and provides several ways to manipulate it.  Today we will look at writing XML.
+
+<pre><code>
+scala> val xml = <root>                             
+     | <child>text</child>
+     | </root>
+xml: scala.xml.Elem = 
+<root>
+       <child>text</child>
+       </root>
+
+scala> val data = "a string"
+data: java.lang.String = a string
+
+// you can embed logic and variables in the xml by surrounding with {}
+scala> val xml = <root>{data}</root>
+xml: scala.xml.Elem = <root>a string</root>
+
+scala> val xml = <root>{ for( i <- 1 to 3 ) yield {<xml i={i.toString}/>} } </root> 
+xml: scala.xml.Elem = <root><xml i="1"></xml><xml i="2"></xml><xml i="3"></xml> </root>
+
+scala> val xml = <root>{ for( i <- 1 to 3 ) yield <child>{i}</child> } </root>      
+xml: scala.xml.Elem = <root><child>1</child><child>2</child><child>3</child> </root>
+
+// save xml to file.  Note Scala 2.8 is changin save API
+// and will require the encoding and DocType information
+scala> scala.xml.XML.save( "/tmp/doc.xml", xml)          
+</code></pre>
