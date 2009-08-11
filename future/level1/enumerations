@@ -1,0 +1,59 @@
+Scala does not have a enum keyword like java so enumerations are not quite as smooth.  However depending on your requirement there are two ways to make enumerations.  Create an object that extends the Enumeration class or create a case-class hierarchy.  I present both ways.  Here are some tips:
+
+<ul>
+<li>If you only need discrete and related values without custom behaviour extend Enumeration</li>
+<li>If each value has custom information associated with it use case classes</li>
+</ul>
+
+Notice the use of the sealed keyword when defining the abstract class MyEnum.  Sealed specifies that the heirarchy is sealed.  Only classes defined in the same file can extend the class.
+
+<pre><code>
+// Note: MyEnum is an object NOT a class
+scala> object MyEnum extends Enumeration("one", "two", "three") {   
+     | type MyEnumType = Value
+     | val One, Two, Three = Value                                  
+     | }
+defined module MyEnum
+
+scala> MyEnum.One                                                   
+res1: MyEnum.Value = one
+
+scala> def printEnum( value:MyEnum.MyEnumType ) = println( value.toString )
+printEnum: (MyEnum.MyEnumType)Unit
+
+scala> printEnum(MyEnum.Two)
+two
+
+// If you don't want to prefix enums with MyEnum. Then you
+// can import the values.  This is similar to static imports in java
+scala> import MyEnum._                                                     
+import MyEnum._
+
+scala> def printEnum( value:MyEnumType ) = println( value.toString )       
+printEnum: (MyEnum.MyEnumType)Unit
+
+scala> printEnum(Three)                                             
+three
+
+
+// Similar but with cases classes
+// Notice MyEnum is 'sealed' and the parameters have the 'val' keyword so they are public
+scala> abstract sealed class MyEnum(val name:String, val someNum:Int)
+defined class MyEnum
+
+scala> case object One extends MyEnum("one", 1) 
+defined module One
+
+scala> case object Two extends MyEnum("two", 2)
+defined module Two
+
+scala> case object Three extends MyEnum("three", 3)
+defined module Three
+
+scala> def printEnum(value:MyEnum) = println(value.name, value.someNum)
+printEnum: (MyEnum)Unit
+
+scala> printEnum(One)
+(one,1)
+
+</code></pre>
