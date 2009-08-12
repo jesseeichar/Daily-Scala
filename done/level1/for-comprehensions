@@ -1,0 +1,57 @@
+For-comprehensions is a very powerful way of iterating over collections.  In its most basic form it is the java <code>for( var: collection )</code> loop.  As with all flow constructs in Scala, the scala for (or more correctly for-comprehension) can return a value.  In the case of the for-comprehension it returns Unit (similar to void in Java terms) or a Sequence if yield is used.  
+
+<pre><code>
+scala> val range = 1 to 5 
+range: Range.Inclusive = Range(1, 2, 3, 4, 5)
+
+
+// no return value if there is no 'yield' keyword
+scala> for( i <- 1 to 10 ) { i + 1 }
+
+// if there is a yield a collection is returned
+// the type of collection depends on the input
+// here a Range is returned
+scala> for( i <- range ) yield i+1
+res1: RandomAccessSeq.Projection[Int] = RangeM(2, 3, 4, 5, 6)
+
+// here a list is returned
+scala> for( i <- List( "a", "b", "c") ) yield "Word: "+i
+res1: List[java.lang.String] = List(Word: a, Word: b, Word: c)
+
+// you can filter the elements that visited in the loop
+scala> for( i <- range; if( i % 2 == 0) ) yield i  
+res2: Seq.Projection[Int] = RangeFM(2, 4)
+
+// this is more about creating ranges than loops
+scala> for ( i <- 20 until (10,-2) ) yield i     
+res3: RandomAccessSeq.Projection[Int] = RangeM(20, 18, 16, 14, 12)
+
+// you can string together multiple "generators"
+scala> for( i <- range; j <- range) yield (i,j)
+res4: Seq.Projection[(Int, Int)] = RangeG((1,1), (1,2), (1,3), (1,4), (1,5), (2,1), (2,2), (2,3), (2,4), (2,5), (3,1), (3,2), (3,3), (3,4), (3,5), (4,1), (4,2), (4,3), (4,4), (4,5), (5,1), (5,2), (5,3), (5,4), (5,5))
+
+// you can also declar variables as part of the loop declaration
+scala> for( i <- range; j <- 1 to i; k = i-j) yield k    
+res5: Seq.Projection[Int] = RangeG(0, 1, 0, 2, 1, 0, 3, 2, 1, 0, 4, 3, 2, 1, 0)
+
+// with round brackets '(' and ')' multiple lines will require semi-colons
+scala> for (                                         
+     | i <- range;
+     | j <- 1 to i;
+     | k = i-j) yield k
+res6: Seq.Projection[Int] = RangeG(0, 1, 0, 2, 1, 0, 3, 2, 1, 0, 4, 3, 2, 1, 0)
+
+// with curly brackets '{' and '}' multiple lines you do not require semi-colons
+scala> for {           
+     | i <- range      
+     | j <- 1 to i     
+     | k = i-j}        
+     | yield{
+     | k 
+     | }
+res7: Seq.Projection[Int] = RangeG(0, 1, 0, 2, 1, 0, 3, 2, 1, 0, 4, 3, 2, 1, 0)
+
+scala> for( i <- "enjoy" ) print(i)
+enjoy
+
+</code></pre>
