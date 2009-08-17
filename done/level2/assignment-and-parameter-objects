@@ -1,0 +1,82 @@
+One of the principle design goals of Scala is to be "deep" not wide.  Which means the language attempts to have a small set of rules that can be applied in many different ways in different situations.  Pattern matching is one of my favourite examples of this.  Pattern matching is commonly seen in match { case... } statements but you will also see it frequently in exception handling, function declaration and, most important for this post, assignment.  
+
+Scala does not have multiple assignment like some languages.  Instead it has tuples and matching.  Tuples are a light-weight way of grouping data in a simple data object. <code>(1,2.0,'c',"string", true)</code>. A simple example of a 5 element tuple.  Tuples can be up to 22 element long and can be homo or heterogenous.  Using this for multiple assignement works something like:
+<pre><code>
+val (firstname, lastname) = ("Jesse","Eichar")
+</code></pre>
+This is pattern matching.
+<pre><code>
+scala> ("Jesse","Eichar") match {
+     | case (firstname,lastname) => println(firstname,lastname)
+     | }
+(Jesse,Eichar)
+</code></pre>
+
+Notice that in both cases you need the brackets around firstname,lastname.  This instructs the compiler that you are matching against a Tuple.  
+
+Now the interesting use is with parameter objects.  Tuples are a poor substitute for parameter objects because they do not have context.  Changing:
+<pre><code>
+  def myMethod( firstname:String, middlename:String, lastname:String) = {...}
+</code></pre>
+to
+<pre><code>
+  def myMethod( name:(String,String,String)) = {...}
+</code></pre>
+
+Is not so good because you loose context. What are the 3 strings?  The information must go in the javadocs. A better option:
+<pre><code>
+case class Name(first:String, middle:String, last:String)
+
+def myMethod( name:Name ) = {
+  val Name(first, middle, last) = name
+
+  // do something with first middle last
+}
+</pre><code>
+
+The beauty is that you have an object that you can pass around easily.  It is a case class therefore extracting the information is incredibly easy and unlike a tuple it has context and can have methods added easily.
+
+Examples:
+
+<pre><code>
+// define name data object.
+// Notice toString is a lazy val.  This means value is calculated only once.  
+scala> case class Name(first:String, middle:String, last:String) {
+     | override lazy val toString="%s, %s %s" format (last, first,middle)
+     | }
+defined class Name
+
+// toString formats name nicely.  
+scala> Name("Jesse","Dale","Eichar")
+res1: Name = Eichar, Jesse Dale
+
+scala> def readName() = {
+     | //maybe load from a file or database
+     | Name("Jesse","Dale","Eichar") :: Name("Jody","","Garnett") :: Name("Andrea","","Antonello"):: Nil
+     | }
+readName: ()List[Name]
+
+scala> def firstLastName(name:Name) = { 
+     |  // we are putting _ because we don't care about middle name
+     | val Name( first, _, last ) = name
+     | (first, last)
+     | }
+firstLastName: (Name)(String, String)
+
+// convert the list of Names to a list of tuples of first and last name
+scala> readName().map( firstLastName _ )    
+res2: List[(String, String)] = List((Jesse,Eichar), (Jody,Garnett), (Andrea,Antonello))
+
+// print all first names starting with J
+scala> for( Name(first,_,_) <- readName; if (first.startsWith("J"))) println(first)  
+Jesse
+Jody
+
+// print the first and middle parts of the first name in the list
+scala> readName() match {
+     | // the :: _ indicates that we are matching against a list but we don't care about the rest of the list
+     | case Name(f,m,_) ::  _ => println( f, m) 
+     | case _ => println("Not a list of names")
+     | }
+(Jesse,Dale)
+</code></pre>

@@ -1,0 +1,63 @@
+Scala provides two structures for inheritance. Classes (abstract or not) and traits. Traits are very similar to Ruby Mixins meaning that they can contain code like abstract classes but like interfaces multiple traits can be inherited from.
+Like interfaces traits cannot have constructors but in Scala variables can be abstract and therefore provide an easy way to simulate a constructor.
+There are no method resolution conflicts because method definitions are always resolved right to left:
+
+<pre><code>
+class X extends Y with A with B with C
+</code></pre>
+
+If ABC and Y all have the method (doit) the method in C will be used. If C calls super.doit that will call B.doit and so on.
+Note: If Y defines doit the A, B, and C must define doit with the override keyword:
+
+<pre><code>
+override def doit() = {...}
+</code></pre>
+
+In the above example ABC must be traits but Y can be a class or a trait. When inheriting you must always have one extends keyword which can optionally followed by one or more with clauses.
+
+<pre><code>
+scala> abstract class Animal {
+     |  val legs:Int
+     | val noise:String
+     | def makeNoise() = println(noise)
+     | }
+defined class Animal
+
+scala>  trait Quadriped {
+     | self:Animal =>
+     | val legs = 4
+     | }
+defined trait Quadriped
+
+scala> trait Biped {
+     | self:Animal =>
+     | val legs = 2
+     | }
+defined trait Biped
+
+scala> class Dog extends Animal with Quadriped {
+     | val noise = "Woof"
+     | override def makeNoise() = println( noise+" "+noise)
+     | }
+defined class Dog
+
+scala> new Dog().makeNoise()
+Woof Woof
+
+scala> val quad = new GenericAnimal() with Quadriped
+quad: GenericAnimal with Quadriped = $anon$1@10bfb545
+
+scala> quad.makeNoise()
+glup
+
+scala> val biped = new GenericAnimal() with Biped
+biped: GenericAnimal with Biped = $anon$1@7669521
+
+scala> val biped = new GenericAnimal() with Biped{
+     | override val noise = "Hello"
+     | }
+biped: GenericAnimal with Biped = $anon$1@6366ce5f
+
+scala> biped.makeNoise()
+Hello
+</code></pre>
