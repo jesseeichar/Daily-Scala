@@ -1,0 +1,70 @@
+As with most functional languages all control structures ( if for try ) return values.  The common java idiom:
+
+<pre><code>
+String name=null;
+if( xxx ) name="yyy";
+else name="zzz";
+</code></pre>
+
+can be replaced by 
+
+<pre><code>
+val name = if( xxx ) "yyy"; else "zzz";
+</code></pre>
+
+The benefit is that name can now be a <strong>val</strong> instead of a <strong>var</strong>.  All control structures return values not just if-else
+
+
+Another other point about returns: The <strong>return</strong> keyword is not required when returning a value from methods or control structures.  The last value is always the return value.  This is why you will get an error if the last line in a method or control structure is an assignment.
+<pre><code>
+scala> val name = if( 1==2 ) "Jesse" else "Mauricio"
+name: java.lang.String = Mauricio
+
+scala> println(name)
+Mauricio
+
+scala> val collection = for( i <- 1 to 100; if(i%20 == 3) ) yield i
+collection: Seq.Projection[Int] = RangeFM(3, 23, 43, 63, 83)
+
+scala> collection.foreach( i => print( i +" ") )    
+3 23 43 63 83 
+
+scala> val someObj:AnyRef = "Hello"             
+someObj: AnyRef = Hello
+
+scala> val choice = someObj match { 
+     | case _:java.io.File => "File"
+     | case _:String => "String"    
+     | case _ => "Dunno"            
+     | }
+choice: java.lang.String = String
+
+scala> val result = try {
+     | "two".toInt
+     | }catch{
+     | case e:NumberFormatException => -1
+     | case _ => 0
+     | }
+result: Int = -1
+
+scala> var i=0        
+i: Int = 0
+
+// while and do-while do not have return values
+scala> while( i<4 ){
+     | "22"
+     | i += 2
+     | }
+
+scala> println( if(i>0) "great" else "less" )
+great
+
+// code blocks return the last statement
+scala> val m = { 
+     | val x = 1
+     | x + 2
+     | }
+m: Int = 3
+
+
+</code></pre>
