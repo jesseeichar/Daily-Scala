@@ -2,10 +2,12 @@ Scala does not have a enum keyword like java so enumerations are not quite as sm
 
 <ul>
 <li>If you only need discrete and related values without custom behaviour extend Enumeration</li>
-<li>If each value has custom information associated with it use case classes</li>
+<li>If each value has custom information associated with it use case objects</li>
 </ul>
 
 Notice the use of the sealed keyword when defining the abstract class MyEnum.  Sealed specifies that the heirarchy is sealed.  Only classes defined in the same file can extend the class.
+
+Also notice in the case object example that the enumeration values are "case object" not "case class".  The two are similar except that there is only one instance of a case object.  However all the same boiler plate code is generated and you can still match in the same way.
 
 <pre><code>
 // Note: MyEnum is an object NOT a class
@@ -36,7 +38,7 @@ scala> printEnum(Three)
 three
 
 
-// Similar but with cases classes
+// Similar but with cases objectc
 // Notice MyEnum is 'sealed' and the parameters have the 'val' keyword so they are public
 scala> abstract sealed class MyEnum(val name:String, val someNum:Int)
 defined class MyEnum

@@ -1,0 +1,61 @@
+Scala is designed to be a scalable language and one if the features that assist in realizing the goal are implicit method. I have seen it occassionally refered to as static duck typing (although I personally think that describes structural typing better).
+
+The idea is to be able to extend an existing class with new methods in a type safe manner.  At a high level essentially what happens is a developer defines an implicit method (or imports an implicit method) which converts one object from one type to another type.  Once the implicit method is within scope all methods are available from both types.  
+
+Note:  The conversion is one way.  If you want bi-directional conversion you need 2 methods.
+
+<pre><code>
+scala> class MyInteger( i:Int ) {
+     | def myNewMethod = println("hello from myNewMethod")
+     | }
+defined class MyInteger
+
+
+// an integer is not a "MyInteger" so you cannot call the myNewMethod on it
+scala> 1.myNewMethod
+<console>:5: error: value myNewMethod is not a member of Int
+       1.myNewMethod
+         ^
+
+
+// define an implicit conversion and now we can call all MyInteger methods on integers
+scala> implicit def int2MyInt( i:Int ) = new MyInteger(i)
+int2MyInt: (Int)MyInteger
+
+scala> 1.myNewMethod
+hello from myNewMethod
+
+scala> class MyInteger2( val i:Int ) {
+     | def inc = new MyInteger2( i+1 )
+     | }
+defined class MyInteger2
+
+// you can define several implicits in an object and import later
+scala> object Conversions{
+     | implicit def int2MyInt2(i:Int) = new MyInteger2(i)
+     | implicit def myInt2Int( mI:MyInteger2) = mI.i
+     | }
+defined module Conversions
+
+// you can import all implicits or just one (although interpreter only allows all for some reason)
+scala> import Conversions._         
+import Conversions._
+
+// inc returns a MyInteger2 instance
+scala> val j = 1.inc
+j: MyInteger2 = MyInteger2@37f808e6
+
+// test the bi-directionality of it all so create a method 
+// that takes and int
+scala> def takesInt( i:Int ) = println(i)
+takesInt: (Int)Unit
+
+// j is a MyInteger2 but thanks to the implicit it can be converted back to an int
+scala> takesInt( j )
+2
+
+
+scala> takesInt ( 5.inc )
+6
+
+</code></pre>
