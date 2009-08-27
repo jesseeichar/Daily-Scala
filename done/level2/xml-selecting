@@ -1,0 +1,163 @@
+The xml API in scala allows xpath like (although not true xpath) queries.  In combination with matching this makes it very easy to process XML documents.  I am only going to discuss xpath style selection now.  The code section is very long but primarily because the results are often quite lengthy.
+<pre><code>
+<strong>scala&gt; val address = &lt;address&gt;
+     | &lt;CI_Address&gt;
+     | &lt;deliveryPoint&gt;
+     | &lt;CharacterString&gt;Viale delle Terme di Caracalla
+     | &lt;/CharacterString&gt;
+     | &lt;/deliveryPoint&gt;
+     | &lt;city&gt;
+     | &lt;CharacterString&gt;Rome&lt;/CharacterString&gt;
+     | &lt;/city&gt;
+     | &lt;administrativeArea&gt;
+     | &lt;CharacterString /&gt;
+     | &lt;/administrativeArea&gt;
+     | &lt;postalCode&gt;
+     | &lt;CharacterString&gt;00153&lt;/CharacterString&gt;
+     | &lt;/postalCode&gt;
+     | &lt;country&gt;
+     | &lt;CharacterString&gt;Italy&lt;/CharacterString&gt;
+     | &lt;/country&gt;
+     | &lt;electronicMailAddress&gt;
+     | &lt;CharacterString&gt;jippe.hoogeveen@fao.org
+     | &lt;/CharacterString&gt;
+     | &lt;/electronicMailAddress&gt;
+     | &lt;/CI_Address&gt;
+     | &lt;/address&gt;</strong>
+address: scala.xml.Elem = 
+&lt;address&gt;
+       &lt;CI_Address&gt;
+      ...
+
+// create a pretty printer for writing out the document nicely
+<strong>scala&gt;  val pp = new scala.xml.PrettyPrinter(80, 5);</strong>
+pp: scala.xml.PrettyPrinter = scala.xml.PrettyPrinter@6d87c12a
+
+// select the city
+<strong>scala&gt; println( pp.formatNodes( address \ "CI_Address" \ "city" ) )</strong>                    
+&lt;city&gt;
+     &lt;gco:CharacterString&gt;Rome&lt;/gco:CharacterString&gt;
+&lt;/city&gt;
+
+// a second way to select city
+<strong>scala&gt; println( pp.formatNodes( address \\ "city" ) )</strong>       
+&lt;city&gt;
+     &lt;gco:CharacterString&gt;Rome&lt;/gco:CharacterString&gt;
+&lt;/city&gt;
+
+// select all characterStrings and print then one per line (unless there is a \n in the text)
+<strong>scala&gt; (address \\ "CharacterString").mkString( "\n" )</strong>
+res2: String = 
+&lt;CharacterString&gt;Viale delle Terme di Caracalla
+       &lt;/CharacterString&gt;
+&lt;CharacterString&gt;Rome&lt;/CharacterString&gt;
+&lt;CharacterString&gt;&lt;/CharacterString&gt;
+&lt;CharacterString&gt;00153&lt;/CharacterString&gt;
+&lt;CharacterString&gt;Italy&lt;/CharacterString&gt;
+&lt;CharacterString&gt;jippe.hoogeveen@fao.org
+       &lt;/CharacterString&gt;
+
+// iterate over the city node and all of its child nodes.
+<strong>scala&gt; println( pp.formatNodes( address \\ "city" \\ "_"))</strong>
+&lt;city&gt;
+     &lt;CharacterString&gt;Rome&lt;/CharacterString&gt;
+&lt;/city&gt;&lt;CharacterString&gt;Rome&lt;/CharacterString&gt;
+
+// similar as above but iterate over all CI_Address nodes and each of its children
+<strong>scala&gt;println( pp.formatNodes( address \\ "CI_Address" \\ "_")) </strong>
+&lt;CI_Address&gt;
+     &lt;deliveryPoint&gt;
+          &lt;CharacterString&gt;Viale delle Terme di Caracalla &lt;/CharacterString&gt;
+     &lt;/deliveryPoint&gt;
+     &lt;city&gt;
+          &lt;CharacterString&gt;Rome&lt;/CharacterString&gt;
+     &lt;/city&gt;
+     &lt;administrativeArea&gt;
+          &lt;CharacterString&gt;&lt;/CharacterString&gt;
+     &lt;/administrativeArea&gt;
+     &lt;postalCode&gt;
+          &lt;CharacterString&gt;00153&lt;/CharacterString&gt;
+     &lt;/postalCode&gt;
+     &lt;country&gt;
+          &lt;CharacterString&gt;Italy&lt;/CharacterString&gt;
+     &lt;/country&gt;
+     &lt;electronicMailAddress&gt;
+          &lt;CharacterString&gt;jippe.hoogeveen@fao.org &lt;/CharacterString&gt;
+     &lt;/electronicMailAddress&gt;
+&lt;/CI_Address&gt;&lt;deliveryPoint&gt;
+     &lt;CharacterString&gt;Viale delle Terme di Caracalla &lt;/CharacterString&gt;
+&lt;/deliveryPoint&gt;&lt;CharacterString&gt;Viale delle Terme di Caracalla &lt;/CharacterString&gt;&lt;city&gt;
+     &lt;CharacterString&gt;Rome&lt;/CharacterString&gt;
+&lt;/city&gt;&lt;CharacterString&gt;Rome&lt;/CharacterString&gt;&lt;administrativeArea&gt;
+     &lt;CharacterString&gt;&lt;/CharacterString&gt;
+&lt;/administrativeArea&gt;&lt;CharacterString&gt;&lt;/CharacterString&gt;&lt;postalCode&gt;
+     &lt;CharacterString&gt;00153&lt;/CharacterString&gt;
+&lt;/postalCode&gt;&lt;CharacterString&gt;00153&lt;/CharacterString&gt;&lt;country&gt;
+     &lt;CharacterString&gt;Italy&lt;/CharacterString&gt;
+&lt;/country&gt;&lt;CharacterString&gt;Italy&lt;/CharacterString&gt;&lt;electronicMailAddress&gt;
+     &lt;CharacterString&gt;jippe.hoogeveen@fao.org &lt;/CharacterString&gt;
+&lt;/electronicMailAddress&gt;&lt;CharacterString&gt;jippe.hoogeveen@fao.org &lt;/CharacterString&gt;
+
+
+// print all text
+<strong>scala&gt; address.text      </strong>                 
+res4: String = 
+
+       
+       
+       Viale delle Terme di Caracalla
+       
+       
+       
+       Rome
+       
+       
+       
+       
+       
+       00153
+       
+       
+       Italy
+       
+       
+       jippe.hoogeveen@fao.org
+       
+// print all character string text
+<strong>scala&gt; (address \\ "CharacterString").text            </strong>
+res3: String = 
+Viale delle Terme di Caracalla
+       Rome00153Italyjippe.hoogeveen@fao.org
+       
+// print all character string text one per line
+<strong>scala&gt; (address \\ "CharacterString").map( _.text ).mkString("\n")</strong>
+res6: String = 
+Viale delle Terme di Caracalla
+       
+Rome
+
+00153
+Italy
+jippe.hoogeveen@fao.org
+
+// find the longest character string
+<strong>scala&gt; (address \\ "CharacterString").reduceRight(  </strong>
+     | (elem, longest) =&gt; {
+     | if( elem.text.length &gt; longest.text.length ) elem
+     | else longest
+     | })
+res8: scala.xml.Node = 
+&lt;CharacterString&gt;Viale delle Terme di Caracalla
+       &lt;/CharacterString&gt;
+
+
+// find the alphabetically first characterstring
+<strong>scala&gt; (address \\ "CharacterString").reduceRight( (elem, longest) =&gt; {</strong>
+     | if( elem.text &gt; longest.text ) elem
+     | else longest
+     | })
+res9: scala.xml.Node = 
+&lt;CharacterString&gt;jippe.hoogeveen@fao.org
+       &lt;/CharacterString&gt;
+
+</code></pre>

@@ -1,0 +1,77 @@
+NOTE:  This topic only works with the coming scala 2.8.0.  A beta is expected at the end of September.
+
+Named and default arguments are a very nice way to reduce boilerplate code.  There are two ideas here.
+
+Default Arguments
+This allows one to provide a default value to a method parameter so that the caller is not required to provide a value if the default is good.  This reduces boilerplate code but also allows the signatures of methods to change and not break existing code (although because of the JVM implementation I think a recompile may be required.  I have not verified whether that is the case or not).
+
+This is how it reduces boilerplate code.  The java way:
+
+<pre><code>
+int method( int required, int notRequired) { return required + notRequired; }
+int method( int required) { method(required,9); }
+</code></pre>
+
+2 methods are required and as the number of optional parameter increase the number of methods increase exponentially.  And you will likely need several similarily named methods
+
+<pre><code>
+def method( required:Int, notRequired:Int=0) = required + notRequired
+</code></pre>
+
+In scala 2.8+ you can assign a parameter a default value which allows you to optionally provide the value or ignore it.
+
+The second part of the equation is named arguments.  Suppose you have the method and all arguments have different values:
+
+<pre><code>
+scala> def bigMethod( p1:Int=1, p2:Int=2, p3:Int=3, p4:Int=4, p5:Int=5) = p1 +p2 + p3+ p4 + p5
+bigMethod: (p1: Int,p2: Int,p3: Int,p4: Int,p5: Int)Int
+
+scala> bigMethod() // you have to provide () when default params are used
+res10: Int = 15
+</code></pre>
+
+How can you provide a parameter for p3 only?  Named arguments to the rescue.
+
+<pre><code>
+scala> bigMethod( p3 = 10 )
+res0: Int = 22
+</code></pre>
+
+Using named arguments you can declare which parameter you are assigning which value.  This works with methods with no default params as well but is particularily important in conjunction with default arguments.
+
+More examples:
+
+<pre><code>
+scala> def bigMethod( p1:Int=1, p2:Int=2, p3:Int=3, p4:Int=4, p5:Int=5) = p1 +p2 + p3+ p4 + p5
+bigMethod: (p1: Int,p2: Int,p3: Int,p4: Int,p5: Int)Int
+
+scala> bigMethod( p3 = 10 )
+res0: Int = 22
+
+scala> bigMethod( p3 = 10, p1=11 )
+res1: Int = 32
+
+scala> bigMethod( 10,10,10 )
+res3: Int = 39
+
+scala> bigMethod( 10,10,10, p5 = -100 )
+res5: Int = -66
+
+scala> def anotherMethod( p1:Int, p2:Boolean) = println( p1, p2 )
+anotherMethod: (p1: Int,p2: Boolean)Unit
+
+scala> anotherMethod(1,false)
+(1,false)
+
+scala> anotherMethod(p2=false, p1=10)
+(10,false)
+
+
+// anotherMethod does not have default params so you must declar all params!
+scala> anotherMethod(p2=false)
+<console>:6: error: not enough arguments for method anotherMethod: (p1: Int,p2: Boolean)Unit.
+Unspecified value parameter p1.
+       anotherMethod(p2=false)
+                    ^
+</code></pre>
+
