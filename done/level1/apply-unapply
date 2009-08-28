@@ -1,0 +1,58 @@
+The apply and update methods are have special meaning in Scala.  They allow a developer to define array like semantics for an arbitrary class.  For example:
+
+<pre><code>
+<strong>scala&gt; class Phonebook {
+     |  val numbers = scala.collection.mutable.Map[String,String]()
+     | def apply(name:String):String = numbers(name)
+     | def update(name:String, number:String) = numbers(name) = number
+     | }</strong>
+defined class Phonebook
+
+<strong>scala&gt; val book = new Phonebook() </strong>
+book: Phonebook = Phonebook@1e406b09
+
+<strong>scala&gt; book("jesse") = "123 456 7890" </strong>
+
+<strong>scala&gt; println (book("jesse"))</strong>
+123 456 7890
+</code><pre>
+
+As you can see you can invoke the apply method in a similar way that [] are used on arrays in Java.  When you call <code>obj(param)</code> the call is translated by the compiler to:  <code>obj.apply(param)</code>.  As such apply can have any number of arguments.
+
+Similarly <code>obj(param) = value</code> is compiled to <code>obj.update(param,value)</code>.  Again the update method can have as many arguments as you wish.  However only the last argument is treated as a value. So:
+<pre><code>
+<strong>scala&gt; class Echo {
+     | def update(n:String, n2:String, n3:String ) = println(n,n2,n3)
+     | }</strong>
+defined class Echo
+
+<strong>scala&gt; val e = new Echo()</strong>
+e: Echo = Echo@2fa847df
+
+<strong>scala&gt; e("hello", "hi") = "bonjour"</strong>
+(hello,hi,bonjour)
+
+<strong>scala&gt; e("hello") = ("salut","bonjour")</strong>
+<console>:7: error: wrong number of arguments for method update: (String,String,String)Unit
+       e("hello") = ("salut","bonjour")
+                  ^
+</code></pre>
+
+This makes sense because if apply has many arguments representing the key then the same key must work for the update method for assignment.  If you have many values to assigne try:
+<pre><code>
+<strong>scala&gt; class Phonebook {                                                    
+     |  val numbers = scala.collection.mutable.Map[String, (Int, Int)]()    
+     | def apply(name:String) = numbers(name)                               
+     | def update(name:String, number:(Int,Int)) = numbers(name) = number   
+     | }</strong>
+defined class Phonebook
+
+<strong>scala&gt; val book2 = new Phonebook()</strong>
+book2: Phonebook = Phonebook@7a120cb3
+
+<strong>scala&gt; book2("jesse") = (123, 4567890)</strong>
+
+<strong>scala&gt; val (areaCode, local) = book2("jesse")</strong>
+areaCode: Int = 123
+local: Int = 4567890
+</code></pre>
