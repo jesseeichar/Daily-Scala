@@ -1,0 +1,50 @@
+The collections APIs in Scala are completely separate from those in Java, the primary reason is because they are designed from the ground up to be functional in nature.  However, in keeping with Scala's goal of effortless Java integration there are implicits that convert between Java and Scala collections.
+
+The object that needs to be imported has changed between Scala 2.7.x and 2.8 but the usage is the same.  In 2.8 all conversions from Java to Scala objects (be it collections, concurrent constructs or others) are in objects call JavaConversions.  For example in the August 31 nightly build there are 2 JavaConversions objects.  scala.collection.JavaConversions and scala.concurrent.JavaConversions.  As time progresses I expect that the types of JavaConversions will expand.  
+
+In scala 2.7 you can not convert Scala collections to Java collections only Java to Scala.  In 2.8 you can do both.
+
+So here is how to use conversions in 2.7.x:
+<pre><code>
+scala> val jmap = new java.util.HashMap[String,Int]()
+jmap: java.util.HashMap[String,Int] = {}
+
+scala> jmap.put("one", 2)
+res0: Int = 0
+
+scala> jmap.get("one")
+res1: Int = 2
+
+scala> import scala.collection.jcl.Conversions._
+import scala.collection.jcl.Conversions._
+
+scala> jmap("one")                              
+res3: Int = 2
+
+scala> jmap("one") = 1 
+
+scala> jmap("one")    
+res5: Int = 1
+</code></pre>
+And in 2.8:
+<pre><code>
+cala> val jmap = new java.util.HashMap[String,Int]()
+jmap: java.util.HashMap[String,Int] = {}
+
+scala> jmap.put("one", 2)
+res0: Int = 0
+
+scala> jmap.get("one")
+res1: Int = 2
+
+scala> import scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
+
+scala> jmap("one")
+res3: Int = 2
+
+scala> jmap("one") = 1
+
+scala> jmap("one")
+res5: Int = 1
+</code></pre>

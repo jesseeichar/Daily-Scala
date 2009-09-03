@@ -1,0 +1,65 @@
+One useful application of a trait is the case where you want to add functionality to an existing class.  In this example I have a class provided by a third party library (in this just a simple StringReader class from the java library.  But what I want is to be able to read lines as well as the standard read methods.  
+
+One solution is to create a trait and when I instantiate the StringReader mix in the new trait.  Code like <code>new StringReader() with Lines</code> results in a new class that extends StringReader and the trait Lines.  As a result we have all the methods of StringReader and Lines.
+
+The other solution that can be used is to create an implicit conversion from StringReader to some other class.  There are two draw backs here
+1. It is harder to tell what is happening
+2. A trait can contain state but a "view" (which is what you get when one class is implicitly converted to another class) has no state it is just a view of the original class.  In this example a view would work but in other examples like creating a pushback reader, it would not work.
+
+Here is a simple example:
+
+<pre><code>
+scala> trait Lines {
+     | // the self type declares what type of class the trait can be applied to    
+     | // if there is no self type then it is assumed it can be applied to Any type
+     | self:java.io.Reader =>                                                      
+     | def nextLine:Option[String] = {
+     | val builder = new scala.collection.mutable.StringBuilder()
+     | 
+     | var next = read()
+     | 
+     | while( next != -1 && next.toByte.toChar != '\n' ){
+     | builder += next.toByte.toChar
+     | next = read()
+     | }
+     | 
+     | if( builder.isEmpty ) None
+     | else Some(builder.toString)
+     | }
+     | }
+defined trait Lines
+
+
+// Using """ allows multiple line strings.  All characters within """ """ are automatically escaped.
+// I am creating a reader and mixing in the Lines trait on construction
+scala> val reader = new java.io.StringReader( """line one
+     | line two""") with Lines
+reader: java.io.StringReader with Lines = $anon$1@3850620f
+
+scala> reader.nextLine
+res0: Option[String] = Some(line one)
+
+scala> reader.nextLine
+res1: Option[String] = Some(       line two)
+
+scala> reader.nextLine
+res2: Option[String] = None
+
+scala> reader.nextLine
+res3: Option[String] = None
+
+// we can define a method that takes a reader with lines
+scala> def toCollection( reader:java.io.StringReader with Lines) = {
+     | def collect:List[String] = reader.nextLine match { 
+     |   case None => Nil
+     |   case Some( line ) => line :: collect
+     | }
+     | 
+     | collect
+     | }
+toCollection: (reader: java.io.StringReader with Lines)List[String]
+
+scala> toCollection( new java.io.StringReader( "line one\nlinetwo" ) with Lines).size
+res8: Int = 2
+
+</code></pre>
