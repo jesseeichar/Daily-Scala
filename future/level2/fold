@@ -1,3 +1,30 @@
+Folding and reducing are two types of operations that are both very important with dealing with collections in Scala (and other functional languages).  This topic covers the fold operations.  The reduce topic was previously covered.
+
+A simplistic explanation is they allow processing of the collections.  I think about foldRight and foldLeft to be very similar to a visitor that visits each element and performs a calculation.  It does not change the values of the collection instead it calculates a result from visiting each element.  In Java you might see the following pattern:
+
+<pre><code class="java">
+class Collection {
+  pubic Result op( Result startingValue, Op operation){...}
+}
+
+interface Op{
+  public Result op( Object nextCollectionElem, Result lastCalculatedResult)
+}
+</code></pre>
+
+To a Java programmer this is pretty obvious how you use it.  This is essentiall the fold operation.  The difference is we are using closures so there is almost no boilerplate and all collection/Iteratore/Iterable interfaces have the fold methods.  
+
+One last point before examples.  For fold and reduce operations there are both foldLeft and foldRight and similarily reduceLeft and reduceRight.  These indicate the order that a collection is processed.  Note that for certain collections one direction is more performant that the other.  Lists, for example, are better to process right to left because of the datastructure used.
+
+Some tasks that are suited to fold are:
+<ul>
+<li>Find the 5 smallest elements in a list</li>
+<li>Sum all the values of a Map together</li>
+<li>Sum the lengths of the Strings contained in the collection</li>
+</ul>
+
+There are a number of ways that fold can be written syntactically.  The following examples are ways to sum together the integers of a Map.  Note that /: is an alias for foldLeft and :/ is an alias for foldRight.  Normally foldLeft and foldRight should be used unless the rest of the developers who will be reading the code are quite confortable reading Scala.
+<pre><code>
 // fold right processes from left to right
 scala> val m = Map(1 -> "one", 2 -> "two", 3 -> "three")
 m: scala.collection.immutable.Map[Int,java.lang.String] = Map(1 -> one, 2 -> two, 3 -> three)
@@ -27,3 +54,4 @@ res5: Int = 6
 
 scala> (0 /: m){case (accum, (key, value)) => accum + value}
 res4: Int = 6
+</code></pre>
