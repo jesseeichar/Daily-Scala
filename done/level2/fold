@@ -1,3 +1,5 @@
+Collection/Iterable/Iterator reduceRight and reduceLeft 
+
 Folding and reducing are two types of operations that are both very important with dealing with collections in Scala (and other functional languages).  This topic covers the fold operations.  The reduce topic was previously covered.
 
 A simplistic explanation is they allow processing of the collections.  I think about foldRight and foldLeft to be very similar to a visitor that visits each element and performs a calculation.  It does not change the values of the collection instead it calculates a result from visiting each element.  In Java you might see the following pattern:

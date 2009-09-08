@@ -1,0 +1,42 @@
+In scala exceptions are not checked so effectively all exceptions are runtime exceptions.  When you want to handle exceptions you use a <code>try {...} catch {...}</code> block like you would in Java except that the catch block uses matching to identify and handle the exceptions.  This creates a very powerful but light-weight way to handle exceptions:
+
+<pre><code>
+scala> def handle( f: => Unit ) = {                                             
+     | try { f } catch {                                                        
+     | case _:AssertionError => println ("Whoops an assertion error")
+     | case r:RuntimeException => println ("Runtime Exception: "+ r.getStackTraceString)  
+     | case e if (e.getMessage == null) => println ("Unknown exception with no message")
+     | case e => println ("An unknown error has been caught" + e.getMessage)            
+     | }
+     | }
+handle: (=> Unit)Unit
+
+scala> handle { throw new AssertionError("big bad error") }
+Whoops an assertion error
+
+scala> handle { throw new IllegalArgumentException("Sooooo illegal") }
+Runtime Exception: line9$object$$iw$$iw$$iw$$anonfun$1.apply(<console>:8)
+line9$object$$iw$$iw$$iw$$anonfun$1.apply(<console>:8)
+line7$object$$iw$$iw$$iw$.handle(<console>:7)
+line9$object$$iw$$iw$$iw$.<init>(<console>:8)
+line9$object$$iw$$iw$$iw$.<clinit>(<console>)
+RequestResult$line9$object$.<init>(<console>:3)
+RequestResult$line9$object$.<clinit>(<console>)
+RequestResult$line9$object.result(<console>)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+java.lang.reflect.Method.invoke(Method.java:597)
+scala.tools.nsc.Interpreter$Request.loadAndRun(Interpreter.scala:889)
+scala.tools.nsc.Interpreter.interpret(Interpreter.scala:508)
+scala.tools.nsc.Interpreter.interpret(Interpreter.scala:494)
+scala.tools.nsc.InterpreterLoop.interpretStartingWith(InterpreterLoop.scala:242)
+scala.tools.nsc.InterpreterLoop.command(InterpreterLoop.scala:230)
+scala.tools.nsc.InterpreterLoop.repl(InterpreterLoop.scala:142)
+scala.tools.nsc.InterpreterLoop.main(InterpreterLoop.scala:298)
+scala.tools.nsc.MainGenericRunner$.main(MainGenericRunner.scala:141)
+scala.tools.nsc.MainGenericRunner.main(MainGenericRunner.scala)
+
+scala> handle{ throw new java.io.IOException("cant read something") }
+An unknown error has been caughtcant read something
+</code></pre>

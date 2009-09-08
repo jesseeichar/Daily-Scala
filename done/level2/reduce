@@ -1,0 +1,74 @@
+Folding and reducing are two types of operations that are both very important with dealing with collections in Scala (and other functional languages).  This topic covers the reduce operations.  The fold topic will be covered shortly
+
+A simplistic explanation is they allow processing of the collections.  I think about foldRight and foldLeft to be very similar to a visitor that visits each element and performs a calculation.  It does not change the values of the collection instead it calculates a result from visiting each element.  In Java you might see the following pattern:
+
+<pre><code class="java">
+class Collection {
+  pubic Result op( Result startingValue, Op operation){...}
+}
+
+interface Op{
+  public Result op( Object nextCollectionElem, Result lastCalculatedResult)
+}
+</code></pre>
+
+To a Java programmer this is pretty obvious how you use it.  Reduce operations are similar but very narrow in scope.  They only return values that are of the same type as the original collection (IE a list of Int will return an Int from reduce) and there is not initial seed value.  The first two imputs are the first and second elements of the collection.  If there is only one element then that element is returned.
+
+Reduce might look like the following in Java:
+
+<pre><code class="java">
+class Collection<Integer> {
+  pubic Integer op(Op operation){...}
+}
+
+interface Op{
+  public Integer op( Integer nextElem, Int lastCalculatedResult)
+}
+</code></pre>
+
+
+One last point before examples.  For fold and reduce operations there are both foldLeft and foldRight and similarily reduceLeft and reduceRight.  These indicate the order that a collection is processed.  Note that for certain collections one direction is more performant that the other.  Lists, for example, are better to process right to left because of the datastructure used.
+
+Some problems that are ideally suited to reduce:
+<ul>
+<li>Calculate the minimum value of a collection</li>
+<li>Calculate the sum of a collection</li>
+</ul>
+
+<pre><code>
+scala> val list = List("one", "two", "three")                                                   
+list: List[java.lang.String] = List(one, two, three)
+
+scala> list reduceRight ((elem, result) => {if (elem.length < result.length ) elem else result})
+res2: java.lang.String = two
+
+// reduce left has the order of parameter reversed.
+scala> list reduceLeft ((result, elem) => {if (elem.length < result.length ) elem else result})        
+res4: java.lang.String = one
+
+// if only 1 element that element is returned
+scala> List("one") reduceRight ((elem, result) => {if (elem.length < result.length ) elem else result})
+res3: java.lang.String = one
+
+// the two following are equivalent.  _ indicates one arguement.  If there are two arguments the first _ is the first argument and the second _ is the second argument
+scala> List(1,2,3) reduceRight ((elem, result) => {elem + result})   
+res6: Int = 6
+
+scala> List(1,2,3) reduceRight ( _ + _ )
+res5: Int = 6
+
+// find minimum.  Four equivalent ways to write it
+scala> List(1,2,3) reduceRight ((elem, result) => {elem.min(result)})   
+res11: Int = 1
+
+scala> List(1,2,3) reduceRight ((elem, result) => {elem min result}) 
+res12: Int = 1
+
+scala> List(1,2,3) reduceRight (_.min(_)) 
+res10: Int = 1
+
+scala> List(1,2,3) reduceRight ( _ min _ )  
+res9: Int = 1
+
+
+</code></pre>

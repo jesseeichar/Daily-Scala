@@ -1,0 +1,56 @@
+This topic is mainly for completeness.  We will quickly cover the standard control structures you find in Java and see how they are the same or different in Scala.  The first thing to note is that in Scala 2.7 there is no break keyword.  In Scala 2.8 there is a break control structure but it is slightly different than the Java break keyword.  We will encounter that topic in a later lesson.  The control structures I will quickly cover are: do-while, while, for and if.
+
+For information about the Java case statement take a look at the several matching topics covered now and in the future.  
+
+Note: The java ternary if statement does not exist in scala instead the standard if statement is to be used.  It is slightly more verbose but returns a value in the same way as a ternary if statement.
+
+<pre><code>
+<strong>scala> var i = 0;</strong>
+i: Int = 0
+
+<strong>scala> while( i<3 ){
+     | println( i )
+     | i += 1
+     | }</strong>
+0
+1
+2
+
+<strong>scala> i = 0</strong>
+i: Int = 0
+
+<strong>scala> do {
+     | println( i )
+     | i += 1
+     | } while (i<3)</strong>
+0
+1
+2
+
+<strong>scala> for(j <- 0 until 3) println (j)  </strong>
+0
+1
+2
+
+<strong>scala> if (i<3) println("less") else println ("more")</strong>
+more
+
+<strong>scala> val result = if (i<3) -10 else 10</strong>
+result: Int = 10
+
+<strong>scala> println (result)</strong>
+10
+
+scala> if (i>10) println(1)
+
+scala> if (i<10) println(1)
+1
+
+// Note that the return value is ().  You can only get a meaningful return value if there is an else.
+scala> val r = if (i<10) 10
+r: Unit = ()
+
+scala> println(r)
+()
+
+</code></pre>
