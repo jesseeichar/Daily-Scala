@@ -1,0 +1,32 @@
+A companion object is an object with the same name as a class or trait and that is defined in the file as the associated file or trait.  A companion object differs from other objects as it has access rights to the class/trait that other objects do not.  In particular it can access methods and fields that are private in the object.  
+
+An analog to a companion object in Java is having a class with static methods.  In Scala you would move the static methods to a Companion object.
+
+One of the most common uses of a companion object is to define factory methods for class.  An example is case-classes.  When a case-class is declared the a companion object is created for the case-class with a factory method that has the same signature as the primary constructor of the case class.  That is why you can create a case-class like:  <code>MyCaseClass(param1, param2)</code>.  No <em>new</em> element is required for case-class instantiation.
+
+A second common use-case for companion objects is to create extractors for the class.  I will mention extractors in a future topic.  Basically extractors allow matching to work with arbitrary classes.
+
+<strong>NOTE:</strong> Because the companion object and the class must be defined in the same source file you cannot create them in the interpreter.  So copy the following example into a file and run it in script mode:
+<pre>
+scala mysourcefile.scala
+</pre>
+
+Example:
+<pre><code>
+class MyString(val jString:String) {
+  private var extraData = ""
+  override def toString = jString+extraData
+}
+
+object MyString {
+  def apply(base:String, extras:String) = {
+    val s = new MyString(base)
+    s.extraData = extras
+    s
+  }
+  def apply(base:String) = new MyString(base)
+}
+
+println(MyString("hello"," world"))
+println(MyString("hello"))
+</code></pre>
