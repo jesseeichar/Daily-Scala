@@ -1,0 +1,51 @@
+Assignment in Scala follows more or less the same rules as Java and other related rules.  There are some differences. 
+
+Increment operators do not work (<code>i++</code>).  As I understand it the rational is that it is too specific an idiom.  There is not an easy way to generalize it.  Instead you must use <code>i += 1</code>.  
+
+Assignments do not return a value.  For example you cannot do <code>val i = j = 2</code> or <code>while( (i = read(buffer)) > 0 ){...}</code>.
+
+One feature that is fairly unique in Scala is the ability to expand a case-class or other class that has an associated extractor.  For details look at the previous topic <a href="http://daily-scala.blogspot.com/2009/08/assignment-and-parameter-objects.html">Assignment and Parameter Objects</a>.
+Examples:
+<pre><code>
+scala> val i,j=2
+i: Int = 2
+j: Int = 2
+
+scala> val (i,j) = (1,2)
+i: Int = 1
+j: Int = 2
+
+scala> val (i,j,k) = (1,"two",3.0)
+i: Int = 1
+j: java.lang.String = two
+k: Double = 3.0
+
+scala> case class Data( name:String, age:Int, weight:Float)
+defined class Data
+
+scala> val Data(name, age, weight) = Data("Jesse", 133, 100f)
+name: String = Jesse
+age: Int = 133
+weight: Float = 100.0
+
+scala> val value = 1
+value: Int = 1
+
+scala> i += 1
+<console>:10: error: reassignment to val
+       i += 1
+         ^
+
+scala> value += 1
+<console>:6: error: reassignment to val
+       value += 1
+             ^
+
+scala> var variable = 1
+variable: Int = 1
+
+scala> variable += 1
+
+scala> println(variable)
+2
+</code></pre>
