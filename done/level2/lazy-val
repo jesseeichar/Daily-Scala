@@ -1,0 +1,26 @@
+One nice feature built into Scala are "lazy val" values.  Essentially they are the lazy initialization pattern that is very commonly implemented in Java programs (and very commonly incorrectly implemented).  When a val is declared witht the lazy modifier the right-hand side of the value (the definition) will not be executed until the first time the value is accessed.
+
+A related forth coming topic is the topic on lazy collections and projections and streams.  They are all ways to lazily evaluate collections.
+
+Note:  The code for today must be put in a file and executed.  Lazy val's cannot be demonstrated in the REPL because after each value is declared in a REPL the variable is accessed and it is printed out in the next line.  If I considered it important enough I could have defined a method in the REPL, put the code in the method and then called the method and demonstrated it and if you wish feel free to do that.  But I recommend creating a file and running <em>scala yourfile</em>
+
+Examples:
+<pre><code>
+val normalVal = {
+  println("---->>>   Initializing normal val    <<<----");
+  "This is the normal val"
+}
+
+lazy val lazyVal = {
+  println("---->>>   Initializing lazy val   <<<----");
+  "This is the lazy val"
+}
+
+println ("\n\nno references have been made yet\n\n")
+println ("Accessing normal val : ")
+println(normalVal)
+println ("\n\nAccessing lazy val : ")
+println(lazyVal)
+println ("\n\nAccessing lazy val a second time, there should be no initialization now: ")
+println(lazyVal)
+</code></pre>

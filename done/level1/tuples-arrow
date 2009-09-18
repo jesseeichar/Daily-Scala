@@ -1,0 +1,22 @@
+Defined in the Predef object are several implicit methods.  All implicit methods defined in the Predef method are applicable to all programs without importing them.  One such method is the -> method.  This method is applicable to all objects and creates a Tuple2.  
+
+Examples:
+<pre><code>
+// normal way to make a Tuple2
+scala> (1,2)
+res3: (Int, Int) = (1,2)
+
+// another way to make a Tuple2 using the implicit -> method
+scala> 1 -> 2
+res2: (Int, Int) = (1,2)
+
+// Creating a map using the normal tuples creation mechanism
+scala> Map (("one",1),
+     |      ("two",2))
+res5: scala.collection.immutable.Map[java.lang.String,Int] = Map(one -> 1, two -> 2)
+
+// -> syntax allows a second "prettier" way of creating the Map
+scala> Map("one" -> 1,
+     |     "two" -> 2)
+res6: scala.collection.immutable.Map[java.lang.String,Int] = Map(one -> 1, two -> 2)
+</code></pre>

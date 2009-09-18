@@ -1,0 +1,40 @@
+This topic is derived from the blog post:  http://ikaisays.com/2009/04/04/using-pattern-matching-with-regular-expressions-in-scala
+
+The Regex class in Scala provides a very handy feature that allows you to match against regular expressions.  This makes dealing with certain types of regular expression very clean and easy to follow.  
+
+What needs to be done is to create a Regex class and assign it to a val.  It is recommended that the val starts with an Uppercase letter, see the topic of matching about the assumptions matching makes based on the first letter of the Match case clause.  
+
+There is nothing like examples to help explain an idea:
+<pre><code>
+
+// I normally use raw strings (""") for regular expressions so that I don't have to escape all \ characters
+// There are two ways to create Regex objects.  
+// 1. Use the RichString's r method
+// 2. Create it using the normal Regex constructor
+scala> val Name = """(\w+)\s+(\w+)""".r                                                                             
+Name: scala.util.matching.Regex = (\w+)\s+(\w+)
+
+scala> import scala.util.matching._         
+import scala.util.matching._
+
+// Notice the val name starts with an upper case letter
+scala> val Name = new Regex("""(\w+)\s+(\w+)""")
+Name: scala.util.matching.Regex = (\w+)\s+(\w+)
+
+scala> "Jesse Eichar" match {
+     | case Name(first,last) => println("found: ", first, last)   
+     | case _ => println("oh no!")                             
+     | }
+(found: ,Jesse,Eichar)
+
+scala> val FullName = """(\w+)\s+(\w+)\s+(\w+)""".r              
+FullName: scala.util.matching.Regex = (\w+)\s+(\w+)\s+(\w+)
+
+// If you KNOW that the match will work you can assign it to a variable
+// Only do this if you are sure the match will work otherwise you will get a MatchError
+scala> val FullName(first, middle, last) = "Jesse Dale Eichar"
+first: String = Jesse
+middle: String = Dale
+last: String = Eichar
+
+</code></pre>
