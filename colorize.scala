@@ -31,13 +31,13 @@ case class Block(start:String, end:String, styleClass:String){
   val Ends = """^(.*%s)(.*\z)""".format(end).r
 
   override def toString = start+"..."+end
-  
+
   private def index(f:String=>Int)(line:String) = f(line) match {
     case x if (x < 0) => None
     case x => Some(x)
   }
   def lastIndexOf = index(line => line.lastIndexOf(start)) _
-  
+
   def indexOf = index(line => line.indexOf(start)) _
 }
 
@@ -48,48 +48,53 @@ def splitInBlocks(line:String):List[(Option[Block],String)]={
   .filter { _._2.isDefined }
   .map {e => (e._1,e._2.get)}
   val sorted = valid sort { _._2 < _._2 }
- 
+
   sorted match {
     case Nil => (None,line) :: Nil
     case (block,_) :: tail => {
       line match {
         case block.Contains (before, b, after ) => splitInBlocks(before) ::: (Some(block),b) :: splitInBlocks(after)
         case block.Starts (b, after) => (Some(block),b) :: splitInBlocks(after)
-        case block.Ends (before, b) => splitInBlocks(before) ::: (Some(block),b) :: Nil 
-      } 
+        case block.Ends (before, b) => splitInBlocks(before) ::: (Some(block),b) :: Nil
+      }
     }
   }
 }
 
 import scala.util.matching.Regex
 def applyStyle(line:String, word:Regex, style:String) = {
-  word replaceAllIn (line,  """$1<span class="%s">$2</span>$3""".format(style))
+  val (_, styled) = line.split("span").foldLeft ((line.trim.startsWith("<span"),"")) {
+    case ((false, styledLine), section) => (true, styledLine + (word replaceAllIn (section,  """$1<span class="%s">$2</span>$3""".format(style))))
+    case ((true, styledLine), section) => (false, styledLine+"span"+section+"span")
+  }
+
+  styled
 }
 def process(line:String):(String,Option[Block])={
   val blocks = splitInBlocks (line)
   val styled = blocks.map {
     case (Some(block),line) => ("""<span class="%s">%s</span>""".format (block.styleClass, line))
-    case (None,line) => 
+    case (None,line) =>
       (line /: styles) {
         case (line, (word,style)) if ((word findFirstIn line).isDefined) => applyStyle(line,word,style)
         case (line, _) => line
       }
   }
-    
-  val endBlock = blocks (blocks.length - 1) match { 
+
+  val endBlock = blocks (blocks.length - 1) match {
     case (Some(b), _) => line match {
       case b.Ends (_,_) => None
       case _ => Some(b)
     }
     case (None,_) => None
   }
-  
+
   (styled mkString "", endBlock)
 }
 
 final def process(line:String, b:Block):(String,Option[Block])={
   line match {
-    case b.Ends(r,l) =>{ 
+    case b.Ends(r,l) =>{
       val (styled,endBlock) = process(l)
       (r+"" + styled, endBlock)
     }
@@ -113,18 +118,29 @@ def processCode(lines:Iterator[String])={
     case None => styled
   }
 }
-  
+
 val source=scala.io.Source.fromFile(args(0))
 
 val data = source.getLines.mkString("")
 
 val startWithCode = data.trim startsWith "<code>"
 val splitData = (data split "<code>") flatMap (_ split "</code>")
+val zipped = splitData.zipWithIndex map { case (line, index) => (line, 1 == (if (startWithCode) (index+1) % 2 else index %2)) }
 
-
-val (_, processed) = ((startWithCode,"") /: splitData) {
-  case ((true,styled), code) => (false, (styled + "<code>\n%s\n</code>") format processCode(code.lines) )
-    case ((false,styled),noncode) => (true,styled+noncode)
+val processed = zipped map {
+  case (code, true) => {
+    def newLine(f:(String)=>Boolean) = if (f("\n")) "\n" else ""
+    "<code>" + newLine(code.startsWith _) + processCode (code.lines) + newLine(code.endsWith _) + "</code>"
+  }
+  case (noncode, false) => noncode
 }
-  
-println(processed)
+
+
+println (processed.mkString(""))
+
+/*val (_, processed) = ((startWithCode,"") /: splitData) {
+  case ((true,styled), code) => (false, (styled + "<code>%s</code>") format processCode(code.lines) )
+    case ((false,styled),noncode) => (true,styled+noncode)
+}*/
+
+//println(processed)

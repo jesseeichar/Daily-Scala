@@ -1,5 +1,6 @@
 <pre><code>
-scala> println ("hi")
+scala> val world="world"
+scala> println ("hi "+world+"!")
 </code></pre>
 
 In between
