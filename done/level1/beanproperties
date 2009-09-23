@@ -1,0 +1,68 @@
+In Java-land many frameworks depend on Bean style properties.  Scala has an extremely handy annotation that assists in interoperating with frameworks that require bean-style interfaces.  In Scala 2.7 there are only a few annotations for helping:  
+<ul>
+<li>@BeanProperty - Generates getters and setters for a property.  (Or just a getter if the bean is a val)</li>
+<li>@BeanInfo - Generates the associated BeanInfo for the class</li>
+</ul>
+Remember that if you want frameworks to be able to create the beans you need to make a 0-arg constructor and have the bean properties as fields.
+
+Example with bean-properties as constructor arguments. This example requires Scala 2.8 because it uses BooleanBeanProperty.  You can remove that and run with Scala 2.7.x.
+In this example we define a bean class and use reflection to show that all the getters and setters are generated:
+<pre><code>
+scala> import scala.reflect._                   
+import scala.reflect._
+
+scala> case class MyBean(                        
+     | @BeanProperty var mutable:String,  // getter and setter should be generated
+     | @BooleanBeanProperty var boolProp:Boolean, // is getter and normal setter should be generated
+     | @BeanProperty val readOnly:Int) // only a getter should be generated
+
+defined class MyBean
+
+scala> val beanClass = classOf[MyBean]           
+beanClass: java.lang.Class[MyBean] = class MyBean
+
+scala> val beanMethods = beanClass.getDeclaredMethods.filter( _.getName.matches("(get|is|set).+"))
+beanMethods: Array[java.lang.reflect.Method] = Array(public java.lang.String MyBean.getMutable(), public boolean MyBean.isBoolProp(), public int MyBean.getReadOnly(), public void MyBean.setBoolProp(boolean), public void MyBean.setMutable(java.lang.String))
+
+scala> println( beanMethods map (_.getName) mkString("\n"))
+getMutable
+isBoolProp
+getReadOnly
+setBoolProp
+setMutable
+</code><pre>
+
+
+This next example would not run in the REPL for some reason so you must copy-paste it into a file, compile and run.  Instructions:
+<ol>
+<li>copy and paste code into bean.scala</li>
+<li>scalac bean.scala</li>
+<li>scala -cp . MyBean</li>
+</ol><pre><code>
+import scala.reflect._
+
+class MyBean{
+  @BeanProperty
+  var mutable:String = ""
+}
+
+object MyBean{
+  def apply(mutable:String) = {
+    val bean = new MyBean()
+    bean.mutable = mutable
+    bean
+  }
+
+  def main(args:Array[String]){
+
+    import java.beans._
+
+    val result = new java.io.ByteArrayOutputStream
+    val encoder = new XMLEncoder(result)
+    val bean = MyBean("hello")
+    encoder.writeObject( bean )
+    encoder.close
+    println(result.toString)
+  }
+}
+</code></pre>
