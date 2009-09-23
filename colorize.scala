@@ -52,23 +52,38 @@ def splitInBlocks(line:String):List[(Option[Block],String)]={
   sorted match {
     case Nil => (None,line) :: Nil
     case (block,_) :: tail => {
-      line match {
+      val blocks = line.lines.next match {
         case block.Contains (before, b, after ) => splitInBlocks(before) ::: (Some(block),b) :: splitInBlocks(after)
         case block.Starts (b, after) => (Some(block),b) :: splitInBlocks(after)
         case block.Ends (before, b) => splitInBlocks(before) ::: (Some(block),b) :: Nil
       }
+      if(line.lines.next.size < line.size) blocks ::: (None, "") :: Nil else blocks
     }
   }
 }
 
 import scala.util.matching.Regex
 def applyStyle(line:String, word:Regex, style:String) = {
-  val (_, styled) = line.split("span").foldLeft ((line.trim.startsWith("<span"),"")) {
-    case ((false, styledLine), section) => (true, styledLine + (word replaceAllIn (section,  """$1<span class="%s">$2</span>$3""".format(style))))
-    case ((true, styledLine), section) => (false, styledLine+"span"+section+"span")
+  
+  val spans = (List((false,"")) /: line) {
+    case ((true,  seg) :: rest, char) if(seg endsWith "</span>") => (false,char.toString) :: (true,  seg) :: rest
+    case ((true,  seg) :: rest, char) => (true,  seg+char) :: rest
+    case ((false,  seg) :: rest, '<') => (false,"<") :: (false,  seg) :: rest
+    case ((false,  seg) :: rest, '>') if(seg startsWith "<span") => (true,  seg+'>') :: rest
+    case ((false,  seg) :: (b,prev) :: rest, '>') => (false,  prev+seg+'>') :: rest
+    case ((false,  seg) :: rest, char) => (false,  seg+char) :: rest
+
+    case (Nil, char) => throw new RuntimeException(char.toString)
   }
 
-  styled
+// println("line: "+line+" -- "+spans.mkString("{",",","}"))
+  val result = spans.reverse map { 
+    case (false,b) => word replaceAllIn (b,  """$1<span class="%s">$2</span>$3""".format(style))
+    case (true,b) => b
+    
+  }
+
+  result.mkString("")
 }
 def process(line:String):(String,Option[Block])={
   val blocks = splitInBlocks (line)
@@ -103,19 +118,22 @@ final def process(line:String, b:Block):(String,Option[Block])={
 }
 
 def processCode(lines:Iterator[String])={
-  val (styled, endBlock) = (("",None:Option[Block]) /: lines){
+  val (styled, endBlock) = ((List[String](),None:Option[Block]) /: lines){
     case ((all, None), line) => {
       val (styled, endBlock) = process(line)
-      (all+styled, endBlock)
+      (styled :: all, endBlock)
     }
     case ((all,Some(b)),line) => {
       val (styled, endBlock) = process (line, b)
-      (all+styled, endBlock)
+      (styled :: all, endBlock)
     }
   }
-  endBlock match {
-    case Some(_) => styled + ""
-    case None => styled
+
+  if(styled.length <= 1) {
+    styled.reverse.mkString("")
+  } else {
+    val table = styled.reverse.zipWithIndex.map {case (l,i) => """<tr><td class="lineNumber">%s</td><td>%s</td></tr>""".format(i+1,l)}
+    "<table>"+table.mkString("")+"</table>"
   }
 }
 
@@ -124,20 +142,26 @@ val source=scala.io.Source.fromFile(args(0))
 val data = source.getLines.mkString("")
 
 val startWithCode = data.trim startsWith "<code>"
-val splitData = (data split "<code>") flatMap (_ split "</code>")
+val splitData = (data split "<code>|</code>")
+
 val zipped = splitData.zipWithIndex map { case (line, index) => (line, 1 == (if (startWithCode) (index+1) % 2 else index %2)) }
 
 val processed = zipped map {
   case (code, true) => {
     def newLine(f:(String)=>Boolean) = if (f("\n")) "\n" else ""
-    "<code>" + newLine(code.startsWith _) + processCode (code.lines) + newLine(code.endsWith _) + "</code>"
+    "<code>" + newLine(code.startsWith _) + processCode (code.trim.linesWithSeparators) + newLine(code.endsWith _) + "</code>"
   }
   case (noncode, false) => noncode
 }
 
-
+//println("===================================================")
+println("""<html>
+  <head>
+    <link rel="STYLESHEET" type="text/css" href="code.css">
+  </head>
+  <body>""")
 println (processed.mkString(""))
-
+println("</body></html>")
 /*val (_, processed) = ((startWithCode,"") /: splitData) {
   case ((true,styled), code) => (false, (styled + "<code>%s</code>") format processCode(code.lines) )
     case ((false,styled),noncode) => (true,styled+noncode)

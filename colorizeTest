@@ -1,3 +1,4 @@
+Inline <code>case class Template()</code> done 
 <pre><code>
 scala> val world="world"
 scala> println ("hi "+world+"!")
@@ -7,4 +8,31 @@ In between
 
 <pre><code>
 for( i <- 1 to 10 ) yield i
+</code></pre>
+<pre><code>
+&lt;xml&gt;
+  &lt;child x="att"/&gt;
+  &lt;child2 /&gt;
+&lt;/xml&gt;
+</code></pre>
+
+<pre><code>
+val sep = """\A?([\s<>=+-:;/\\+,!\(\)\{\}'\|\&\^\[\] ]?)"""
+
+case class Block(start:String, end:String, styleClass:String){
+  val Contains="""(\A.*)(%s.*%s)(.*\z)""".format(start,end).r
+  val Starts="""^(.*)(%s.*\z)""".format(start).r
+  val Ends = """^(.*%s)(.*\z)""".format(end).r
+
+  override def toString = start+"..."+end
+
+  private def index(f:String=>Int)(line:String) = f(line) match {
+    case x if (x < 0) => None
+    case x => Some(x)
+  }
+  def lastIndexOf = index(line => line.lastIndexOf(start)) _
+
+  def indexOf = index(line => line.indexOf(start)) _
+}
+
 </code></pre>
