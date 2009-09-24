@@ -117,7 +117,7 @@ final def process(line:String, b:Block):(String,Option[Block])={
   }
 }
 
-def processCode(lines:Iterator[String])={
+def processCode(withIndices:Boolean, lines:Iterator[String])={
   val (styled, endBlock) = ((List[String](),None:Option[Block]) /: lines){
     case ((all, None), line) => {
       val (styled, endBlock) = process(line)
@@ -129,11 +129,11 @@ def processCode(lines:Iterator[String])={
     }
   }
 
-  if(styled.length <= 1) {
-    styled.reverse.mkString("")
+  if(withIndices) {
+    val table = styled.reverse.zipWithIndex.map {case (l,i) => """<li class="codelist %s">%s</li>""".format(if(i % 2 == 0) "alt" else "",l)}
+    """<div class="codelist"><ol class="codelist">"""+table.mkString("")+"</ol></div>"
   } else {
-    val table = styled.reverse.zipWithIndex.map {case (l,i) => """<tr><td class="lineNumber">%s</td><td>%s</td></tr>""".format(i+1,l)}
-    "<table>"+table.mkString("")+"</table>"
+    styled.reverse.mkString("")
   }
 }
 
@@ -149,7 +149,7 @@ val zipped = splitData.zipWithIndex map { case (line, index) => (line, 1 == (if 
 val processed = zipped map {
   case (code, true) => {
     def newLine(f:(String)=>Boolean) = if (f("\n")) "\n" else ""
-    "<code>" + newLine(code.startsWith _) + processCode (code.trim.linesWithSeparators) + newLine(code.endsWith _) + "</code>"
+    "<code>" + newLine(code.startsWith _) + processCode (code.lines.toList.length>1, code.trim.linesWithSeparators) + newLine(code.endsWith _) + "</code>"
   }
   case (noncode, false) => noncode
 }

@@ -1,0 +1,54 @@
+/* color scheme : http://www.colorschemer.com/online.html
+ * start color is: #1A9900
+ */
+
+.key {
+    color: #001A99;
+    font-weight: bold;
+}
+
+.quote {
+    color: #1A9900;
+    font-weight: bold; 
+}
+
+code {
+    font-family:"Consolas","Courier New",Courier,mono,serif;
+    color:#5C5C5C;
+}
+
+div.codelist {
+    display:block;
+    background-color:#C9C9C9;
+    margin:1em 0 1em 2em;
+    padding:0;
+    overflow: auto; /*--If the Code exceeds the width, a scrolling is available--*/
+    overflow-Y: hidden;
+}
+
+ol.codelist {
+    font-family:"Consolas","Courier New",Courier,mono,serif;
+    list-style-image:none;
+    list-style-position:outside;
+    list-style-type:decimal;
+    margin:0 0 1px 45px !important;
+    padding:0;
+    border-top:thin solid #C9C9C9;
+    border-bottom:thin solid #C9C9C9;
+}
+
+li.codelist {
+    color:#5C5C5C;
+    border-left:3px solid #6CE26C;
+    line-height:14px;
+    list-style-image:none;
+    list-style-position:outside !important;
+    list-style-type:decimal-leading-zero;
+    margin:0 !important;
+    padding:0 3px 0 10px !important;
+    background-color:#F2FFE5;
+}
+
+li.alt {
+    background-color:#ffffff;
+}
