@@ -2,13 +2,41 @@
  * start color is: #1A9900
  */
 
+body {
+    font-size: 12pt;
+}
 .key {
     color: #001A99;
     font-weight: bold;
 }
 
-.quote {
+.string {
     color: #1A9900;
+    font-weight: bold; 
+}
+
+.char {
+    color: #1A9900;
+    font-weight: bold; 
+}
+
+.comment {
+    color: #ff0000;
+    font-weight: bold; 
+}
+
+.javadoc {
+    color: #800099;
+    font-weight: bold; 
+}
+
+.xml {
+    color: #993300;
+    font-weight: bold; 
+}
+
+.singleton {
+    color: #E68A00;
     font-weight: bold; 
 }
 
@@ -28,6 +56,7 @@ div.codelist {
 
 ol.codelist {
     font-family:"Consolas","Courier New",Courier,mono,serif;
+    font-size:.8em;
     list-style-image:none;
     list-style-position:outside;
     list-style-type:decimal;
