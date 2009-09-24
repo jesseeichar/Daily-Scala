@@ -1,4 +1,4 @@
-
+def log(msg: =>String) = () //Console.err.println(msg)
 val sep = """\A?([\s<>=+-:;/\\+,!\(\)\{\}'\|\&\^\[\] ]?)"""
 
 val styles=Map(
@@ -18,6 +18,9 @@ val styles=Map(
   "finally" -> "key",
   "self" -> "key",
   "yield" -> "key",
+  "private" -> "key",
+  "protected" -> "key",
+  "public" -> "key",
   "object" -> "key",
   "Nil" -> "singleton",
   "Null" -> "singleton",
@@ -66,17 +69,17 @@ import scala.util.matching.Regex
 def applyStyle(line:String, word:Regex, style:String) = {
   
   val spans = (List((false,"")) /: line) {
-    case ((true,  seg) :: rest, char) if(seg endsWith "</span>") => (false,char.toString) :: (true,  seg) :: rest
-    case ((true,  seg) :: rest, char) => (true,  seg+char) :: rest
-    case ((false,  seg) :: rest, '<') => (false,"<") :: (false,  seg) :: rest
-    case ((false,  seg) :: rest, '>') if(seg startsWith "<span") => (true,  seg+'>') :: rest
-    case ((false,  seg) :: (b,prev) :: rest, '>') => (false,  prev+seg+'>') :: rest
-    case ((false,  seg) :: rest, char) => (false,  seg+char) :: rest
+    case (l @ (true,  seg) :: rest, char) if(seg endsWith "</span>") => {log("1: "+l); (false,char.toString) :: (true,  seg) :: rest}
+    case (l @ (true,  seg) :: rest, char) => {log("2: "+l); (true,  seg+char) :: rest}
+    case (l @ (false,  seg) :: rest, '<') => {log("3: "+l); ;(false,"<") :: (false,  seg) :: rest}
+    case (l @ (false,  seg) :: rest, '>') if(seg startsWith "<span") => {log("4: "+l); (true,  seg+'>') :: rest}
+    case (l @ (false,  seg) :: (b,prev) :: rest, '>') if(seg startsWith "<")=> {log("5: "+l); (false,  prev+seg+'>') :: rest}
+    case (l @ (false,  seg) :: rest, char) => {log("6: "+l); (false,  seg+char) :: rest}
 
     case (Nil, char) => throw new RuntimeException(char.toString)
   }
 
-// println("line: "+line+" -- "+spans.mkString("{",",","}"))
+log("line: "+line+" -- "+spans.mkString("{",",","}"))
   val result = spans.reverse map { 
     case (false,b) => word replaceAllIn (b,  """$1<span class="%s">$2</span>$3""".format(style))
     case (true,b) => b
