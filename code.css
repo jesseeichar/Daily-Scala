@@ -26,7 +26,7 @@ body {
 }
 
 .javadoc {
-    color: #800099;
+    color: #FF6633;
     font-weight: bold; 
 }
 
@@ -36,7 +36,17 @@ body {
 }
 
 .singleton {
-    color: #E68A00;
+    color: #800099;
+    font-weight: bold; 
+}
+
+.annotation {
+    color: #C2C2C2;
+    font-weight: bold; 
+}
+
+.type-param {
+    color: #B88A00;
     font-weight: bold; 
 }
 
@@ -72,7 +82,7 @@ li.codelist {
     line-height:14px;
     list-style-image:none;
     list-style-position:outside !important;
-    list-style-type:decimal-leading-zero;
+    list-style-type:decimal;
     margin:0 !important;
     padding:0 3px 0 10px !important;
     background-color:#F2FFE5;
