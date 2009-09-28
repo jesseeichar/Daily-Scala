@@ -1,0 +1,77 @@
+When defining a match such as <code>case Tuple2(one, two)</code> the methods Tuple2.unapply and Tuple2.unapplySeq are called to see if that case can match the input.  If one of methods return a Some(...) object then the case is considered to be a match.  These methods are called Extractor methods because they essentially decompose the object into several parameters.  
+
+I will cover unapplySeq later.
+
+Examples are the best way to illustrate the issue:
+<code>
+// The unapply method of this object takes a string and returns an Option[String]
+//   This means that the value being matched must be a string and the value extracted is also a string
+scala> object SingleParamExtractor {
+     | def unapply(v:String):Option[String] = if(v.contains("Hello")) Some("Hello") else None
+     | }
+defined module SingleParamExtractor
+
+// this Will match since the extractor will return a Some object
+scala> "Hello World" match { case SingleParamExtractor(v) => println(v) }
+Hello
+
+// this will not match and therefore an exception will be thrown
+scala> "Hi World" match { case SingleParamExtractor(v) => println(v) }   
+scala.MatchError: Hi World
+                  at .<init>(<console>:7)
+                  at .<clinit>(<console>)
+                  at RequestResult$.<init>(<console>:3)
+                  at RequestResult$.<clinit>(<console>)
+                  at RequestResult$result(<console>)
+                  at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+                  at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+                  at sun.reflect.DelegatingMethodAccessorImpl.invok...
+
+// This extractor converts the string to an int if possible.
+scala> object ConvertToInt{         
+     | def unapply(v:String):Option[Int] = try{ Some(v.toInt) } catch { case _ => None }
+     | }
+defined module ConvertToInt
+
+scala> "10" match { case ConvertToInt(i) => println(i)}
+10
+
+// If you want to extract multiple elements you return an Option that contains a Tuple.  
+//   In this example we divide the string into two parts if it has a space
+scala> object MultipleParamExtractor {                                       
+     |  def unapply(v:String):Option[(String,String)] = (v indexOf ' ') match {           
+     | case x if (x>0) => Some ((v take x, v drop x+1))
+     | case _ => None
+     | }
+     | }
+defined module MultipleParamExtractor
+
+scala> "hello everyone :)" match { case MultipleParamExtractor(one, two) => println(one,two) }
+(hello,everyone :))
+
+// Any object with a unapply method can be used it does not have to be defined as an object
+// So if you have a class of extractors that needs to be parameterized you can 
+// create a class and use instances of that class for matching
+scala> class Splitter(sep:Char){
+     | def unapply(v:String):Option[(String,String)] = (v indexOf sep) match {
+     | case x if (x>0) => Some ((v take x, v drop x+1))
+     | case _ => None
+     | }
+     | }
+defined class Splitter
+
+// Remember that we need the matching object start with an uppercase
+// See http://daily-scala.blogspot.com/2009/09/case-sensitive-matching.html 
+// for details
+scala> val SplitOnComma = new Splitter (',')
+SplitOnComma: Splitter = Splitter@15eb9b0d
+
+// How cool now can create splitters for all sorts of things
+scala> "1,2" match { case SplitOnComma(one,two) => println(one,two)}
+(1,2)
+
+// All extractors can also be used in assignments
+scala> val SplitOnComma(one,two) = "1,2"                           
+one: String = 1
+two: String = 2
+</code>
