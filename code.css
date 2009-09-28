@@ -50,6 +50,12 @@ body {
     font-weight: bold; 
 }
 
+.magic {
+    color: #800099;
+    font-weight: bold; 
+    text-decoration: underline;
+}
+
 .annotation {
     color: #C2C2C2;
     font-weight: bold; 
