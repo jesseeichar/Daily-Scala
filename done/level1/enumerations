@@ -1,23 +1,21 @@
-Scala does not have a enum keyword like java so enumerations are not quite as smooth.  However depending on your requirement there are two ways to make enumerations.  Create an object that extends the Enumeration class or create a case-class hierarchy.  I present both ways.  Here are some tips:
+Scala does not have a enum keyword like java so enumerations are not quite as smooth.  Depending on your requirements there are two ways to make enumerations. 
 
-<ul>
-<li>If you only need discrete and related values without custom behaviour extend Enumeration</li>
-<li>If each value has custom information associated with it use case objects</li>
-</ul>
+<ol><li>Create an object that extends the Enumeration class</li><li>Create a <span style="font-style: italic;">case-object</span> hierarchy. 
+</li></ol>I present both ways.  Here are some tips:
+<ul><li>If you only need discrete and related values without custom behaviour create and <span style="font-weight: bold;">object </span>that extends Enumeration</li><li>If each value has custom information associated with it use <span style="font-weight: bold;">case-objects</span></li></li></ul>
+In the following examples notice the use of the sealed keyword when defining the abstract class MyEnum.  Sealed specifies that the heirarchy is sealed.  Only classes defined in the same file can extend the class.
 
-Notice the use of the sealed keyword when defining the abstract class MyEnum.  Sealed specifies that the heirarchy is sealed.  Only classes defined in the same file can extend the class.
-
-Also notice in the case object example that the enumeration values are "case object" not "case class".  The two are similar except that there is only one instance of a case object.  However all the same boiler plate code is generated and you can still match in the same way.
+Also notice in the case object example that the enumeration values are <span style="font-style: italic;">"case object</span>" not "<span style="font-style: italic;">case class"</span>.  The two are similar except that there is only one instance of a case object.  However all the same boiler plate code is generated and you can still match in the same way.
 
 <pre><code>
 // Note: MyEnum is an object NOT a class
-scala> object MyEnum extends Enumeration("one", "two", "three") {   
+scala> object MyEnum extends Enumeration("one", "two", "three") {
      | type MyEnumType = Value
-     | val One, Two, Three = Value                                  
+     | val One, Two, Three = Value
      | }
 defined module MyEnum
 
-scala> MyEnum.One                                                   
+scala> MyEnum.One
 res1: MyEnum.Value = one
 
 scala> def printEnum( value:MyEnum.MyEnumType ) = println( value.toString )
@@ -28,22 +26,21 @@ two
 
 // If you don't want to prefix enums with MyEnum. Then you
 // can import the values.  This is similar to static imports in java
-scala> import MyEnum._                                                     
+scala> import MyEnum._
 import MyEnum._
 
-scala> def printEnum( value:MyEnumType ) = println( value.toString )       
+scala> def printEnum( value:MyEnumType ) = println( value.toString )
 printEnum: (MyEnum.MyEnumType)Unit
 
-scala> printEnum(Three)                                             
+scala> printEnum(Three)
 three
 
-
-// Similar but with cases objectc
+// Similar but with cases objects
 // Notice MyEnum is 'sealed' and the parameters have the 'val' keyword so they are public
 scala> abstract sealed class MyEnum(val name:String, val someNum:Int)
 defined class MyEnum
 
-scala> case object One extends MyEnum("one", 1) 
+scala> case object One extends MyEnum("one", 1)
 defined module One
 
 scala> case object Two extends MyEnum("two", 2)

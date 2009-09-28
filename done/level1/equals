@@ -1,9 +1,7 @@
-One welcome change in Scala is the change of sematics of the == operator.  In Scala it is the same as doing a .equals comparison in Java.  If you want identity comparison you can use the eq method (and ne for the not equal comparitor).
+One welcome change in Scala is the change of semantics of the == operator.  In Scala it is the same as doing a .equals comparison in Java.  If you want identity comparison you can use the eq method (and ne for the not equal comparator).
 
-Examples: 
-
-<pre><code>
-scala> case class Name(first:String, last:String)
+Examples:
+<pre><code>scala> case class Name(first:String, last:String)
 defined class Name
 
 scala> val jesse = Name("Jesse","Eichar")

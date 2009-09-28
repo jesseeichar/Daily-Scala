@@ -1,6 +1,6 @@
-Today's topic is based on an artical by Bill Venners.  http://www.artima.com/scalazine/articles/selfless_trait_pattern.html.  I recommend reading that article as it goes into much more detail.  I also recommend taking a look at the earlier topic that covers companion objects.
+Today's topic is based on an article by Bill Venners.  http://www.artima.com/scalazine/articles/selfless_trait_pattern.html.  I recommend reading that article as it goes into much more detail.  I also recommend taking a look at the earlier topic that covers companion objects.
 
-The normal way to use a trait is to mix it in to an object.  However there is the problem of mixing two traits with methods with equal signatures.  If the two traits are not designed to work together then you will get a compile error.  Otherwise one method will override the other.  Either way you cannot access both methods.  There is an additional way to access the functionality of a trait.  You can create an <em>object</em> (not instance) that extends the trait and import the methods when you need them.  
+The normal way to use a trait is to mix it in to an object.  However there can be a problem mixing two traits containing methods with equal signatures.  If the two traits are not designed to work together then you will get a compile error.  Otherwise one method will override the other.  Either way you cannot access both methods.  There is an additional way to access the functionality of a trait.  You can create an <em>object</em> (not instance) that extends the trait and import the methods when you need them.
 
 If the trait is stateless then the object can be shared if not then make sure that sharing the object is carefully handled.
 
@@ -19,7 +19,7 @@ defined trait T2
 // Cannot extend C with T1 and T2 because they are not designed to work together
 scala> class C extends T1 with T2
 <console>:6: error: error overriding method talk in trait T1 of type => java.lang.String;
- method talk in trait T2 of type => java.lang.String needs `override' modifier
+ method talk in trait T2 of type => java.lang.String needs override modifier
        class C extends T1 with T2
              ^
 
@@ -27,9 +27,6 @@ scala> class C extends T1
 defined class C
 
 // objects can have state so becareful how you share them
-scala> object O1 extends T1
-defined module O1
-
 scala> object Obj1 extends T1
 defined module Obj1
 
@@ -68,5 +65,4 @@ res2: java.lang.String = hi
 
 scala> c2.helloTalk
 res5: java.lang.String = hello
-
 </code></pre>

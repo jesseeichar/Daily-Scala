@@ -1,7 +1,7 @@
 Scala classes are similar to java classes but are designed to work around some of the boiler plate code.  We will address multiple constructors another day.  But one thing to note is that normally the code that is in a Java constructor goes directly in the body of a Scala class or in a companion object (also covered later).
 
 <pre><code>
-scala> class NewClass( aPrivateInt:Int, val iAmPublic:Int, var iAmAlsoPublic:Int )
+scala> class NewClass( aPrivateInt:Int, val iAmPublic:Int, var iAmAlsoPublic:Int)
 defined class NewClass
 
 scala> val c = new NewClass(1,2,3)
@@ -34,7 +34,8 @@ scala> class c2( aPrivate:Int ) {
 defined class c2
 
 scala> class c3(tmp:Int) extends c2(tmp){
-     | override val aPublic = tmp * 10 // can't access super.aPrivate because it is class private so use tmp
+     | override val aPublic = tmp * 10 // can't access super.aPrivate because it
+ is class private so use tmp
      | }
 defined class c3
 

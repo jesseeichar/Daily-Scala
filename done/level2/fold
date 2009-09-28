@@ -1,9 +1,6 @@
-Collection/Iterable/Iterator reduceRight and reduceLeft 
-
 Folding and reducing are two types of operations that are both very important with dealing with collections in Scala (and other functional languages).  This topic covers the fold operations.  The reduce topic was previously covered.
 
 A simplistic explanation is they allow processing of the collections.  I think about foldRight and foldLeft to be very similar to a visitor that visits each element and performs a calculation.  It does not change the values of the collection instead it calculates a result from visiting each element.  In Java you might see the following pattern:
-
 <pre><code class="java">
 class Collection {
   pubic Result op( Result startingValue, Op operation){...}
@@ -13,10 +10,9 @@ interface Op{
   public Result op( Object nextCollectionElem, Result lastCalculatedResult)
 }
 </code></pre>
+To a Java programmer this is pretty obvious how you use it.  This is essentially the fold operation.  The difference is we are using closures so there is almost no boilerplate and all collection/Iteratore/Iterable interfaces have the fold methods.
 
-To a Java programmer this is pretty obvious how you use it.  This is essentiall the fold operation.  The difference is we are using closures so there is almost no boilerplate and all collection/Iteratore/Iterable interfaces have the fold methods.  
-
-One last point before examples.  For fold and reduce operations there are both foldLeft and foldRight and similarily reduceLeft and reduceRight.  These indicate the order that a collection is processed.  Note that for certain collections one direction is more performant that the other.  Lists, for example, are better to process right to left because of the datastructure used.
+One last point before examples.  For fold and reduce operations there are both foldLeft and foldRight and similarly reduceLeft and reduceRight.  These indicate the order that a collection is processed.  Note that for certain collections one direction is more performant that the other.  Lists, for example, are better to process right to left because of the datastructure used.
 
 Some tasks that are suited to fold are:
 <ul>
@@ -40,12 +36,11 @@ res5: Int = 11
 scala> m.foldRight(0){ case ((key, value), a) => a+value.length}
 res7: Int = 11
 
-
-scala> m.foldRight(0){ case (kv, a) => a+kv._2.length}          }} 
+scala> m.foldRight(0){ case (kv, a) => a+kv._2.length} }}
 res8: Int = 11
 
 // fold left processes from right to left (usually slower than foldRight)
-scala> val m = Map("a" -> 1, "b" -> 2, "c" -> 3)                 
+scala> val m = Map("a" -> 1, "b" -> 2, "c" -> 3)
 m: scala.collection.immutable.Map[java.lang.String,Int] = Map(a -> 1, b -> 2, c -> 3)
 
 scala> m.foldLeft(0)( (accum, kv) => accum + kv._2 )

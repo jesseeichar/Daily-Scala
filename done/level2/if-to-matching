@@ -1,4 +1,6 @@
-One of the refactorings I find myself doing quite often in Scala is converting large branching <em>if</em> trees into easy to read match statements, often with guards.  The reasoning is that it is much easier to read a match statement because it is like reading bullet points rather than trying to follow the flow of information through a tree of if statements.  Before you complain there are other ways to refactor a tree of if-statements but I find the match statements the easiest to reason about and the quickest to write with the least amount of boiler plate.  
+One of the refactorings I find myself doing quite often in Scala is converting large branching <em>if</em> trees into an easy to read <em>match</em> statement. The reasoning is that it is much easier to read a match statement because it is like reading bullet points rather than trying to follow the flow of information through a tree of if statements. 
+
+Before you complain, I realize there are other ways to refactor a tree of if-statements but I find the match statements the easiest to reason about and the quickest to write with the least amount of boiler plate.
 
 Here is an example where I need to see if the file is dirty and needs to be regenerated, if it is clean or if some one has modified the generated file (which results in a CONFLICT).
 

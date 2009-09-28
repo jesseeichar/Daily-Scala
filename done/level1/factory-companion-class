@@ -1,0 +1,45 @@
+One of the most common uses of a companion object (See <a href="http://daily-scala.blogspot.com/2009/09/companion-object.html">Companion Objects</a> for more) is as a factory for creating instances of the class. For example, there may be several overloaded apply methods which provide different ways of instantiating the object.  This is often preferred to adding many constructors because Scala places restrictions on constructors that Java does not have.
+
+One built in example of Factory methods in a companion object are when you create a case class.
+
+Examples:
+<pre><code>
+scala> case class Data(p1:Int, p2:String)
+defined class Data
+
+// This is using the generated (or synthetic) factory method.
+// call case classes have a factory method generated
+scala> Data(1,"one")
+res0: Data = Data(1,one)
+
+// This is the normal new syntax.
+// case-classes are normal object so they have one of these too
+scala> new Data(1,"one")
+res1: Data = Data(1,one)
+
+scala> class MyClass(val p1:Int, val p2:String)
+defined class MyClass
+
+// MyClass is a normal class so there is no
+// synthetic factory method
+scala> MyClass(1,"one")
+<console>:5: error: not found: value MyClass
+       MyClass(1,"one")
+       ^
+
+// but of course you can create an instance normally
+scala> new MyClass(1,"one")
+res3: MyClass = MyClass@55444319
+
+// create the companion object with an apply factory method
+scala> object MyClass{
+     | def apply(p1:Int, p2:String)=new MyClass(p1,p2)
+     | }
+defined module MyClass
+
+// now you can create MyClass as if it was a case-class
+// It is not a case-class so you still don't have the other
+// synthetic methods like: equals, hash-code, toString, etc...
+scala> MyClass(1,"one")
+res4: MyClass = MyClass@2c5e5c15
+</code></pre>

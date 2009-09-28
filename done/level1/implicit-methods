@@ -1,6 +1,6 @@
-Scala is designed to be a scalable language and one if the features that assist in realizing the goal are implicit method. I have seen it occassionally refered to as static duck typing (although I personally think that describes structural typing better).
+Scala is designed to be a scalable language and one if the features that assist in realizing this goal are implicit methods. I have seen it occasionally referred to as static duck typing (although I personally think that describes structural typing better).
 
-The idea is to be able to extend an existing class with new methods in a type safe manner.  At a high level essentially what happens is a developer defines an implicit method (or imports an implicit method) which converts one object from one type to another type.  Once the implicit method is within scope all methods are available from both types.  
+The idea is to be able to extend an existing class with new methods in a type safe manner.  Essentially what happens is a developer defines an implicit method (or imports an implicit method) which converts one object from one type to another type.  Once the implicit method is within scope all methods are available from both types.
 
 Note:  The conversion is one way.  If you want bi-directional conversion you need 2 methods.
 
@@ -37,15 +37,14 @@ scala> object Conversions{
      | }
 defined module Conversions
 
-// you can import all implicits or just one (although interpreter only allows all for some reason)
-scala> import Conversions._         
+// you can import all implicits    or just    one (although interpreter only allows all for some reason)
+scala> import Conversions._
 import Conversions._
 
 // inc returns a MyInteger2 instance
 scala> val j = 1.inc
 j: MyInteger2 = MyInteger2@37f808e6
-
-// test the bi-directionality of it all so create a method 
+// test    the bi-directionality of it all    so create a method
 // that takes and int
 scala> def takesInt( i:Int ) = println(i)
 takesInt: (Int)Unit
@@ -57,5 +56,4 @@ scala> takesInt( j )
 
 scala> takesInt ( 5.inc )
 6
-
 </code></pre>

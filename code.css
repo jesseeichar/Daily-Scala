@@ -25,8 +25,18 @@ body {
     font-weight: bold; 
 }
 
+.basicType {
+    color: #800099;
+    font-weight: bold; 
+}
+
 .javadoc {
     color: #FF6633;
+    font-weight: bold; 
+}
+
+.repl {
+    color: #000000;
     font-weight: bold; 
 }
 

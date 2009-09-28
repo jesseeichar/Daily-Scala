@@ -1,4 +1,4 @@
-Defined in the Predef object are several implicit methods.  All implicit methods defined in the Predef method are applicable to all programs without importing them.  One such method is the -> method.  This method is applicable to all objects and creates a Tuple2.  
+Defined in the Predef object are several implicit methods.  All implicit methods defined in the Predef method are applicable to all programs without importing them.  One such method is the -> method.  This method is applicable to all objects and creates a Tuple2.
 
 Examples:
 <pre><code>

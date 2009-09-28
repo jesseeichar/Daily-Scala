@@ -1,19 +1,15 @@
-Scala provides two structures for inheritance. Classes (abstract or not) and traits. Traits are very similar to Ruby Mixins meaning that they can contain code like abstract classes but like interfaces multiple traits can be inherited from.
-Like interfaces traits cannot have constructors but in Scala variables can be abstract and therefore provide an easy way to simulate a constructor.
+Scala provides two structures for inheritance.  Classes (abstract or not) and traits.  Traits are very similar to Ruby Mixins meaning that they can contain code like abstract classes but like interfaces multiple traits can be inherited from. 
+Like interfaces traits cannot have constructors but in Scala variables can be abstract and therefore provide an easy way to simulate a constructor. 
 There are no method resolution conflicts because method definitions are always resolved right to left:
-
 <pre><code>
 class X extends Y with A with B with C
 </code></pre>
-
-If ABC and Y all have the method (doit) the method in C will be used. If C calls super.doit that will call B.doit and so on.
-Note: If Y defines doit the A, B, and C must define doit with the override keyword:
-
+If ABC and Y all have the method (doit) the method in C will be used.  If C calls super.doit that will call B.doit and so on.
+Note:  If Y defines doit the A, B, and C must define doit with the override keyword:
 <pre><code>
 override def doit() = {...}
 </code></pre>
-
-In the above example ABC must be traits but Y can be a class or a trait. When inheriting you must always have one extends keyword which can optionally followed by one or more with clauses.
+In the above example ABC must be traits but Y can be a class or a trait.  When inheriting you must always have one <span style="font-style: italic;">extends</span> keyword which can optionally followed by one or more <span style="font-style: italic;">with</span> clauses.
 
 <pre><code>
 scala> abstract class Animal {
@@ -60,4 +56,5 @@ biped: GenericAnimal with Biped = $anon$1@6366ce5f
 
 scala> biped.makeNoise()
 Hello
+
 </code></pre>

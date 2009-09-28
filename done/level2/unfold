@@ -5,7 +5,6 @@ The methods are called unfoldRight and unfoldLeft because they are more or less 
 This sample is directly derived from the samples:  http://paste.pocoo.org/show/140865/
 
 Remember the performance differences between the two.  Adding an element to the head of scala list is a constant operation but adding an element to the end(tail) of the list is linear time based on the size of the list.  So unfoldLeft will typically suffer from worse performance.
-
 <pre><code>
 scala> def unfoldRight[A, B](seed: B)(f: B => Option[(A, B)]): List[A] = f(seed) match {
      |   case Some((a, b)) => a :: unfoldRight(b)(f)
@@ -24,17 +23,17 @@ scala> def unfoldLeft[A, B](seed: B)(f: B => Option[(B, A)]) = {
      |     case Some((b, a)) => loop(b)(a :: ls)
      |     case None => ls
      |   }
-     | 
+     |
      |   loop(seed)(Nil)
      | }
 unfoldLeft: [A,B](B)((B) => Option[(B, A)])List[A]
 
-scala> unfoldLeft(1) { x => if (x == 11) None else Some((x + 1, x)) } 
+scala> unfoldLeft(1) { x => if (x == 11) None else Some((x + 1, x)) }
 res0: List[Int] = List(10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 
 // Notice that the result is ordered in the opposite way from unfoldRight
 // Also notice the order of the list is reversed since the algorithm is the same but
 // unfoldLeft adds to end of list.
-scala> unfoldLeft("Jesse")  { x => if (x.length == 0) None else Some((x.drop(1).toString,x)) } 
+scala> unfoldLeft("Jesse")  { x => if (x.length == 0) None else Some((x.drop(1).toString,x)) }
 res1: List[java.lang.String] = List(e, se, sse, esse, Jesse)
 </code></pre>

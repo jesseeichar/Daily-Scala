@@ -135,7 +135,7 @@ case class Lang(blocks:List[Block], mapping:Iterable[(Regex,String)]) {
     
     if(withIndices) {
       val table = styled.reverse.zipWithIndex.map {case (l,i) => """<li class="codelist %s">%s</li>""".format(if(i % 2 == 0) "alt" else "",l)}
-      """<div class="codelist"><ol class="codelist">"""+"\n"+table.mkString("\n")+"\n</ol></div>"
+      """<div class="codelist"><ol class="codelist">"""+table.mkString("")+"</ol></div>"
     } else {
       styled.reverse.mkString("")
     }
@@ -172,7 +172,13 @@ val Scala = Lang(List(Block("&lt;","&gt;", "xml",false, true,true),
                      "private" -> "key",
                      "protected" -> "key",
                      "public" -> "key",
+                     "with" -> "key",
+                     "lazy" -> "key",
+                     "finally" -> "key",
+                     "type" -> "key",
+                     "new" -> "key",
                      "object" -> "key",
+                     "throw" -> "key",
                      "default" -> "key",
                      "import" -> "key",
                      "Nil" -> "singleton",
@@ -180,7 +186,16 @@ val Scala = Lang(List(Block("&lt;","&gt;", "xml",false, true,true),
                      "null" -> "singleton",
                      "Unit" -> "singleton",
                      "false" -> "singleton",
-                     "true" -> "singleton"
+                     "true" -> "singleton",
+                     "Int" -> "basicType",
+                     "String" -> "basicType",
+                     "Boolean" -> "basicType",
+                     "Char" -> "basicType",
+                     "Long" -> "basicType",
+                     "Byte" -> "basicType",
+                     "Double" -> "basicType",
+                     "Float" -> "basicType",
+                     "scala>" -> "repl"
                    ).map{case (k,v) => ((sep+"("+k+")"+sep).r,v)}
                ) 
 val Java = Lang(List(Block("\"","\"", "string",false, true,true),
@@ -195,6 +210,7 @@ val Java = Lang(List(Block("\"","\"", "string",false, true,true),
                      "case" -> "key",
                      "switch" -> "key",
                      "static" -> "key",
+                     "new" -> "key",
                      "for" -> "key",
                      "while" -> "key",
                      "default" -> "key",
@@ -202,11 +218,20 @@ val Java = Lang(List(Block("\"","\"", "string",false, true,true),
                      "else" -> "key",
                      "try" -> "key",
                      "catch" -> "key",
+                     "throw" -> "key",
                      "finally" -> "key",
                      "private" -> "key",
                      "protected" -> "key",
                      "public" -> "key",
                      "import" -> "key",
+                     "int" -> "basicType",
+                     "String" -> "basicType",
+                     "boolean" -> "basicType",
+                     "char" -> "basicType",
+                     "long" -> "basicType",
+                     "byte" -> "basicType",
+                     "double" -> "basicType",
+                     "float" -> "basicType",
                      "null" -> "singleton",
                      "false" -> "singleton",
                      "true" -> "singleton"
@@ -223,7 +248,8 @@ val (_, processed) = ( (0,data) /: (CodeBlocks findAllIn data.trim).matchData) (
   (result, matchData) => {
     val (offset,data) = result
     def withIndices(code:String):Boolean = code.lines.toList.length > 1
-    def update(code:String, lang:Lang) = {
+    def update(raw:String, lang:Lang) = {
+      val code = raw//.replaceAll("<strong>|</strong>","")
       val updatedCode = lang.processCode (withIndices (code), code.trim.lines)
       val patched = data.patch (matchData.start(3)+offset, updatedCode, code.length).mkString
       (offset + updatedCode.length - code.length, patched)

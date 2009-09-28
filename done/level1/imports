@@ -1,16 +1,17 @@
 Scala's mechanism for importing is analogous to Java's import statements but provides more options.  For example import statements can be anywhere in the file and only apply to the scope that they are declared in.
 
-scala> def lineCount = {                                                               
-     | import scala.io._ // the '_' character is the wildcard in scala                 
+<pre><code>
+scala> def lineCount = {                                                              
+     | import scala.io._ // the '_' character is the wildcard in scala                
      | Source.fromURL("http://www.google.com").getLines.foldRight(0)( (line, acc) => acc + 1 )
      | }
 lineCount: Int
 
-scala> lineCount                                                                              
+scala> lineCount                                                                             
 res1: Int = 11
 
-scala> def lineCount = {                                                                
-     | import scala.io.Source                                                           
+scala> def lineCount = {                                                               
+     | import scala.io.Source                                                          
      |  Source.fromURL("http://www.google.com").getLines.foldRight(0)( (line, acc) => acc + 1 )
      | }
 lineCount: Int
@@ -18,22 +19,22 @@ lineCount: Int
 scala> lineCount
 res3: Int = 11
 
-scala> def lineCount = {                                                                                       
-     | import scala.io.Source.fromURL // import the fromURL method, only methods from objects can be imported. 
-     | fromURL("http://www.google.com").getLines.foldRight(0)( (line, acc) => acc + 1 )                        
+scala> def lineCount = {                                                                                      
+     | import scala.io.Source.fromURL // import the fromURL method, only methods from objects can be imported.
+     | fromURL("http://www.google.com").getLines.foldRight(0)( (line, acc) => acc + 1 )                       
      | }
 lineCount: Int
 
 scala> lineCount
 res4: Int = 11
 
-scala> def lineCount = {                                                                                       
-     | import scala.io.Source.{fromURL => url} // you can remap imports to another name                        
-     | url("http://www.google.com").getLines.foldRight(0)( (line, acc) => acc + 1 )     
+scala> def lineCount = {                                                                                      
+     | import scala.io.Source.{fromURL => url} // you can remap imports to another name                       
+     | url("http://www.google.com").getLines.foldRight(0)( (line, acc) => acc + 1 )    
      | }
 lineCount: Int
 
-scala> lineCount                                                                        
+scala> lineCount                                                                       
 res5: Int = 11
 
 scala> import java.io.{File, FileWriter} // you can import multiple classes in one statement
@@ -41,4 +42,4 @@ import java.io.{File, FileWriter}
 
 scala> println( classOf[File], classOf[FileWriter])
 (class java.io.File,class java.io.FileWriter)
-
+</code></pre>

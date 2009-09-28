@@ -1,6 +1,6 @@
 In the spirit of making Scala scalable from scripts up to systems, Scala contains some syntactic sugar to make scripting and internal DSLs a bit easier to write.  For example there are several situations where the '.' and '()' for method calls are optional.  Semi-colons are optional (except for single-line statements).
 
-There are some corner cases but the basic rule is that you need an odd number of arguments if you wish leave out the '.'.  
+There are some corner cases but the basic rule is that you need an odd number of arguments if you wish leave out the '.'.
 Examples:
 <pre><code>
 scala> "hello" substring (1,3)
@@ -12,17 +12,14 @@ res1: java.lang.String = ello
 scala> 1 toString ()
 res2: java.lang.String = 1
 </code></pre>
-
 Precendence runs left to right so:
 <pre><code>
 "hello" contains "hello world" toString ()
 </code></pre>
-
 becomes
 <pre><code>
 "hello".contains("hello world").toString()
 </code></pre>
-
 Another example:
 <pre><code>
 scala> "hello" contains "hello world" toString () substring 4
@@ -31,15 +28,14 @@ res6: java.lang.String = e
 scala> "hello".contains("hello world").toString().substring(4)
 res7: java.lang.String = e
 </code></pre>
-
 There is some operator precendence which we will cover later.  Operator precedence allows statements like the following:
 <pre><code>
-scala> "hello" substring 6 - 4                                
+scala> "hello" substring 6 - 4
 res8: java.lang.String = llo
 
 scala> "hello" substring  (6 - 4)
 res9: java.lang.String = llo
 
-scala> "hello".substring  (6 - 4)    
+scala> "hello".substring  (6 - 4)
 res10: java.lang.String = llo
 </code></pre>

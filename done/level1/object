@@ -1,24 +1,24 @@
-Scala does not have static methods in the same way that Java does.  As a replacement Scala has "objects" and object is a singleton object whose methods can be called in the same manner one would call a static method in Java.  The big differentiator is that objects are complete objects and can extent abstract classes and traits.  
+Scala does not have static methods in the same way that Java does.  As a replacement Scala has "objects" and object is a singleton object whose methods can be called in the same manner one would call a static method in Java.  The big differentiator is that objects are complete objects and can extent abstract classes and traits.
 
-Objects are sometime refered to as modules as well. See next section for more on modules.  In addition there is a special situation where a class has what is called a companion object.  That is a topic for another day.  Finally you can have case objects, also a topic for another day. case objects will be address as part of the Enumeration topic.
+Objects are sometime referred to as modules as well. See next section for more on modules.  In addition there is a special situation where a class has what is called a companion object.  That is a topic for another day.  Finally you can have case objects, also a topic for another day. case objects will be address as part of the Enumeration topic.
 
 <pre><code>
 scala> abstract class SuperClass {
-     | def method = "hi"
-     | val value = 10
-     | }
+    | def method = "hi"
+    | val value = 10
+    | }
 defined class SuperClass
 
 scala> object MyObject extends SuperClass {
-     | override def method = "Hello"
-     | def anotherMethod = "other"
-     | }
+    | override def method = "Hello"
+    | def anotherMethod = "other"
+    | }
 defined module MyObject
 
 scala> MyObject.method
 res0: java.lang.String = Hello
 
-scala> MyObject.value 
+scala> MyObject.value
 res1: Int = 10
 
 scala> MyObject.anotherMethod
@@ -31,14 +31,14 @@ Objects are also a good way to modularize projects.  You can define classes and 
 <pre><code>
 
 scala> object Outer {
-     | case class Data(name:String)
-     | 
-     | def print(data:Data) = Console.println(data.name)
-     | 
-     | object Factory {
-     | def defaultData = Data("defaultName")
-     | }
-     | }
+    | case class Data(name:String)
+    |
+    | def print(data:Data) = Console.println(data.name)
+    |
+    | object Factory {
+    | def defaultData = Data("defaultName")
+    | }
+    | }
 defined module Outer
 
 scala> val data = Outer.Factory.defaultData

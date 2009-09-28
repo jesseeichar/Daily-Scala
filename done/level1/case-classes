@@ -1,36 +1,36 @@
-Case classes are a special type of class that comes with several convienient definintions (equals, hashcode, tostring, copy).  There are two main uses:
+Case classes are a special type of class that comes with several convenient definitions (equals, hashCode, toString, copy).  There are two main uses:
 
 1. Data object
 2. Matching
 
 First examples is using as a datastructure (Note: Some and None are both case classes):
 <pre><code>
-scala> val tree = Node( "root",                                                            
-     |                  Some(Node( "left", None, None)),                                   
+scala> val tree = Node( "root",
+     |                  Some(Node( "left", None, None)),
      |                  Some(Node( "right", None, Some( Node( "grandchild", None, None) ) ) )
      |                )
 tree: Node = Node(root,Some(Node(left,None,None)),Some(Node(right,None,Some(Node(grandchild,None,None)))))
 
 // you can deconstruct a datastructure made of cases classes
-scala> tree match {                                                   
+scala> tree match {
      | case Node( _, Some(left), Some(right) ) => println(left, right)
-     | case _ => println( "shouldnt happen" )                         
+     | case _ => println( "shouldnt happen" )
      | }
 (Node(left,None,None),Node(right,None,Some(Node(grandchild,None,None))))
 
 scala> case class DataStructure( value1:String, value2:Int, value3:String)
 defined class DataStructure
 
-scala>  val d = DataStructure("one", 2, "three") 
+scala>  val d = DataStructure("one", 2, "three")
 d: DataStructure = DataStructure(one,2,three)
 
 scala> d.toString
 res0: String = DataStructure(one,2,three)
 
-scala> d == DataStructure("one", 2, "three")  
+scala> d == DataStructure("one", 2, "three")
 res1: Boolean = true
 
-scala> d == DataStructure("zero",1, "two")   
+scala> d == DataStructure("zero",1, "two")
 res2: Boolean = false
 
 scala> d.hashCode
@@ -39,7 +39,5 @@ res4: Int = 1652907895
 // Only available in Scala 2.8
 scala> d.copy( value3="newValue")
 res5: DataStructure = DataStructure(one,2,newValue)
-
-scala> 
 
 </code></pre>

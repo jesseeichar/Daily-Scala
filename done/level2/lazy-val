@@ -1,4 +1,4 @@
-One nice feature built into Scala are "lazy val" values.  Essentially they are the lazy initialization pattern that is very commonly implemented in Java programs (and very commonly incorrectly implemented).  When a val is declared witht the lazy modifier the right-hand side of the value (the definition) will not be executed until the first time the value is accessed.
+One nice feature built into Scala are "lazy val" values.  Essentially they are the lazy initialization pattern that is very commonly implemented in Java programs (and very commonly incorrectly implemented).  When a val is declared with the lazy modifier the right-hand side of the value (the definition) will not be executed until the first time the value is accessed.
 
 A related forth coming topic is the topic on lazy collections and projections and streams.  They are all ways to lazily evaluate collections.
 

@@ -1,12 +1,12 @@
-In scala exceptions are not checked so effectively all exceptions are runtime exceptions.  When you want to handle exceptions you use a <code>try {...} catch {...}</code> block like you would in Java except that the catch block uses matching to identify and handle the exceptions.  This creates a very powerful but light-weight way to handle exceptions:
+In Scala exceptions are not checked so effectively all exceptions are runtime exceptions.  When you want to handle exceptions you use a <code>try {...} catch {...}</code> block like you would in Java except that the catch block uses matching to identify and handle the exceptions.  This creates a very powerful but light-weight way to handle exceptions:
 
 <pre><code>
-scala> def handle( f: => Unit ) = {                                             
-     | try { f } catch {                                                        
+scala> def handle( f: => Unit ) = {
+     | try { f } catch {
      | case _:AssertionError => println ("Whoops an assertion error")
-     | case r:RuntimeException => println ("Runtime Exception: "+ r.getStackTraceString)  
+     | case r:RuntimeException => println ("Runtime Exception: "+ r.getStackTraceString)
      | case e if (e.getMessage == null) => println ("Unknown exception with no message")
-     | case e => println ("An unknown error has been caught" + e.getMessage)            
+     | case e => println ("An unknown error has been caught" + e.getMessage)
      | }
      | }
 handle: (=> Unit)Unit

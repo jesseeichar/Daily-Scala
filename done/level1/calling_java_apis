@@ -1,7 +1,9 @@
-Calling Java APIs from scala is completely seemless to a Scala experience.  I will demonstrate this functionality by copying data from a URL to a file and then making a copy of that file.  
+Calling Java APIs from Scala is completely seamless.  I will demonstrate this functionality by copying data from a URL to a file and then making a copy of that file.
 
-Important Note:  Scala 2.8 is getting a redesigned API for accessing files and streams based on JSR-203 New NIO.  It is quite nice to use.  For example File("/tmp") / "dir" / "dir2" will create a file to /tmp/dir/dir2.  That is just the most basic of what you can expect.  I will do a couple topics on that when it gets closer to being finalized.
+Important Note:  Scala 2.8 is getting a redesigned API for accessing files and streams based on JSR-203 New NIO.  It is quite nice to use.  For example File("/tmp") / "dir" / "dir2" will create a file to /\
+tmp/dir/dir2.  That is just the most basic of what you can expect.  I will do a couple topics on that when it gets closer to being finalized.
 
+<pre><code>
 scala> import java.net._
 import java.net._
 
@@ -20,28 +22,29 @@ scala> val out = new FileWriter("/tmp/daily-scala")
 out: java.io.FileWriter = java.io.FileWriter@71d0e17a
 
 scala> try {
-     | out.write( in.getLines.mkString("\n") )
-     | }finally{
-     | out.close
-     | }
+    | out.write( in.getLines.mkString("\n") )
+    | }finally{
+    | out.close
+    | }
 
 scala> // now lets copy the file
 
 scala> val copy = new FileWriter("/tmp/copy")
 copy: java.io.FileWriter = java.io.FileWriter@7bfd25ce
 
-scala> try {                                                                  
-     | copy.write( Source.fromFile("/tmp/daily-scala").getLines.mkString("\n") )
-     | } finally {copy.close}                                                   
+scala> try {
+    | copy.write( Source.fromFile("/tmp/daily-scala").getLines.mkString("\n") )
+    | } finally {copy.close}
 
 scala> val copy2 = new FileWriter("/tmp/copy2")
 copy2: java.io.FileWriter = java.io.FileWriter@7bfd25ce
 
 // You can reuse a source if you reset it
-scala> try {                                                                  
-     | copy2.write( in.reset.getLines.mkString("\n") )
-     | } finally {copy2.close}                                                   
+scala> try {
+    | copy2.write( in.reset.getLines.mkString("\n") )
+    | } finally {copy2.close}
 
 // Change all 'e' to upper case.  We could write this to a file if we desired
 scala> in.reset.getLines.mkString("\n").map( c => if (c == 'e') c.toUpperCase else c).mkString("")
 res9: String = This is thE dEmo filE
+</code></pre>
