@@ -1,0 +1,63 @@
+This topic continues the previous topic on matching and Extractors.  Make sure you look at <a href="http://daily-scala.blogspot.com/2009/09/extractors-1.html">Extractors 1</a>.
+
+The first extractor topic covered the unapply method and how it is used during matching.  Today I want to visit a similar method unapplySeq, which is used to match sequences.  The method <code>def unapplySeq(param):Option[Seq[T]</code> can be used <em>instead</em> of unapply.  
+
+<strong>Note:</strong> if both unapply and unapplySeq are defined only unapply is used.
+
+When matching on Sequences the _* symbol means to match an arbitrary sequence.  We use this several times in the examples below
+
+<code>
+scala> object FindAs {
+     | def unapplySeq(string:String):Option[List[String]] = {
+     |    def containsA (word:String) = word.toLowerCase contains "a"
+     | 
+     |    if (string.toLowerCase contains "a") {
+     |      val words = string.split ("\\s+").
+     |                         filter (containsA _)
+     |      Some(words.toList)
+     |    } else {
+     |      None
+     |    }
+     | }
+     | }
+defined module FindAs
+
+// as usual you can use extractors to assign variables
+scala> val FindAs(a,b) = "This sentence contains 2 a-s"
+a: String = contains
+b: String = a-s
+
+// If you only care about the first variable you can use _* to 
+// reference the rest of the sequence that you don-t care about
+scala>  val FindAs(a, _*) = "A crazy a sentence ack!"
+a: String = A
+
+// using b @ _* we can get the rest of the sequence assigned to b
+scala>  val FindAs(a, b@_*) = "A crazy a sentence ack!"
+a: String = A
+b: Seq[String] = List(crazy, a, ack!)
+
+// standard matching pattern
+scala> "This sentence contains 2 a-s" match {          
+     | case FindAs(a,b) => println(a,b)
+     | case _ => println("whoops")
+     | }
+(contains,a-s)
+
+// In this example we only care that it can match not the values
+// so we ignore all of the actual sequence by using: _* as the parameters
+scala> "This sentence contains 2 a-s" match {          
+     |  case FindAs(_*) => println("a match")          
+     | }
+a match
+
+scala> "This sentence contains 2 a-s" match {
+     | case FindAs( first, _*) => println("first word = "+first)
+     | }
+first word = contains
+
+scala> "A crazy a sentence ack!" match {
+     | case FindAs( first, next, rest @ _*) => println("1=%s, 2=%s, rest=%s".format(first, next, rest) )
+     | }
+1=A, 2=crazy, rest=List(a, ack!)
+</code>

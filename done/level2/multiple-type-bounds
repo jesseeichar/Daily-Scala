@@ -1,0 +1,17 @@
+Suppose you want to declare a method to take objects that implement two interfaces or parent objects.  For example suppose the parameter must implement both Iterable and a function so that you can access the elements of the iterable via <code>object(index)</code>. How can you do that in scala?
+
+This topic is derived from <a href="http://stackoverflow.com/questions/1491283/how-do-i-setup-multiple-type-bounds-in-scala">How do I setup multiple type bounds in Scala?</a>
+
+Answer:
+<code>
+scala> def process[R <: Function1[Int,String] with Iterable[String]] (resource:R) = {
+     | println("using function:"+resource(0))
+     | println("using iterable:"+resource.elements.next)
+     | }
+process: [R <: (Int) => String with Iterable[String]](R)Unit
+
+// Array is a Function1 and iterable so this works
+scala> process (Array("1","2","3"))                                                  
+using function:1
+using iterable:1
+</code>

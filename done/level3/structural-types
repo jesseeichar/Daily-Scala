@@ -1,0 +1,4 @@
+Structural types allows one to declare types based on the methods the type has.  For example you could define a method that takes a class containing a close method.  This is failry analogous to duck-typing in dynamic languages.  Except that it is statically enforced.  Because of the fact that it is statically enforced it is not quite as flexible as dynamic language's version of duck typing.  For example you cannot do:
+<code>
+
+</code>

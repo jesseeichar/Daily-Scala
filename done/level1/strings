@@ -1,0 +1,129 @@
+This topic simply shows several things that can be done with strings.  It is not exhaustive and focusses of things that cannot as easily be done with java strings.
+
+<strong>Note:</strong> Because I am using Scala 2.7 we often need to use mkString to convert the processed string from a sequence of characters to a string.  In scala 2.8 this is not required.
+
+<code>
+/*
+   Making use of raw strings to create a multi line string
+   I add a | at the beginning of each line so that we can line up the quote nicely 
+   in source code then later strip it from the string using stripMargin
+*/
+scala> val quote = """|I don-t consider myself a pessimist.                                                                                                
+     |                |I think of a pessimist as someone who is waiting for it to rain.
+     |                |And I feel soaked to the skin.
+     | 
+     |                |Leonard Cohen"""
+quote: java.lang.String = 
+|I don-t consider myself a pessimist. 
+                      |I think of a pessimist as someone who is waiting for it to rain.
+                      |And I feel soaked to the skin.
+       
+                      |Leonard Cohen
+
+
+// capilize the first character of each line
+scala> val capitalized = quote.lines.
+     |                         map( _.trim.capitalize).mkString("\n")
+capitalized: String = 
+|I don-t consider myself a pessimist.
+|I think of a pessimist as someone who is waiting for it to rain.
+|And I feel soaked to the skin.
+
+|Leonard Cohen
+
+// remove the margin of each line
+scala> quote.stripMargin        
+res1: String = 
+I don-t consider myself a pessimist. 
+I think of a pessimist as someone who is waiting for it to rain.
+And I feel soaked to the skin.
+       
+Leonard Cohen
+
+// this is silly.  I reverse the order of each word but keep the words in order
+scala> quote.stripMargin.         
+     |       lines.               
+     |       map( _.split(" ").   
+     |              map(_.reverse).
+     |              mkString (" ")).
+     |      mkString("\n")
+res16: String = 
+I t-nod redisnoc flesym a .tsimissep
+I kniht fo a tsimissep sa enoemos ohw si gnitiaw rof ti ot .niar
+dnA I leef dekaos ot eht .niks
+
+dranoeL nehoC
+
+scala> val myPatch = "-->This is my patch<--"                
+myPatch: java.lang.String = -->This is my patch&lt;--
+
+// I replace the characters from point 10 in the string to myPatch.length 
+// (the full patch string)
+scala> quote.patch(10, myPatch, myPatch.length).mkString     
+res21: String = 
+|I don-t c-->This is my patch&lt;--mist.
+                      |I think of a pessimist as someone who is waiting for it to rain.
+                      |And I feel soaked to the skin.
+       
+                      |Leonard Cohen
+
+// drop the first 3 lines of the string.  
+// there is also a take method
+scala> quote.lines.drop(3).mkString("\n").stripMargin 
+res25: String = 
+       
+Leonard Cohen
+
+// a bunch of examples of converting strings
+scala> "1024".toInt
+res26: Int = 1024
+
+scala> "1024".toFloat
+res27: Float = 1024.0
+
+scala> "1024".toDouble
+res28: Double = 1024.0
+
+scala> "1024".toLong  
+res29: Long = 1024
+
+scala> "102".toByte 
+res31: Byte = 102
+
+scala> "true".toBoolean
+res32: Boolean = true
+
+// format uses the java.util.Formatter class to format a string
+scala> "Hello %s,\nThe date is %2$tm %2$te,%2$tY".format("Jesse", new java.util.Date()) 
+res35: String = 
+Hello Jesse,
+The date is 09 30,2009
+
+/*
+   More silliness
+   I am replacing every other character with the character of the reversed string
+  
+   this is done by 
+   1. convert string to a list and zip it together with its reverse
+      We may still need to cover zipping.  It basically matches up the 
+      corresponding elements of two lists into one list
+      so 1,2,3 and one,two,three zipped would be (1,one),(2,two),(3,three)
+   2. Add an index to each element in the list with zipWithIndex
+   3. Use map to check if the element is an odd element using the index and return either the original element or the reversed element
+  
+   Not useful but interesting use of functional idioms
+*/
+scala> quote.toList.                                          
+     |       zip(quote.reverse.toList).                       
+     |       zipWithIndex.                                    
+     |       map {                                            
+     |            case ((original,reversed),index) if(index % 2 == 0) => original
+     |            case ((original,reversed),index) => reversed                   
+     |           }.                                                              
+     |       mkString                                                            
+res42: String = |e oo -r noes|d r m s l     e s m s .        . i s e t o   e|a shlne  f anp|s i i t a   o e n   h  .siwrioi gifrrfig ioirwis.  h   n e o   a t i i s|pna f  enlhs a|e   o t e s i .        . s m s e     l s m r d|seon r- oo e|
+
+// filter out all non-vowels
+scala> quote.filter( "aeiou" contains _ ).mkString
+res51: String = ooieeaeiiioaeiiaoeoeoiaiioioaieeoaeoeieoaoe
+</code>

@@ -1,10 +1,14 @@
 
+val file = args(args.length-1)
+val pretty = args.find( _ == "-pretty").isDefined
+
 def logStyle(msg: =>String) =() //Console.err.println("[logStyle] "+msg)
 def logStyleFine(msg: =>String) = () //Console.err.println("[logStyle] "+msg)
 def logSplitBlocks(msg: =>String) =() //Console.err.println("[splitBlocks] "+msg)
 def logProcessCode(msg: =>String) = () //Console.err.println("[processCode] "+msg)
 def logProcess(msg: =>String) = () //Console.err.println("[process] "+msg)
 def logMain(msg: =>String) = () //Console.err.println("[main] "+msg)
+def qlog(msg: =>String) = Console.err.println("[quicklog] "+msg)
 
 import scala.util.matching.Regex
 
@@ -24,28 +28,31 @@ case class Block(start:String, end:String, styleClass:String, singleliner:Boolea
   }
 
   val Ends = includeEndQuote match {
-    case true => """^(.*%s)(.*?\z)""".format(end).r
-    case false => """^(.*)(%s.*?\z)""".format(end).r
+    case true => """^(.*%s)(.*)""".format(end).r
+    case false => """^(.*)(%s.*)""".format(end).r
   }
 
   override def toString = start+"..."+end
 
   def indexOf(line:String) =  line match {
-    case Starts(_,s) => Some(line.indexOf(s))
-    case _ => None
-  }
+      case Starts(_,s) => Some(line.indexOf(s))
+      case _ => None
+    }
 }
 
-case class Lang(blocks:List[Block], mapping:Iterable[(Regex,String)]) {
+case class Lang(name:String, blocks:List[Block], mapping:Iterable[(Regex,String)]) {
+  override def toString = name
   def splitInBlocks(line:String):List[(Option[Block],String)]={
-    val valid = blocks.map {b=> (b, b indexOf line) }
-    .filter { _._2.isDefined }
-    .map {e => (e._1,e._2.get)}
+    val valid = blocks.map {b=> (b, b indexOf line) }.
+                       filter { _._2.isDefined }.
+                       map {e => (e._1,e._2.get)}
     val sorted = valid sort { _._2 <= _._2 }
-    
-    val split = sorted match {
-      case Nil => (None,line) :: Nil
-      case (block,_) :: tail => {
+
+    val firstBlock = sorted.firstOption
+
+    val split = firstBlock match {
+      case None => (None,line) :: Nil
+      case Some((block,_)) => {
         val blocks = line.lines.next match {
           case block.Contains (before, b, after ) => splitInBlocks(before) ::: (Some(block),b) :: splitInBlocks(after)
           case block.Starts (before, b) => splitInBlocks(before) ::: (Some(block),b) :: Nil
@@ -78,14 +85,14 @@ case class Lang(blocks:List[Block], mapping:Iterable[(Regex,String)]) {
       case (true,b) => {logStyleFine("no replace"+b); b}
       
     }
-    
-    result.mkString("")
+
+     result.mkString("")
   }
   
   def process(line:String):(String,Option[Block])={
     val blocks = splitInBlocks (line)
     val styled = blocks.map {
-      case (Some(block),line) => ("""<span class="%s">%s</span>""".format (block.styleClass, line))
+      case (Some(block),line) => ("""<span class="%s">%s</span>""".format (block.styleClass, line.replaceAll("<","&lt;").replaceAll(">","&gt;")))
         case (None,line) =>
           (line /: mapping) {
             case (line, (word,style)) if ((word findFirstIn line).isDefined) => applyStyle(line,word,style)
@@ -109,18 +116,19 @@ case class Lang(blocks:List[Block], mapping:Iterable[(Regex,String)]) {
   
   final def process(line:String, b:Block):(String,Option[Block])={
     val span = """<span class="%s">""".format(b.styleClass)
+    val endSpan = """</span>"""
     
     line match {
       case b.Ends(r,l) =>{
         val (styled,endBlock) = process(l)
-        (span + r + styled, endBlock)
+        (span + r + styled+endSpan, endBlock)
       }
-      case r => (span+r, Some(b))
+      case r => (span+r+endSpan, Some(b))
     }
   }
   
-  def processCode(withIndices:Boolean, lines:Iterator[String])={
-    val nbSpaces = lines.toList.map( _.replace(" ", "&#8195;"))
+  def processCode(withIndices:Boolean, lines:List[String])(pretty:Boolean)={
+    val nbSpaces = lines.map( _.replace(" ", "&#8195;"))
     logProcessCode(nbSpaces.mkString("\n"))
     val (styled, endBlock) = ((List[String](),None:Option[Block]) /: nbSpaces){
       case ((all, None), line) => {
@@ -133,16 +141,25 @@ case class Lang(blocks:List[Block], mapping:Iterable[(Regex,String)]) {
       }
     }
     
+    val itemSep = if(pretty) "\n    " else ""
     if(withIndices) {
       val table = styled.reverse.zipWithIndex.map {case (l,i) => """<li class="codelist %s">%s</li>""".format(if(i % 2 == 0) "alt" else "",l)}
-      """<div class="codelist"><ol class="codelist">"""+table.mkString("")+"</ol></div>"
+      if(pretty)
+        """<div class="codelist">
+           |  <ol class="codelist">
+           |    %s
+           |  </ol>
+           |</div>""".stripMargin.format(table.mkString(itemSep))
+      else
+        """<div class="codelist"><ol class="codelist">%s</ol></div>""" format table.mkString(itemSep)
     } else {
       styled.reverse.mkString("")
     }
   }
 }
 
-val Scala = Lang(List(Block("&lt;","&gt;", "xml",false, true,true),
+val Scala = Lang("Scala", 
+                 List(Block("&lt;[^-]","&gt;", "xml",false, true,true),
                       Block("\"\"\"","\"\"\"", "string",false, true,true),
                       Block("\"","\"", "string",false, true,true),
                       Block("""/\*\*""", """\*/""", "javadoc",false, true,true),
@@ -185,6 +202,8 @@ val Scala = Lang(List(Block("&lt;","&gt;", "xml",false, true,true),
                      "Null" -> "singleton",
                      "null" -> "singleton",
                      "Unit" -> "singleton",
+//                     "_" -> "singleton",
+//                     "_*" -> "singleton",
                      "unapply" -> "magic",
                      "unapplySeq" -> "magic",
                      "apply" -> "magic",
@@ -202,13 +221,14 @@ val Scala = Lang(List(Block("&lt;","&gt;", "xml",false, true,true),
                      "scala>" -> "repl"
                    ).map{case (k,v) => ((sep+"("+k+")"+sep).r,v)}
                ) 
-val Java = Lang(List(Block("\"","\"", "string",false, true,true),
-                      Block("""/\*\*""", """\*/""", "javadoc",false, true,true),
-                      Block("""//""", """\z""", "comment",false, true,true),
-                      Block("""/\*""", """\*/""", "comment",false, true,true),
-                      Block("@", sepCharacters, "annotation",true, true,false),
-                      Block("'","'", "char",false, true,true)
-                    ),
+val Java = Lang("Java",
+                List(Block("\"","\"", "string",false, true,true),
+                     Block("""/\*\*""", """\*/""", "javadoc",false, true,true),
+                     Block("""//""", """\z""", "comment",false, true,true),
+                     Block("""/\*""", """\*/""", "comment",false, true,true),
+                     Block("@", sepCharacters, "annotation",true, true,false),
+                     Block("'","'", "char",false, true,true)
+                   ),
                  Map("interface" -> "key",
                      "class" -> "key",
                      "case" -> "key",
@@ -243,41 +263,56 @@ val Java = Lang(List(Block("\"","\"", "string",false, true,true),
                ) 
 
 
-val source=scala.io.Source.fromFile(args(0))
-val data = source.getLines.mkString("").replaceAll("""<pre>|</pre>""","")
 
-val CodeBlocks = """<code( class="(\w+)")?>([\s\S]*?)</code>""".r
-logMain (CodeBlocks.findAllIn(data).mkString("\n"))
-val (_, processed) = ( (0,data) /: (CodeBlocks findAllIn data.trim).matchData) (
-  (result, matchData) => {
-    val (offset,data) = result
-    def withIndices(code:String):Boolean = code.lines.toList.length > 1
-    def update(raw:String, lang:Lang) = {
-      val code = raw//.replaceAll("<strong>|</strong>","")
-      val updatedCode = lang.processCode (withIndices (code), code.trim.lines)
-      val patched = data.patch (matchData.start(3)+offset, updatedCode, code.length).mkString
-      (offset + updatedCode.length - code.length, patched)
-    }
-    val updated = matchData match {
-      case CodeBlocks(_,null,code) => update(code, Scala)
-      case CodeBlocks(_,codeType,code) if(codeType.toLowerCase == "java") => update(code, Java)
-      case CodeBlocks(_,codeType,code) => update(code, Scala)
-    }
-    logMain(matchData+" --> "+updated)
-    updated
-  })
+    val source=scala.io.Source.fromFile(file)
+    val data = source.getLines.mkString("").replaceAll("""<pre>|</pre>""","")
 
-//println("===================================================")
-println("""<html>
-  <head>
-    <link rel="STYLESHEET" type="text/css" href="code.css">
-  </head>
-  <body>""")
-println (processed.mkString(""))
-println("</body></html>")
-/*val (_, processed) = ((startWithCode,"") /: splitData) {
-  case ((true,styled), code) => (false, (styled + "<code>%s</code>") format processCode(code.lines) )
-    case ((false,styled),noncode) => (true,styled+noncode)
-}*/
+    val CodeBlocks = """<code( class="(\w+)")?>([\s\S]*?)</code>""".r
+    logMain (CodeBlocks.findAllIn(data).mkString("\n"))
+    val (_, processed) = ( (0,data) /: (CodeBlocks findAllIn data.trim).matchData) (
+      (result, matchData) => {
+        val (offset,data) = result
+        def withIndices(code:String):Boolean = code.lines.toList.length > 1
+        def update(raw:String, lang:Lang) = {
 
-//println(processed)
+          val code = raw//.replaceAll("<strong>|</strong>","")
+          val processFunc = lang.processCode (withIndices (code), code.trim.lines.toList) _
+          val updatedCode = processFunc(pretty)
+
+          // check that the code is valid XML
+          try{
+            scala.xml.XML.loadString(updatedCode)
+          }catch{
+            case e => {
+              val pretty = processFunc(true)
+              println(pretty)
+              scala.xml.XML.loadString(pretty)
+            }
+          }
+          val patched = data.patch (matchData.start(3)+offset, updatedCode, code.length).mkString
+          (offset + updatedCode.length - code.length, patched)
+        }
+        val updated = matchData match {
+          case CodeBlocks(_,null,code) => update(code, Scala)
+          case CodeBlocks(_,codeType,code) if(codeType.toLowerCase == "java") => update(code, Java)
+          case CodeBlocks(_,codeType,code) => update(code, Scala)
+        }
+        logMain(matchData+" --> "+updated)
+        updated
+      })
+    
+    //println("===================================================")
+    println("""<html>
+            <head>
+            <link rel="STYLESHEET" type="text/css" href="code.css">
+            </head>
+            <body>""")
+    println (processed.mkString(""))
+    println("</body></html>")
+    /*val (_, processed) = ((startWithCode,"") /: splitData) {
+     case ((true,styled), code) => (false, (styled + "<code>%s</code>") format processCode(code.lines) )
+     case ((false,styled),noncode) => (true,styled+noncode)
+     }*/
+    
+    //println(processed)
+    
