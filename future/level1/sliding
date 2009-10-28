@@ -1,0 +1,29 @@
+This topic requires Scala 2.8 or higher.
+
+Iterator and Iterable have most of the most useful methods when dealing with collections.  Fold, Map, Filter are probably the most common.  But other very useful methods include grouped/groupBy, sliding, find, forall, foreach, and many more.  I want to cover Iterator's grouped method.
+
+The <code>def sliding[B >: A](size : Int, step : Int) : GroupedIterator[B]</code> method provides a sliding window on the iterator.  The first parameter is the size of the window and the second is the number of elements to skip each time the window is moved.  If step == size then this method is the same as grouped.  Step defaults to one 
+
+Examples:
+
+<code>
+// notice resulting lists are all 3 long and increases by 1
+scala> (1 to 5).iterator.sliding(3).toList
+res18: List[Sequence[Int]] = List(List(1, 2, 3), List(2, 3, 4), List(3, 4, 5))
+
+// step is 3 so now there are only 2 groups
+scala> (1 to 5).iterator.sliding(4, 3).toList
+res19: List[Sequence[Int]] = List(List(1, 2, 3, 4), List(4, 5))
+
+// withPartial(false) makes the partial group be ignored
+scala> (1 to 5).iterator.sliding(4, 3).withPartial(false).toList
+res21: List[Sequence[Int]] = List(List(1, 2, 3, 4))
+
+scala> val it2 = Iterator.iterate(20)(_ + 5)
+it2: Iterator[Int] = non-empty iterator
+
+// withPadding fills in the partial group
+// notice with padding is by-name (it is executed each time it is called)
+scala> (1 to 5).iterator.sliding(4, 3).withPadding(it2.next).toList
+res23: List[Sequence[Int]] = List(List(1, 2, 3, 4), List(4, 5, 20, 25))
+</code>
