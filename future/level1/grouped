@@ -1,0 +1,29 @@
+This topic requires Scala 2.8 or higher.
+
+Iterator and Iterable have most of the most useful methods when dealing with collections.  Fold, Map, Filter are probably the most common.  But other very useful methods include grouped/groupBy, sliding, find, forall, foreach, and many more.  I want to cover Iterator's grouped method.
+
+The <code>def grouped[B >: A](size : Int) : GroupedIterator[B]</code> method returns an Iterator that is a Seq of Iterators of fixed size as indicated by the parameter. This way one can jump through the iterator quickly.  Grouped iterator has some other handy methods for dealing with the end group if it does not have the full set of elements.
+
+Examples:
+
+<code>
+scala> val iterators = (1 to 7).iterator grouped 3 toList
+iterators: List[Sequence[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7))
+
+scala> iterators(2)
+res14: Sequence[Int] = List(7)
+
+// withPartial false trims all partial groups
+scala> (1 to 7).iterator grouped 3 withPartial false toList
+res16: List[Sequence[Int]] = List(List(1, 2, 3), List(4, 5, 6))
+
+scala> val it2 = Iterator.iterate(20)(_ + 5)
+it2: Iterator[Int] = non-empty iterator
+
+/* withPadding uses the provided function to fill in the missing elements in the
+ * group with fewer elements
+ */
+scala> (1 to 7).iterator grouped 3 withPadding it2.next toList
+res17: List[Sequence[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 20, 25))
+</code>
+
