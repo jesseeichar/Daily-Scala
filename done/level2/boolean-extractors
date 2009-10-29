@@ -1,1 +1,62 @@
-unapply and unapplySeq can return Boolean
+As discussed in other topics there are several ways to create custom extractors for objects.  See 
+<ul>
+<li><a href="http://daily-scala.blogspot.com/2009/09/extractors-1.html">Extractors Introduction</a></li>
+<li><a href="http://daily-scala.blogspot.com/2009/09/extractors-sequences-unapplyseq.html">Extract Sequences</a></li>
+<li><a href="http://daily-scala.blogspot.com/2009/10/extractors-3-operator-style-matching.html">Operator Style Extractors</a></li>
+</ul>
+
+There is one more custom extractor that can be defined.  Simple boolean extractors.  They are used as follows:
+<code>
+scala> "hello world" match {                   
+     | case HasVowels() => println("Vowel found")
+     | case _ => println("No Vowels")            
+     | }
+Vowel found
+</code>
+
+A boolean extractor is an object that returns Boolean from the unapply method rather than Option[_].  
+
+Examples:
+<code>
+scala> object HasVowels{ def unapply(in:String):Boolean = in.exists( "aeiou" contains _ ) }
+defined module HasVowels
+
+// Note that HasVowels() has ().
+// This is critical because otherwise the match checks whether
+// the input is the HasVowels object.
+// The () forces the unapply method to be used for matching
+scala> "hello world" match {
+     | case HasVowels() => println("Vowel found")
+     | case _ => println("No Vowels")
+     | }
+Vowel found
+
+// Don't forget the ()
+scala> "kkkkkk" match {    
+     | case HasVowels() => println("Vowel found")
+     | case _ => println("No Vowels")
+     | }
+No Vowels
+
+scala> class HasChar(c:Char) {           
+     | def unapply(in:String) = in.contains(c)
+     | }
+defined class HasChar
+
+scala> val HasC = new HasChar('c')
+HasC: HasChar = HasChar@3f2f529b
+
+// Don't forget the () it is required here as well
+scala> "It actually works!" match {
+     | case HasC() => println("a c was found")
+     | case _ => println("no c found")  
+     | }
+a c was found
+
+// Don't forget the ()
+scala> "hello world" match { 
+     | case HasC() => println("a c was found")
+     | case _ => println("no c found")       
+     | }
+no c found
+</code>
