@@ -1,0 +1,44 @@
+One of the blessings and curses of Scala the several rules for creating expressive code (curse because it can be used for evil.) One such rule is related to extractors that allows the following style of match pattern:
+<code>
+List(1,2,3) match {
+  case 1 :: _ => println("found a list that starts with a 1")
+  case _ => println("boo")
+}
+</code>
+The rule is very simple.  An extractor object that returns Option[Tuple2[_,_]] (or equivalently Option[(_,_)]) can be expressed in this form.
+
+In other words: <code>object X {def unapply(in:String):Option[(String,String)] = ...}</code> can be used in a case statement like: <code>case first X head => ...</code> or <code>case "a" X head => ...</code>.
+
+Example to extract out the vowels from a string:
+<code>
+scala> object X { def unapply(in:String):Option[(RichString,RichString)] = Some(in.partition( "aeiou" contains _ )) }
+defined module X
+
+scala> "hello world" match { case head X tail => println(head, tail) }
+(eoo,hll wrld)
+
+// This is equivalent but a different way of expressing it
+scala> "hello world" match { case X(head, tail) => println(head, tail) }       
+(eoo,hll wrld)
+</code>
+
+Example for Matching the last element in a list.  Thanks to <a href="http://speaking-my-language.blogspot.com/2009/09/3-things-you-didnt-know-scala-pattern.html">3-things-you-didnt-know-scala-pattern.html</a>:
+<code>
+scala> object ::&gt; {def unapply[A] (l: List[A]) = Some( (l.init, l.last) )}
+defined module $colon$colon$greater
+
+scala> List(1, 2, 3) match {
+     | case _ ::&gt; last => println(last)
+     | }
+3
+
+scala> (1 to 9).toList match {
+     | case List(1, 2, 3, 4, 5, 6, 7, 8) ::&gt; 9 => "woah!"
+     | }
+res12: java.lang.String = woah!
+
+scala> (1 to 9).toList match {
+     | case List(1, 2, 3, 4, 5, 6, 7) ::&gt; 8 ::&gt; 9 => "w00t!"
+     | }
+res13: java.lang.String = w00t!
+</code>

@@ -281,11 +281,11 @@ val Java = Lang("Java",
 
           // check that the code is valid XML
           try{
-            scala.xml.XML.loadString(updatedCode)
+            scala.xml.XML.loadString("<code>"+updatedCode+"</code>")
           }catch{
             case e => {
               val pretty = processFunc(true)
-              println(pretty)
+              println("<code>"+pretty+"</code>")
               scala.xml.XML.loadString(pretty)
             }
           }
