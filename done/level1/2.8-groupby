@@ -4,18 +4,18 @@ This is a Scala 2.8 and later method.  It is similar to partition in that it all
 
 Here is the method signature:
 <code>
-def groupBy[K](f : (A) => K) : Map[K, This]
+def groupBy[K](f : (A) =&gt; K) : Map[K, This]
 </code>
 
 Examples:
 <code>
 scala> val groups = (1 to 20).toList groupBy {
-     | case i if(i<5) => "g1"
-     | case i if(i<10) => "g2"
-     | case i if(i<15) => "g3"
-     | case _ => "g4"
+     | case i if(i&lt;5) =&gt; "g1"
+     | case i if(i&lt;10) =&gt; "g2"
+     | case i if(i&lt;15) =&gt; "g3"
+     | case _ =&gt; "g4"
      | }
-res4: scala.collection.Map[java.lang.String,List[Int]] = Map(g1 -> List(1, 2, 3, 4), g2 -> List(5, 6, 7, 8, 9), g3 -> List(10, 11, 12, 13, 14), g4 -> List(15, 16, 17, 18, 19, 20))
+res4: scala.collection.Map[java.lang.String,List[Int]] = Map(g1 -&gt; List(1, 2, 3, 4), g2 -&gt; List(5, 6, 7, 8, 9), g3 -&gt; List(10, 11, 12, 13, 14), g4 -&gt; List(15, 16, 17, 18, 19, 20))
 
 scala> groups.keySet
 res6: scala.collection.Set[java.lang.String] = Set(g1, g2, g3, g4)
@@ -24,8 +24,8 @@ scala> groups("g1")
 res7: List[Int] = List(1, 2, 3, 4)
 
 scala> val mods = (1 to 20).toList groupBy ( _ % 4 )
-mods: scala.collection.Map[Int,List[Int]] = Map(1 -> List(1, 5, 9, 13, 17), 2 -> List(2, 6, 10, 14, 18), 3 -> List(3, 7,
- 11, 15, 19), 0 -> List(4, 8, 12, 16, 20))
+mods: scala.collection.Map[Int,List[Int]] = Map(1 -&gt; List(1, 5, 9, 13, 17), 2 -&gt; List(2, 6, 10, 14, 18), 3 -&gt; List(3, 7,
+ 11, 15, 19), 0 -&gt; List(4, 8, 12, 16, 20))
 
 scala> mods.keySet
 res9: scala.collection.Set[Int] = Set(1, 2, 3, 0)

@@ -40,6 +40,11 @@ defined class Dog
 scala> new Dog().makeNoise()
 Woof Woof
 
+scala> abstract class GenericAnimal extends Animal{ 
+     | val noise = "glup"                          
+     | }
+defined class GenericAnimal
+
 scala> val quad = new GenericAnimal() with Quadriped
 quad: GenericAnimal with Quadriped = $anon$1@10bfb545
 

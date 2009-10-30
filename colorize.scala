@@ -128,7 +128,7 @@ case class Lang(name:String, blocks:List[Block], mapping:Iterable[(Regex,String)
   }
   
   def processCode(withIndices:Boolean, lines:List[String])(pretty:Boolean)={
-    val nbSpaces = lines.map( _.replace(" ", "&#8195;"))
+    val nbSpaces = lines.map( _.replace(" ", "&#160;"))
     logProcessCode(nbSpaces.mkString("\n"))
     val (styled, endBlock) = ((List[String](),None:Option[Block]) /: nbSpaces){
       case ((all, None), line) => {
@@ -185,6 +185,8 @@ val Scala = Lang("Scala",
                      "catch" -> "key",
                      "finally" -> "key",
                      "self" -> "key",
+                     "extends" -> "key",
+                     "abstract" -> "key",
                      "yield" -> "key",
                      "private" -> "key",
                      "protected" -> "key",
