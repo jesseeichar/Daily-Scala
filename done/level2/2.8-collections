@@ -1,0 +1,49 @@
+This topic introduces the basics of the collections API introduced in Scala 2.8.  It is NOT intended to teach everything one needs to know about the collections API.  It is intended only to provide context for future discussions about the new features of 2.8 collections.  For example I am planning on how to introduce custom collection builders.
+
+Disclaimer:  I am not an expert on the changes to 2.8.  But I think it is important to have a basic awareness of the changes.  So I am going to try to provide a simplified explanation. Corrections are most certainly welcome.  I will incorporate them into the post as soon as I get them.  
+
+If you want more information you can view the improvement document: <a href="http://www.scala-lang.org/sid/3">Collections SID</a>.
+
+Pre Scala 2.8 there were several criticisms about the inconsistencies on the collections API.
+
+Here is a Scala 2.7 example:
+<code>
+scala> "Hello" filter ('a' to 'z' contains _)
+res0: Seq[Char] = ArrayBuffer(e, l, l, o)
+
+scala> res0.mkString("")
+res1: String = ello
+</code>
+Notice how after the map function the return value is a ArrayBuffer, not a String.  The mkString function is required to convert the collection back to a String.
+Here is the code in Scala28:
+<code>
+scala> "Hello" filter ('a' to 'z' contains _)         
+res2: String = ello
+</code>
+In Scala28 it recognizes that the original collection is a String and therefore a String should be returned.  This sort of issue was endemic in Scala 2.7 and several classes had hacks to work around the issue.  For example List overrode the implementations for many of its methods so a List would be returned.  But other classes, like Map, did not.  So depending on what class you were using you would have to convert back to the original collection type.  Maps are another good example:
+<code>
+scala> Map(1 -> "one",                                         
+     |     2 -> "two") map {case (key, value) => (key+1,value)}
+res3: Iterable[(Int, java.lang.String)] = ArrayBuffer((2,one), (3,two))
+</code>
+But if you use filter in map then you got a Map back. 
+
+I don't want to go into detail how this works, but basically each collection is associated with a Builder which is used to construct new instances of the collection.  So the superclasses can perform the logic and simply delegate the construction of the classes to the Builder.  This has the effect of both reducing the amount of code duplication in the Scala code base (not so important to the API) but most importantly making the return values of the various methods consistent.
+
+It does make the API slightly more complex.
+
+So where in pre Scala 2.8 there was a hierarchy (simplified):<pre class="small-font">
+                   Iterable[A]
+                       |
+                   Collection[A]
+                       |
+                     Seq[A]
+</pre>In 2.8 we now have:<pre class="small-font">
+               TraversableLike[A,Repr]   
+               /               \
+     IterableLike[A,Repr]    Traversable[A]
+       /               \      / 
+  SeqLike[A,Repr]   Iterable[A]
+            \        /
+              Seq[A]
+</pre>The *Like classes have most of the implementation code and are used to compose the public facing API: Seq, List, Array, Iterable, etc...  From what I understand these traits are publicly available to assist in creating new collection implementations (and so the Scaladocs reflect the actual structure of the code.)

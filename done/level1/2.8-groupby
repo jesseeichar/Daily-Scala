@@ -6,6 +6,7 @@ Here is the method signature:
 <code>
 def groupBy[K](f : (A) =&gt; K) : Map[K, This]
 </code>
+A bit of context is require to understand the three Type parameters A, K and This. This method is defined in a super class of collections called TraversableLike (I will briefly discuss this in the next topic.) TraversableLike takes two type parameters: the type of the collection and the type contained in the collection. Therefore in this method definition, 'This' refers to the collection type (List for example) and A refers to contained type (perhaps Int). Finally K refers to the type returned by the function and are the keys of the groups formed by the method.
 
 Examples:
 <code>

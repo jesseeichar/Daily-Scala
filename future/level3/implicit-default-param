@@ -1,0 +1,27 @@
+If you have a default param the () is required unless the param (maybe many params) are implicit
+
+<code>
+scala> def p(i:Int*)(s:String = "hi") = println(i,s)
+p: (i: Int*)(s: String)Unit
+
+scala> p(1,2,3)()
+(WrappedArray(1, 2, 3),hi)
+
+scala> p(1,2,3)  
+<console>:6: error: missing arguments for method p in object $iw;
+follow this method with `_' if you want to treat it as a partially applied function
+       p(1,2,3)
+        ^
+
+scala> def p(i:Int*)(implicit s:String = "hi") = println(i,s)
+p: (i: Int*)(implicit s: String)Unit
+
+scala> p(1,2,3)()                                            
+(WrappedArray(1, 2, 3),hi)
+
+scala> p(1,2,3)("other")
+(WrappedArray(1, 2, 3),other)
+
+scala> p(1,2,3)                                              
+(WrappedArray(1, 2, 3),hi)
+</code>

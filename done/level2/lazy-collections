@@ -1,0 +1,163 @@
+This topic discusses non-strict collections.  There is a fair bit of confusion with regards to non-strict collections: what to call them and what are they.  First lets clear up some definitions.
+
+Pre Scala 2.8 collections have a projection method.  This returns a non-strict collections.  So often non-strict collections are called projections in Pre Scala 2.8
+Scala 2.8+ the method was changed to view, so in Scala 2.8+ view sometimes refers to non-strict collections (and sometime to a implicit conversion of a class)
+Another name for non-strict collections I have seen is "lazy collections."
+
+All those labels are for the same thing "non-strict collections" which is the functional programming term and which I will use for the rest of this topic.
+
+As an excellent addition to this topic please take a look at <a href="http://dcsobral.blogspot.com/2009/10/strict-ranges.html">Strict Ranges?</a> by Daniel Sobral.
+
+One way to think of non-strict collections are pull collections.  A programmer can essentially form a sequence of functions and the evaluation is only performed on request.
+
+Note:  I am intentionally adding side effects to the processes in order to demonstrate where processing takes place.  In practice the collectionsshould be immutable (ideally) and the processing the collections <strong>really</strong> should be side-effect free.  Otherwise almost guaranteed you will find yourself with a bug that is almost impossible to find.
+
+Example of processing a strict collection:
+<code>
+scala> var x=0
+x: Int = 0
+
+scala> def inc = {
+     | x += 1
+     | x
+     | }
+inc: Int
+
+scala> var list =  List(inc _, inc _, inc _)
+list: List[() => Int] = List(&lt;function0&gt;, &lt;function0&gt;, &lt;function0&gt;)
+
+scala> list.map (_()).head
+res0: Int = 1
+
+scala> list.map (_()).head
+res1: Int = 4
+
+scala> list.map (_()).head
+res2: Int = 7
+</code>
+
+Notice how each time the expression is called x is incremented 3 times.  Once for each element in the list.  This demonstrates that map is being called for every element of the list even though only head is being calculated.  This is strict behaviour.
+
+Example of processing a non-strict collection with Scala 2.7.5
+For Scala 2.8 change project => view.
+<code>
+scala> var x=0
+x: Int = 0
+
+scala> def inc = {
+     | x += 1
+     | x
+     | }
+inc: Int
+
+scala> var list =  List(inc _, inc _, inc _)
+list: List[() => Int] = List(&lt;function0&gt;, &lt;function0&gt;, &lt;function0&gt;)
+
+scala> list.projection.map (_()).head
+res0: Int = 1
+
+scala> list.projection.map (_()).head
+res1: Int = 2
+
+scala> list.projection.map (_()).head
+res2: Int = 3
+
+scala> list.projection.map (_()).head
+res3: Int = 4
+</code>
+
+Here you can see that only one element in the list is being calculated for the head request.  That is the idea behind non-strict collections and can be useful when dealing with large collections and very expensive operations.  This also demonstrates why side-effects are so crazy <strong>dangerous!</strong>.
+
+More examples (Scala 2.8):
+<code>
+scala> var x=0
+x: Int = 0
+
+scala> def inc = { x +=1; x }
+inc: Int
+
+// strict processing of a range and obtain the 6th element
+// this will run inc for every element in the range
+scala> (1 to 10).map( _ + inc).apply(5)
+res2: Int = 12
+
+scala> x
+res3: Int = 10
+
+// reset for comparison
+scala> x = 0
+x: Int = 0
+
+// now non-strict processing but the same process
+// you get a different answer because only one
+// element is calculated
+scala> (1 to 10).view.map( _ + inc).apply(5)
+res6: Int = 7
+
+// verify that x was incremented only once
+scala> x
+res7: Int = 1
+
+// reset for comparison
+scala> x = 0
+x: Int = 0
+
+// force forces strict processing
+// now we have the same answer as if we did not use view
+scala> (1 to 10).view.map( _ + inc).force.apply(5)
+res9: Int = 12
+
+scala> x
+res10: Int = 10
+
+// reset for comparison
+scala> x = 0
+x: Int = 0
+
+// first 5 elements are computed only
+scala> (1 to 10).view.map( _ + inc).take(5).mkString(",")
+res9: String = 2,4,6,8,10
+
+scala> x
+res10: Int = 5
+
+// reset for comparison
+scala> x = 0
+x: Int = 0
+
+// only first two elements are computed
+scala> (1 to 10).view.map( _ + inc).takeWhile( _ &lt; 5).mkString(",")
+res11: String = 5,7
+
+scala> x
+res12: Int = 5
+
+// reset for comparison
+scala> x = 0
+x: Int = 0
+
+// inc is called 2 for each element but only the last 5 elements are computed so
+// x only == 10 not 20
+scala> (1 to 10).view.map( _ + inc).map( i => inc ).drop(5).mkString(",")
+res16: String = 2,4,6,8,10
+
+scala> x
+res17: Int = 10
+
+scala> x = 0                                             
+x: Int = 0
+
+// define this for-comprehension in a method so that
+// the repl doesn't call toString on the result value and
+// as a result force the full list to be processed
+scala> def add = for( i &lt;- (1 to 10).view ) yield i + inc
+add: scala.collection.IndexedSeqView[Int,IndexedSeq[_]]
+
+scala> add.head                                          
+res5: Int = 2
+
+// for-comprehensions will also be non-strict if the generator is non-strict
+scala> x
+res6: Int = 1
+
+</code>

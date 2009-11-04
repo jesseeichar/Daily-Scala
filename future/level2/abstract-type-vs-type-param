@@ -1,0 +1,2 @@
+abstract type good when extending and will have concrete subclasses
+param type good for when a type is usefule without extension but can handle several types
