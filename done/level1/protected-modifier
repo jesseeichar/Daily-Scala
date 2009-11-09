@@ -1,0 +1,120 @@
+By default classes, objects and class members (fields, methods) are all public.
+IE:
+<code>
+object PublicObject {
+  val publicVal
+  var publicVar
+  def publicMethod = 1
+}
+</code>
+In this example everything is public.  Similar to Java there is private and protected (there is no public because that is default).  Private works as it does in Java but protected is dramatically different.
+<ul><li>The first difference is that protected can have two forms: protected and protected[foo].  Where foo can be a class, package or object.</li>
+<li>The second difference is that the non-parameterized protected for is only visible from subclasses <em>not</em> from the same package.</li></ul>
+<code>
+scala> class Class1 {
+     | protected def pMethod = "protected"
+     | }
+defined class Class1
+
+scala> class Class2 { 
+// pMethod is not accessible because Class2 is not a subclass of Class1
+     | new Class1().pMethod 
+     | }
+&lt;console&gt;:6: error: method pMethod cannot be accessed in Class1
+       new Class1().pMethod
+                    ^
+
+scala> class Class3 extends Class1 {
+// also unlike Java, protected restricts to the same object
+     | new Class1().pMethod
+     | }
+&lt;console&gt;:6: error: method pMethod cannot be accessed in Class1
+       new Class1().pMethod
+                    ^
+
+scala> class Class3 extends Class1 {
+     | pMethod
+     | }
+defined class Class3
+</code>
+If the protected is parameterized then only classes that fall into the parameter category can access the parameter:
+<code>
+scala> class Class1 {                                
+// protected[Class1] is equivalent to private
+     | protected[Class1] def method() = println("hi")
+     | method()
+     | }
+defined class Class1
+
+scala> new Class1()
+hi
+res0: Class1 = Class1@dc44a6d
+
+// this does not work because method is only accessible in Class1
+scala> class Class2 extends Class1 { method() }      
+&lt;console&gt;:5: error: not found: value method
+       class Class2 extends Class1 { method() }
+                                     ^
+scala> object Module {                                         
+     |   object Inner1 {                                         
+     |     protected[Inner1] def innerMethod = println("hi")       
+     |     protected[Module] def moduleMethod = println("moduleMethod")
+     |
+     |     object InnerInner { 
+     |       // InnerInner is within Inner1 so the access works
+     |       def callInner = innerMethod
+     |     }
+     |   }
+     |   // module method is protected[Module] so anything in Module can access it
+     |   def callModuleMethod = Inner1.moduleMethod
+     |
+     |   object Inner2 {
+     |     // Inner1.module method is protected[Module] and 
+     |     // Inner2 is within module so therefore has access
+     |     def callModuleMethod = Inner1.moduleMethod
+     |   }
+     | }
+defined module Module
+
+scala> Module.callModuleMethod
+moduleMethod
+
+scala> Module.Inner1.InnerInner.callInner
+hi
+
+scala> Module.Inner1.innerMethod         
+&lt;console&gt;:6: error: method innerMethod cannot be accessed in object Module.Inner1
+       Module.Inner1.innerMethod
+                     ^
+
+scala> Module.Inner1.moduleMethod
+&lt;console&gt;:6: error: method moduleMethod cannot be accessed in object Module.Inner1
+       Module.Inner1.moduleMethod
+</code>
+The following example shows how package access works in Scala 2.8.  They have to be compiled as 2 files
+Root.scala (this file compiles:
+<code>
+package root
+
+class Class1 {
+  protected[root] def rootMethod = println("rootMethod")
+}
+
+class Class2 {
+  // same package so this is legal
+  new Class1().rootMethod
+}
+</code>
+Subpackage.scala
+<code>
+package root.sub
+
+class Class3 {
+  // Class3 is in a subpackage of root so 
+  // it can access all objects protected by
+  // protected[root] as well as objects
+  // protected by protected[root.sub]
+  new root.Class1().rootMethod
+}
+</code>
+

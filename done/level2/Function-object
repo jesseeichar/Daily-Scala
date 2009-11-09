@@ -1,0 +1,72 @@
+If you have not looked at the Function object I would recommend you do. It contains several useful methods for combining and converting functions.
+
+Examples:
+<code>
+cala> def twoParamFunc( i:Int, j:String) = println(i,j)
+twoParamFunc: (i: Int,j: String)Unit
+
+// the tupled method converts the function with n parameters into
+// a function that takes one tupleN
+scala> val tupled = Function tupled twoParamFunc _
+tupled: ((Int, String)) => Unit = &lt; function1>
+
+scala> tupled (1 -> "one") 
+(1,one)
+
+// A practical use-case is to convert an existing method
+// for use with a Map
+
+// Example with out using the tupled method
+scala> Map( 1 -> "one", 2 -> "two") map (entry => twoParamFunc(entry._1, entry._2)) 
+(1,one)
+(2,two)
+res5: scala.collection.immutable.Iterable[Unit] = List((), ())
+
+// example using tupled
+scala> Map( 1 -> "one", 2 -> "two") map (tupled)  
+(1,one)
+(2,two)
+res7: scala.collection.immutable.Iterable[Unit] = List((), ())
+
+// and for balance the opposite
+scala> val untupled = Function untupled tupleParamFunc _
+untupled: (Int, String) => Unit = &lt; function2>
+
+scala> untupled(1, "one") 
+tuple = (1,one)
+
+// Chain is for chaining together an arbitrary number of functions
+
+scala> def inc(i:Int) = i + 1 
+inc: (i: Int)Int
+
+scala> def double(i:Int) = i*i
+double: (i: Int)Int
+
+scala> def decr(i:Int) = i - 1
+decr: (i: Int)Int
+
+scala> (Function chain List(inc _, double _, decr _, double _, inc _, inc _))(3)
+res10: Int = 227
+
+// Now examples curries two methods then chains them together
+
+// define basic methods
+scala> def inc(step:Int,i:Int) = i + step 
+inc: (step: Int,i: Int)Int
+
+scala> def multiply(i:Int, j:Int) = i * j
+multiply: (i: Int,j: Int)Int
+
+// Convert them to methods where the first argument is 3
+scala> val inc3 = (Function curried inc _)(3)
+inc3: (Int) => Int = &lt; function1>
+
+scala> val multiplyBy3 = (Function curried multiply _)(3)
+multiplyBy3: (Int) => Int = &lt; function1>
+
+// chain the resulting Function1 objects together and execute chain with parameter 3
+// (3 + 3)*3 = 18
+scala> chain(List(inc3, multiplyBy3))(3)
+res12: Int = 18
+</code>

@@ -1,0 +1,29 @@
+One of the best examples of why it is so great to use Scala for API design is BigInt. Using BigInt in Java is a real headache because of the limitations of Java with regards to API design. Scala in comparison makes using BigInt no different than using Ints (with execution that there is not a BigInt literal). 
+
+<code>
+// BigInt objects can be created from ints
+scala> val x = BigInt(1500)
+x: BigInt = 1500
+
+// or longs
+scala> val y = BigInt(8839200231L)
+y: BigInt = 8839200231
+
+// or strings
+scala> val z = BigInt("1234566789008723457802308972345723470589237507")
+z: BigInt = 1234566789008723457802308972345723470589237507
+
+// then thanks to scala you can multiply/divide/add/subtract etc...
+// as if it was a Scala literal
+scala> x * y * z
+res0: BigInt = 16368874569886254973831932331037537269641764816982396175500
+
+// by importing implicits you can also directly multiply big ints with integers and longs
+// however remember to put the big in first so that the int is converted to big int
+// because you cannot do Int * BigInt.  It must be BigInt * Int
+scala> import BigInt._
+import BigInt._
+
+scala> x * y * z * 124
+res1: BigInt = 2029740446665895616755159609048654621435578837305817125762000
+</code>
