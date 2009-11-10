@@ -1,0 +1,8 @@
+A fun but easily overlooked fact is that many classes inherit from a Function class and therefore can be used where "normal" functions can be used.  
+<code>
+scala> List(1,2) map (Map(1->"one",2->"two"))
+res0: List[java.lang.String] = List(one, two)
+
+scala> List(3,3,2) map (List('a', 'b', 'c','d'))
+res2: List[Char] = List(d, d, c)
+</code>
