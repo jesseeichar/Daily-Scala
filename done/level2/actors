@@ -1,0 +1,67 @@
+The support for Actors is one of the features that attracts many new developers to Scala. It is not the only concurrancy construct in Scala but it is one of the most recognized. 
+
+An actor is essentially an active object. Instead of calling methods on the actor messages are passed to the actor and the message will be handled in a thread. Resources about actors can be found all over the internet a couple pages to look at are:
+<ul>
+<li><a href="http://www.scala-lang.org/node/242">Scala Actors: A Short Tutorial</a></li>
+<li><a href="http://lampwww.epfl.ch/~odersky/papers/jmlc06.pdf">Event-Based Programming without Inversion of
+Control (PDF)</a></li>
+<li><a href="http://lamp.epfl.ch/~phaller/doc/haller07coord.pdf">Actors That Unify Threads and Events</a></li>
+</ul>
+
+This is a big topic about how threads are scheduled and so on but for now we will write a simple little program that downloads several webpages in parallel. <code>
+scala> import scala.actors.Actor
+import scala.actors.Actor
+
+scala> import Actor._
+import scala.actors.Actor._
+
+scala>  val collector = actor {
+     |   var count = 3
+     |   var data = ""
+     |   loop {
+     |   react { 
+     |    case payload:String => {
+     |      reply ("thank you")
+     |      data += payload + "\n\n"
+     |      count -= 1
+     |      if (count == 0) {
+     |        println (data)
+     |        exit()
+     |     }
+     |    }
+     |  }
+     | }
+     | }
+collector: scala.actors.Actor = scala.actors.Actor$$anon$1@2bbef4c6
+
+scala> import scala.io.Source
+import scala.io.Source
+
+scala> class Downloader(url:String) extends Actor {
+     |  def act = {
+     |   val source = Source.fromURL(new java.net.URL(url))
+     |   val data = source.getLines.mkString("\n")
+     |   collector ! data
+     |   receive { case s => println("Done with "+url) }
+     |  }
+     | }
+defined class Downloader
+
+scala> List("http:/daily-scala.blogspot.com/2009/11/using-objects-as-functions.html",
+     |      "http:/daily-scala.blogspot.com/2009/10/boolean-extractors.html",
+     |      "http:/daily-scala.blogspot.com/2009/08/java-vs-scala-control-structures.html",
+     |      "http:/www.blogger.com/profile/07600430363435495915")
+res0: List[java.lang.String] = List(http:/daily-scala.blogspot.com/2009/11/using-objects-as-functions.html, http:/daily-scala.blogspot.com/2009/10/boolean-extractors.html, http:/daily-scala.blogspot.com/2009/08/java-vs-scala-control-structures.html, http:/www.blogger.com/profile/07600430363435495915)
+
+scala> for (url &lt;- res0) { 
+     | new Downloader(url).start
+     | }
+
+[snip... lots of output]
+</code>
+Update:
+If this program is put into a file and executed it will not finish is because the program exits.  What is happening is there are 6 "actors" the main thread, collector and the 4 Downloaders.  The main thread completes and shutdown the system taking all the Actors with it.  
+
+Just add link(collector) as the last line to make the main trhead wait for collector.
+
+Also important to realize is that in Scala 2.7 an actor is lightweight.  IE the application can exit while actors are still alive.  In Scala 2.8 that is changed.  For Scala 2.7 semantics you must use a DaemonActor instead of Actor.

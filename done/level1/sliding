@@ -1,6 +1,6 @@
 This topic requires Scala 2.8 or higher.
 
-Iterator and Iterable have most of the most useful methods when dealing with collections.  Fold, Map, Filter are probably the most common.  But other very useful methods include grouped/groupBy, sliding, find, forall, foreach, and many more.  I want to cover Iterator's grouped method.
+Iterator and Iterable have most of the most useful methods when dealing with collections.  Fold, Map, Filter are probably the most common.  But other very useful methods include grouped/groupBy, sliding, find, forall, foreach, and many more.  I want to cover Iterator's sliding method.
 
 The <code>def sliding[B >: A](size : Int, step : Int) : GroupedIterator[B]</code> method provides a sliding window on the iterator.  The first parameter is the size of the window and the second is the number of elements to skip each time the window is moved.  If step == size then this method is the same as grouped.  Step defaults to one 
 
