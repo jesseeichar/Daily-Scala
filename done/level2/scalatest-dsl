@@ -1,0 +1,45 @@
+This is the first of three topics exploring some of the testing tools that you can use with Scala.  They all integrate with JUnit and can be used with maven and ant.  
+
+The first example is <a href="http://www.scalatest.org">ScalaTest</a>. ScalaTest provides many different usage patterns but the one I will show today is a Behaviour Driven Design test.  It provides a DSL for declaring a test that is nearly english in syntax and if done correctly can be given to a non technical person to review.  The ScalaTest BDD test style was inspired by the work done on <a href="http://code.google.com/p/specs/">Specs by Eric Torreborre</a>.  I will demonstrate that library in the next topic.
+
+I want to reiterate that ScalaTest permits several different styles of test writing.  NUnit, JUnit and BDD are the main styles.  So anyone that is used to NUnit or JUnit should have no problem using ScalaTest but if you like the look of the BDD test specifications then you can migrate and slowly become accustomed to that style.
+
+Instructions to run example:<ol><li>Download ScalaTest: <a href="http://www.scalatest.org/download">http://www.scalatest.org/download</a></li><li>Extract archive.  For example to /tmp/</li><li>Run scala with the ScalaTest jar on classpath: scala -classpath /tmp/scalatest-1.0/scalatest-1.0.jar</li><li>copy in code</li></ol>
+
+This example is directly taken from the ScalaTest documentation.  It tests a Stack implementation.
+<code>
+scala>  import org.scalatest.WordSpec
+import org.scalatest.WordSpec
+
+scala>  import scala.collection.mutable.Stack
+import scala.collection.mutable.Stack
+
+scala> 
+
+scala>  class StackSpec extends WordSpec {
+     | 
+     |    "A Stack" should {
+     | 
+     |      "pop values in last-in-first-out order" in {
+     |        val stack = new Stack[Int]
+     |        stack.push(1)
+     |        stack.push(2)
+     |        assert(stack.pop() === 2)
+     |        assert(stack.pop() === 1)
+     |      }
+     | 
+     |      "throw NoSuchElementException if an empty stack is popped" in {
+     |        val emptyStack = new Stack[String]
+     |        intercept[NoSuchElementException] {
+     |          emptyStack.pop()
+     |        }
+     |      }
+     |    }
+     |  }
+defined class StackSpec
+
+scala> new StackSpec().execute()
+A Stack 
+- should pop values in last-in-first-out order
+- should throw NoSuchElementException if an empty stack is popped
+</code>

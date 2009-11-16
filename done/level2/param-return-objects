@@ -1,0 +1,101 @@
+A truly fantastic aspect of Scala is the uniform principle that Scala attempts to adhere to. In other words Scala tries to not make any rules that only apply to a single case when it can be applied generally. 
+
+One example is matching you can see several uses of matching in the following topics:
+<ul><li><a href="http://daily-scala.blogspot.com/2009/09/assignments.html">Assignments</a></li>
+<li><a href="http://daily-scala.blogspot.com/2009/08/assignment-and-parameter-objects.html">Assignment and Parameter Objects</a></li></ul>But matching it applies to today's topic as well. This topic covers a cool trick that helps assist with parameter objects and complex return types. 
+
+This topic is another take on <a href="http://daily-scala.blogspot.com/2009/08/assignment-and-parameter-objects.html">Assignment and Parameter Objects</a>.  There are cases when a method has a large number of parameters and the API can be cleaned up by introducing a parameter object. Or perhaps an object with several public proprties are passed to a method. 
+<code>
+scala> case class Params(p1:Int, p2:Int, p3:Int)
+defined class Params
+
+scala>  def method(params:Params) = {
+     |   println(params.p1, params.p2, params.p3)
+     | }
+method: (Params)Unit
+
+scala> method(Params(1,2,3))
+(1,2,3)
+}
+</code>
+The symbol 'params' introduces noise into the code. The noise can be reduced further by assigned the properties of the parameter object to local variables:
+<code>
+scala>  case class Params(p1:Int, p2:Int, p3:Int)
+defined class Params
+
+scala> 
+
+scala>  def method(params:Params) = {
+     |   val Params(p1,p2,p3) = params
+     |   println(p1,p2,p3)
+     | }
+method: (Params)Unit
+
+scala> method(Params(1,2,3))
+(1,2,3)
+}
+</code>
+But we can do better remember that we can import methods and properties from an object:
+<code>
+scala> object Obj {
+     |  val prop = 10
+     | }
+defined module Obj
+
+scala> import Obj._
+import Obj._
+
+scala> println(prop)
+10
+</code>
+Since all instance are objects it is possible to import fields and methods from instances as well:
+<code>
+scala>  case class Params(p1:Int, p2:Int, p3:Int)
+defined class Params
+
+scala> 
+
+scala>  def method(params:Params) = {
+     |   import params._
+     |   println(p1, p2, p3)
+     | }
+method: (Params)Unit
+}
+</code>
+The same technique is extremely useful when a method needs to return multiple values:
+<code>
+scala>  def method() = {
+     |   (1,2,3)
+     | }
+method: ()(Int, Int, Int)
+
+scala> val retVal = method()
+retVal: (Int, Int, Int) = (1,2,3)
+/*
+ retVal is a tuple so we can import the tuple
+ properties.  Becareful to not do this multiple times in
+ the same scope
+*/
+scala> import retVal._
+import retVal._
+
+scala> println(_1,_2,_3)
+(1,2,3)
+
+scala> def method2={
+       // Notice case class declaration can be contained in method
+     | case class Return(v1:Int,v2:Int)
+     | Return(6,7)
+     | }
+method2: java.lang.Object with ScalaObject with Product{def v1: Int; def v2: Int}
+
+scala> val r = method2
+r: java.lang.Object with ScalaObject with Product{def v1: Int; def v2: Int} = Return(6,7)
+
+scala> import r._
+import r._
+
+scala> println(v1,v2)
+(6,7)
+}
+</code>
