@@ -159,7 +159,7 @@ case class Lang(name:String, blocks:List[Block], mapping:Iterable[(Regex,String)
 }
 
 val Scala = Lang("Scala", 
-                 List(Block("&lt;[\\w]","&gt;", "xml",false, true,true),
+                 List(Block("&lt;[/|\\w]","&gt;", "xml",false, true,true),
                       Block("\"\"\"","\"\"\"", "string",false, true,true),
                       Block("\"","\"", "string",false, true,true),
                       Block("""/\*\*""", """\*/""", "javadoc",false, true,true),

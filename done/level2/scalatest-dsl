@@ -4,6 +4,16 @@ The first example is <a href="http://www.scalatest.org">ScalaTest</a>. ScalaTest
 
 I want to reiterate that ScalaTest permits several different styles of test writing.  NUnit, JUnit and BDD are the main styles.  So anyone that is used to NUnit or JUnit should have no problem using ScalaTest but if you like the look of the BDD test specifications then you can migrate and slowly become accustomed to that style.
 
+If you want to integrate with JUnit one easy way to add the @RunWith annotation for the class.  See <a href="http://www.scalatest.org/scaladoc/doc-1.0/org/scalatest/junit/JUnitRunner.html">JUnitRunner</a> for details:
+<code>
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
+
+@RunWith(classOf[JUnitRunner])
+class StackSpec extends WordSpec {
+...
+}
+</code>
 Instructions to run example:<ol><li>Download ScalaTest: <a href="http://www.scalatest.org/download">http://www.scalatest.org/download</a></li><li>Extract archive.  For example to /tmp/</li><li>Run scala with the ScalaTest jar on classpath: scala -classpath /tmp/scalatest-1.0/scalatest-1.0.jar</li><li>copy in code</li></ol>
 
 This example is directly taken from the ScalaTest documentation.  It tests a Stack implementation.

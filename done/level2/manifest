@@ -1,0 +1,58 @@
+Added in Scala 2.7 as an experimental feature is the manifest class it is a handy class allowing for very limmited type reification. Take the following example:
+<code>def inspect[T](l:List[T])</code>
+If you want to know they type of T in Java you are out of luck because that type information is gone. However, Scala offers help through manifests.
+<code>
+def inspect[T](l:List[T])(implicit manifest : scala.reflect.Manifest[T]) = println(manifest.toString)
+</code>
+This code snippet will print out the string representation of type T.
+
+Examples:
+<code>
+scala> def inspect[T](l:List[T])(implicit manifest : scala.reflect.Manifest[T]) = println(manifest.toString)
+inspect: [T](List[T])(implicit scala.reflect.Manifest[T])Unit
+
+scala> inspect(List(1,2,3,4))
+int
+
+scala> inspect(List(List(1,2),List(3,4)))
+scala.List[int]
+
+scala> inspect(List(List(List(1),List(2)),List(List(3),List(4))))
+scala.List[scala.List[int]]
+
+scala> val l:List[Iterable[Int]] = List(List(1,2))  
+l: List[Iterable[Int]] = List(List(1, 2))
+
+scala> inspect(l)                                                                                           
+scala.collection.Iterable[Int]
+
+scala> class MV[T](val v:T)(implicit m:scala.reflect.Manifest[T]) { println(m.toString) }
+defined class MV
+
+scala> new MV(1)
+Int
+res1: MV[Int] = MV@180e6899
+
+scala> class MV2[T](val v:T)(implicit m:scala.reflect.Manifest[T]) {                     
+     | def isA[A](implicit testManifest:scala.reflect.Manifest[A]) = m.toString == testManifest.toString
+     | }
+defined class MV2
+
+scala> val x = new MV2(19)
+x: MV2[Int] = MV2@41ff8506
+
+scala> x.isA[String]
+res2: Boolean = false
+
+scala> x.isA[Int]   
+res3: Boolean = true
+
+scala> def isA[A](o:Object)(implicit m:Manifest[A]) = {
+     | val `class` = Class.forName(m.toString)         
+     | `class`.isAssignableFrom(o.getClass)            
+     | }
+isA: [A](o: java.lang.Object)(implicit m: scala.reflect.Manifest[A])Boolean
+
+scala> isA[java.lang.Integer](java.lang.Integer.valueOf(19))
+res6: Boolean = true
+</code>

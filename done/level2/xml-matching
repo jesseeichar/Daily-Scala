@@ -1,0 +1,92 @@
+The Scala XML support includes the ability to match on XML elements.  Here are several examples.  One of the most important parts to remember is to not miss the '{' and '}'.  
+
+<code>
+scala> &lt;document&gt;
+     |  &lt;child1/&gt;
+     |  &lt;child2/&gt;
+     | &lt;/document&gt;
+res0: scala.xml.Elem =
+&lt;document&gt;
+        &lt;child1&gt;&lt;/child1&gt;
+        &lt;child2&gt;&lt;/child2&gt;
+       &lt;/document&gt;
+
+scala> res0 match {
+       // match the document tag
+       // the {_*} is critical
+     | case &lt;document&gt;{_*}&lt;/document&gt; => println("found document element")
+     | case _ => println("Found another element")
+     | }
+found document element
+
+scala> res0 match {
+       // assign the document element to e
+     | case e @ &lt;document&gt;{_*}&lt;/document&gt; => println(e)
+     | case _ => println("Found another element")
+     | }
+&lt;document&gt;
+        &lt;child1&gt;&lt;/child1&gt;
+        &lt;child2&gt;&lt;/child2&gt;
+       &lt;/document&gt;
+
+scala> res0 match {
+       // assign the children of document to children
+       // notice that there are Text elements that are part of children
+     | case &lt;document&gt;{children @ _*}&lt;/document&gt; => println(children)
+     | case _ => println("Found another element")
+     | }
+ArrayBuffer(
+        , &lt;child1&gt;&lt;/child1&gt;,
+        , &lt;child2&gt;&lt;/child2&gt;,
+       )
+
+// the '\' is xpath like but only returns elements and attributes
+// in this case the \ "_" returns all element children of res0.  It
+// will not return the Text elements.
+scala> res0 \ "_" foreach {
+     | case &lt;child1&gt;{_*}&lt;/child1&gt; => println("child1 found")
+     | case &lt;child2&gt;{_*}&lt;/child2&gt; => println("child2 found")
+     | case e => println("found another element")
+     | }
+child1 found
+child2 found
+
+// another example of how \ does not return any text elements.  This returns
+// no elements
+scala> &lt;doc&gt;Hello&lt;/doc&gt; \ "_" foreach { case scala.xml.Text(t) => println("a text element found: "+t) }
+
+// the .child returns all children of an Elem
+scala> &lt;doc&gt;Hello&lt;/doc&gt;.child foreach { case scala.xml.Text(t) => println("a text element found: "+t) }
+a text element found: Hello
+
+// This example throws a match error because there are whitespace text elements
+// that cause the match to fail.
+scala> res0 match {                                                                                    
+     | case &lt;document&gt;&lt;child1/&gt;&lt;child2/&gt;&lt;/document&gt; => println("found the fragment")
+     | }
+scala.MatchError: &lt;document&gt;
+        &lt;child1&gt;&lt;/child1&gt;
+        &lt;child2&gt;&lt;/child2&gt;
+       &lt;/document&gt;
+       at .&lt; init>(&lt; console>:6)
+       at .&lt; clinit>(&lt; console>)
+       at RequestResult$.&lt; init>(&lt; console>:3)
+       at RequestResult$.&lt; clinit>(&lt; console>)
+       at RequestResult$result(&lt; console>)
+       at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+       at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMetho...
+
+// The trim method removes the whitespace nodes so now the 
+// match will work
+scala> scala.xml.Utility.trim(res0) match {                                                            
+     | case &lt;document&gt;&lt;child1/&gt;&lt;child2/&gt;&lt;/document&gt; => println("found the fragment")
+     | }
+found the fragment
+
+// you can select part of the tree using matching
+// child2 is assigned to 3 in this example.
+scala> scala.xml.Utility.trim(res0) match {                                           
+     | case &lt;document&gt;&lt;child1/&gt;{e @ _*}&lt;/document&gt; => println("found the fragment:"+e)
+     | }
+found the fragment:RandomAccessSeq(&lt;child2&gt;&lt;/child2&gt;)
+</code>
