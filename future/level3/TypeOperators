@@ -1,0 +1,7 @@
+scala> type |[A,B] = Either[A,B]
+
+// If a Type has 2 parameters it can be used in operator form
+scala> Array[Int | Long](Left(5),Right(12L))
+
+
+and List (::) I think 

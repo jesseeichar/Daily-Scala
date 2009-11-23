@@ -1,0 +1,26 @@
+This topic combines advanced two topics.  types and implicit methods.  This topic is not really intended to be instructional as much as a illustration of the cool stuff you can do with the language.  As always becareful not to cut yourself :-)
+
+In keeping with the uniform principle of Scala, types can defined as variables.  This is useful for several reasons but this topic covers a cool/fun effect of having types be declared like variables.  Type Aliasing.  In the example below an alias | is created for the Either class.  This allows the | to be used in place of Either.   
+
+<code>
+// Start of example 1.  creating the type alias
+// define the | type
+scala> type |[A,B] = Either[A,B]
+defined type alias $bar
+
+// If a Type has 2 parameters it can be used in operator form
+scala> Array[Int | Long](Left(5),Right(12L))
+res0: Array[|[Int,Long]] = Array(Left(5), Right(12))
+
+// start of example 2.  Simplify creation of an Array (or other collection) of either
+scala> implicit def makeLeft[A,B](a:A):Either[A,B] = Left(a)
+makeLeft: [A,B](a: A)Either[A,B]
+
+scala> implicit def makeRight[A,B](b:B):Either[A,B] = Right(b) 
+makeRight: [A,B](b: B)Either[A,B]
+
+// Since there are implicits to convert to Right and Left the values in the Array will be wrapped
+// automatically.  Makes the syntax MUCH cleaner and easier to read.
+scala> Array[Int|String](5,"Wurst",123,2,6)
+res1: Array[|[Int,String]] = Array(Left(5), Right(Wurst), Left(123), Left(2), Left(6))
+</code>

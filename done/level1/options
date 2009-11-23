@@ -1,0 +1,166 @@
+Scala is forced to have a "null" value because it interoperates with Java.  However unlike Java APIs the recommended way to hand cases where there may or may not be a value (IE a return value) is to return an Option object.  Compare the Scala and Java idioms for handling a possible null (or None) return value:
+
+Note:  The Option class have been updated in Scala 2.8 so I am going to use some of the scala 2.8 methods.  Most of the examples will work with Scala 2.7 but not all; the principal is the same for 2.7 and 2.8.
+
+Java:<code class="java">
+/**
+ * Returns the annotation with the given name or null if there is no annotation
+ * on the objects class with the given name.
+ */
+public static &lt; A extends java.lang.annotation.Annotation> Annotation annotation(Object obj, Class&lt; A> annotationCls) {
+  return obj.getClass().getAnnotation(annotationCls)
+}
+</code>Scala:<code>
+import java.lang.annotation.Annotation
+/**
+ * Returns the annotation with the given name.
+ */
+def annotation[A <: Annotation](obj:Object, annotationCls:Class[A]) : Option[Annotation] = {
+   Option (obj.getClass.getAnnotation (annotationCls))
+}
+</code>In the Scala version it is obvious the use of the API (and the compiler) that there are two types of legal return types.  Some or None and the compiler will force you to deal with this fact.  Where in Java it is very easy to forget to check for null.
+
+Also not that it is very easy to Wrap a null in an Option using the Option objects apply method.  If the parameter is a null then None is return otherwise Some is returned.
+
+The other important aspect is how to deal with the Option object and obtain the data from the object if it is present.  This is both simple and non-simple.  There are a large number of possible useage patterns that can be applied to it.  
+
+Examples:
+<code>
+scala> import java.lang.annotation.Annotation
+import java.lang.annotation.Annotation
+
+kscala> def annotation[A <: Annotation](obj:Object, annotationCls:Class[A]) : Option[Annotation] = { 
+     |    Option (obj.getClass.getAnnotation (annotationCls))                                      
+     | }
+annotation: [A <: java.lang.annotation.Annotation](obj: java.lang.Object,annotationCls: Class[A])Option[java.lang.annotation.Annotation]
+
+// strings do not have the Documented annotation so None is returned
+scala> annotation("x", classOf[java.lang.annotation.Documented])                                   
+res0: Option[java.lang.annotation.Annotation] = None
+
+// None is not defined
+scala> res0.isDefined
+res1: Boolean = false
+
+// None IS empty 
+scala> res0.isEmpty
+res26: Boolean = true
+
+// We need a some example so LineNumberInputStream has Deprecated annotation
+// we will use that in order to 
+scala> val in = new LineNumberInputStream(new ByteArrayInputStream("hello".getBytes))
+in: java.io.LineNumberInputStream = java.io.LineNumberInputStream@8ca9a2d
+
+scala> annotation(in, classOf[Deprecated])                                           
+res2: Option[java.lang.annotation.Annotation] = Some(@java.lang.Deprecated())
+
+// Some(...) is always defined even if it contains null
+scala> res2.isDefined
+res3: Boolean = true
+
+scala> val nullSome = Some(null)
+nullSome: Some[Null] = Some(null)
+
+scala> nullSome.isDefined
+res28: Boolean = true
+
+// Some is never empty
+scala> res2.isEmpty
+res4: Boolean = false
+
+// You can also test particular values as follows
+scala> if(res0 == None) println("its ok to use")
+its ok to use
+
+scala> if (res2.map {a => "found"} == Some("found")) println ("it is deprecated dont use!")
+it is deprecated dont use!
+
+scala> res0 match {                                                       
+     | case None => println("its ok to use")                              
+     | case Some(x:Deprecated) => println ("it is deprecated dont use!") 
+     | }
+its ok to use
+
+scala> res2 match {                                                      
+     | case None => println("its ok to use")                             
+     | case Some(x:Deprecated) => println ("it is deprecated dont use!")
+     | }
+it is deprecated dont use!
+
+scala> if(Some("hi") == Some("hi")) println("a match")    
+a match
+
+scala> if(Some("hi") == Some("ho")) println("a match")
+
+
+// After you have tested you can use get to obtain the value
+// but becareful, you will get an exception if you forget to test.
+scala> res0.get
+java.util.NoSuchElementException: None.get
+                          at scala.None$.get(Option.scala:169)
+                          at scala.None$.get(Option.scala:167)
+                          at .&lt; init>(&lt; console>:12)
+                          at .&lt; clinit>(&lt; console>)
+                          [snip]
+
+scala> res2.get
+res10: java.lang.annotation.Annotation = @java.lang.Deprecated()
+
+// a potentially better way of optaining the value is to provide a default if 
+// the value does not exists
+scala> res2.getOrElse(classOf[java.lang.annotation.Documented])
+res13: java.lang.Object = @java.lang.Deprecated()
+
+scala> res0.getOrElse(classOf[java.lang.annotation.Documented])
+res14: java.lang.Object = interface java.lang.annotation.Documented
+
+// A Option is a "monad" (dont worry too much about the term if 
+// you dont know it) a very (VERY) simplified meaning of that is that 
+// option behaves a bit like a collection of size 1 or 0
+// you can use similar methods on an Option as a collection.  
+// So exists tests each element in the Option to see if it matches 
+// the function passed in as the parameter
+
+// res2 has an object that is an instanceOf Annotation 
+scala> res2.exists {_.isInstanceOf[Annotation]}  
+res7: Boolean = true
+
+// None always returns false to exists
+scala> res0.exists {_.isInstanceOf[Annotation]}
+res8: Boolean = false
+
+scala> res2.exists {_.toString == "hi"}
+res29: Boolean = false
+
+// Similarly you can use the filter method that is present in all collections
+scala> res2.filter {_.toString == "hi"}    
+res30: Option[java.lang.annotation.Annotation] = None
+
+scala> res2.filter {_.isInstanceOf[Annotation]}
+res32: Option[java.lang.annotation.Annotation] = Some(@java.lang.Deprecated())
+
+// apart from just filtering you can convert the type contained 
+// in the Option by using map to map from one type of Option to
+// another type of Option in this examples we map from 
+// Option[Annotation] to Option[String]
+scala> res0.map {_.toString}.getOrElse("does not exist")                        
+res15: java.lang.String = does not exist
+
+scala> res2.map {_.toString}.getOrElse("does not exist")
+res16: java.lang.String = @java.lang.Deprecated()
+
+// Another very handy and safe way to access the value is to use foreach
+// this will call the function with the parameter from the Option if
+// the Option is Some but a noop will occur if the Option is None.
+scala> res2.foreach { println _ }
+@java.lang.Deprecated()
+
+scala> res0.foreach { println _ }
+
+// orElse is simply a method to ensure that the Option is a Some
+scala> res0.orElse(Some(classOf[java.lang.annotation.Documented]))
+res22: Option[java.lang.Object] = Some(interface java.lang.annotation.Documented)
+
+scala> res2.orElse(Some(classOf[java.lang.annotation.Documented]))
+res23: Option[java.lang.Object] = Some(@java.lang.Deprecated())
+</code>

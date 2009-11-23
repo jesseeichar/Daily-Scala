@@ -1,0 +1,78 @@
+The Scala Either class is similar in function as Option but it represents a choice.  For example a method can return Either an Int or an Exception.  Usage example:
+<code>
+// If string can be converted to an Int then return Right[Int] otherwise
+// return a Left[String] with the error message
+// by convention the error state will always be the Left
+scala> def toInt(string:String):Either[String,Int] = {
+     | try { Right(string.toInt) }
+     | catch { case e => Left("Error: "+e.getMessage) }
+     | }
+toInt: (string: String)Either[String,Int]
+
+scala> toInt("1")
+res0: Either[String,Int] = Right(1)
+
+scala> toInt("booger")
+res1: Either[String,Int] = Left(Error: For input string: "booger")
+</code>
+By convention if one return value is a error state and the other the expected state then Right will contain the expected state and Left will contain the error state.
+<code>
+scala> def toInt(string:String):Either[String,Int] = {
+     | try { Right(string.toInt) }
+     | catch { case e => Left("Error: "+e.getMessage) }
+     | }
+toInt: (string: String)Either[String,Int]
+
+scala> toInt("1")
+res0: Either[String,Int] = Right(1)
+
+scala> toInt("booger")
+res1: Either[String,Int] = Left(Error: For input string: "booger")
+
+// you can test if the value is a left or right value quite easily
+scala> res0.isLeft
+res2: Boolean = false
+
+scala> res1.isRight
+res3: Boolean = false
+
+scala> res0.isRight
+res4: Boolean = true
+
+scala> res1.isLeft 
+res5: Boolean = true
+
+// or matching can be used
+scala> res0 match {                                   
+     | case Left(l) => println("it is a left")        
+     | case Right(r) => println("it is a right")      
+     | }
+it is a right
+
+scala> res1 match {                             
+     | case Left(l) => println("it is a left")  
+     | case Right(r) => println("it is a right")
+     | }
+it is a left
+
+
+// Perhaps cleaner than matching even is being able to pass 
+// functions to the fold method:
+// define one function for each side of the either
+
+// first the function to handle the left side case
+scala> def leftFunc(errMsg:String) = println("there has been an error")             
+leftFunc: (errMsg: String)Unit
+
+// next the function the handle the right side case
+scala> def rightFunc(i:Int) = println(i+" was calculated")              
+rightFunc: (i: Int)Unit
+
+// then you can pass the two functions to the fold method
+// and the correct one will be invoked
+scala> res0 fold (leftFunc _, rightFunc _)
+1 was calculated
+
+scala> res1 fold (leftFunc _, rightFunc _)
+there has been an error
+</code>
