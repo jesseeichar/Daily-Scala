@@ -1,0 +1,37 @@
+This is mostly a quick tip (or opportunity for refactoring).  
+
+Most of Scala's built in classes implement a useful equals and hashcode.  The very commonly used case-classes and Tuple classes are the examples that spring to mind.  So this enables the following refactoring:
+<code>
+// Assume Box is out of your control and you cannot refactor it into a case class
+scala> class Box(val name:String, val minx:Int, val miny:Int, val maxx:Int, val maxy:Int)
+defined class Box
+
+scala> val box = new Box("mybox", 0, 0, 10, 10)
+box: Box = Box@568bf3ec
+
+// before:
+scala> box.minx == 0 &amp;&amp; box.miny == 0 &amp;&amp; box.maxx == 10 &amp;&amp; box.maxy == 10      
+res3: Boolean = true
+
+// after
+scala> import box._
+import box._
+
+scala> (minx,miny,maxx,maxy) == (0,0,10,10)
+res5: Boolean = true
+
+// another box definition:
+scala> case class Box2 (name:String, ul:(Int,Int), lr:(Int,Int)) 
+defined class Box2
+
+// case classes have nice equals for comparison
+scala> box2 == Box2("a nicer box", (0,0), (10,10))
+res6: Boolean = true
+
+// but what if you don't want to compare names
+scala> import box2._
+import box2._
+
+scala> (ul,lr) == ((0,0),(10,10))
+res7: Boolean = true
+</code>
