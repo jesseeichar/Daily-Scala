@@ -1,0 +1,52 @@
+It is possible (although not recommended) to declare a public property in a super class and have a private value or variable in a subclass:
+<code>
+scala> class X (val i:Int)
+defined class X
+
+scala> class Y(i:Int) extends X(19) {
+     | println(i)
+     | }
+defined class Y
+
+scala> val y = new Y(100)
+100
+y: Y = Y@3e55a58f
+
+scala> y.i
+res7: Int = 19
+</code>
+This begs the question: how can the subclass access the superclass instance of i?  Let me re-iterate.  Just because it is possible this is a bad idea.  This pattern seems like it is begging to create bugs.  But who knows there is probably some reason out there where this is required.
+
+The way to access the X.i value from Y is to declare which value you want using the syntax this:X :
+<code>
+scala> class Y(i:Int) extends X(19) {
+     | println("Y.i"+i)              
+     | println("X.i"+(this:X).i)
+     | }
+defined class Y
+
+scala> new Y(39)
+Y.i39
+X.i19
+res8: Y = Y@451dfada
+</code>
+
+Again <strong>watch out</strong>!  Because I learned this danger while writing this topic:
+<code>
+scala> class Y(i:Int) extends X(19) {
+     | println("1. "+i)              
+     | println("2. "+this.i)         
+     | println("3. "+(this:Y).i)     
+     | println("4. "+(this:X).i)     
+     | }
+defined class Y
+
+scala> new Y(44)
+1. 44
+2. 44
+3. 19  // this is created via (this:Y).i !
+4. 19
+res0: Y = Y@338bd37a
+</code>
+
+It seems that the syntax (this:X).i accesses the public accessor for i.  The public access is a method call I think so it always obtains the value for the property.  Shocking!

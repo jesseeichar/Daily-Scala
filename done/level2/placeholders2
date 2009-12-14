@@ -1,0 +1,34 @@
+A few more placeholder instances that I have remembered or was reminded of.
+
+<code>
+scala> class MyClass {             
+     | var a:Int = _    // 1
+     | def countDown = 10 to 5 by -1
+     | }
+defined class MyClass
+
+scala> val obj = new MyClass()
+obj: MyClass = MyClass@6ff0239
+
+scala> val countDownMethod = obj.countDown _  // 2
+countDownMethod: () => Range = &lt; function>
+
+scala> def multiple(a:Int)(b:Int) = a*b
+multiple: (Int)(Int)Int
+
+scala> val triple = multiple(3) _ // 3
+triple: (Int) => Int = &lt; function>
+
+scala> List(1,2,3) foreach { _ => Console.println("Hello") } // 4
+Hello
+Hello
+Hello
+</code>
+
+<ol>
+<li>initialize a variable to its default value.  If the = _ is left out then the definition will be an abstract declaration and will have to be defined in subclasses</li>
+<li>create a reference to the method (rather than invoking the method and having a reference to the resulting value) (Thanks Daniel)</li>
+<li>This is an example of currying; a new function is created with a single parameter.</li>
+<li>where the underscore is used as an ignored and unnamed parameter (Thanks Alex)</li>
+</ol>
+

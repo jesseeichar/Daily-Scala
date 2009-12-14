@@ -1,0 +1,91 @@
+Transforming XML
+
+Unlike most Java Xml Apis the Scala Object model consists of immutable object. This has two major consequences:
+<ul><li>There is no reference to the parent node because that would cause the XML to be very expensive during transformations</li><li>Transforming the XML requires creating new nodes rather than changing the existing nodes</li></ul>
+Both point cause non-functional programmers to feel a little uneasy but in practice only the first restriction causes any real discomfort. 
+
+Two methods for XML transformation will be demonstrated in this and the next topic. 
+<code>
+scala&gt; val xml = &lt;library&gt;
+     | &lt;videos&gt;
+     | &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+     | &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+     | &lt;video type="hardcover"&gt;Gardens of the moon&lt;/video&gt;
+     | &lt;/videos&gt;
+     | &lt;books&gt;
+     | &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+     | &lt;/books&gt;
+     | &lt;/library&gt;
+xml: scala.xml.Elem = 
+&lt;library&gt;
+       &lt;videos&gt;
+       &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+       &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+       &lt;video type="hardcover"&gt;Gardens of the moon&lt;/video&gt;
+       &lt;/videos&gt;
+       &lt;books&gt;
+       &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+       &lt;/books&gt;
+       &lt;/library&gt;
+
+scala&gt; import scala.xml._
+import scala.xml._
+
+scala> import scala.xml.transform._
+import scala.xml.transform._
+
+// Some of the books are labelled as videos
+// not books so lets select those elements
+scala&gt; val mislabelledBooks = xml \\ "video" filter {e =&gt; (e \\ "@type").text == "hardcover"}
+mislabelledBooks: scala.xml.NodeSeq = &lt;video type="hardcover"&gt;Gardens of the moon&lt;/video&gt;
+
+// we can create a rule that will remove all the
+// selected elements
+scala&gt; object RemoveMislabelledBooks extends RewriteRule {
+     | override def transform(n: Node): Seq[Node] ={ 
+     | if (mislabelledBooks contains n) Array[Node]()
+     | else n
+     | }
+     | }
+defined module RemoveMislabelledBooks
+
+// a quick test to make sure the elements are removed
+scala&gt; new RuleTransformer(RemoveMislabelledBooks)(xml)
+res1: scala.xml.Node = 
+&lt;library&gt;
+       &lt;videos&gt;
+       &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+       &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+       
+       &lt;/videos&gt;
+       &lt;books&gt;
+       &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+       &lt;/books&gt;
+       &lt;/library&gt;
+
+
+// Now another rule to add them back
+scala&gt; object AddToBooks extends RewriteRule {                             
+     | override def transform(n: Node): Seq[Node] = n match {                                
+     | case e:Elem if(e.label == "books") =&gt;                                                 
+     |   val newBooks = mislabelledBooks map { case e:Elem =&gt; e.copy(label="book") }
+     |   e.copy(child = e.child ++ newBooks)                                                 
+     | case _ =&gt; n
+     | }
+     | }
+defined module AddToBooks
+
+// voila done
+scala&gt; new RuleTransformer(RemoveMislabelledBooks, AddToBooks)(xml) 
+res4: scala.xml.Node = 
+&lt;library&gt;
+       &lt;videos&gt;
+       &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+       &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+
+       &lt;/videos&gt;
+       &lt;books&gt;
+       &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+       &lt;book type="hardcover"&gt;Gardens of the moon&lt;/book&gt;&lt;/books&gt;
+       &lt;/library&gt;
+</code>

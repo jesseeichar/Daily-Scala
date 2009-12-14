@@ -1,0 +1,9 @@
+During the topic <a href=""></a> I realized that the structure <code>method (_ + _)</code> requires more explanation.  While not a complicated syntax it can exhibit some odd behaviour.  
+
+In a few words the <code>_ + _</code> syntax creates a function with the same number of parameters as there are underscores ('_').  The types of the underscores can be declared inline or more commonly are inferred at the declaration site:
+
+<code>
+scala> val m:(Int, Int)=>Int =_ + _    
+m: (Int, Int) => Int = <function>
+
+</code>

@@ -1,0 +1,155 @@
+This topic is really just a collection of examples using the Scala 2.8 API.  The examples are mostly based on Strings.  But because Strings are in fact an IndexedSeq all of these examples also work with Lists arrays and the first several work with all collections.  
+
+These examples are all based on first Traversable.  The basis of all collections and therefore will work with all collections.  And the next set of examples work with IndexedSeq and most will work with Seq as well.  Sets, Maps and others still need to be examined.
+
+This is not an exhaustive set of examples and not all are even that interesting (sorry :-) ).  But I let out the most trivial unless theay are being compared to others.
+
+Traversable:
+<code>
+scala> val license = """Subject of Agreement. ?Product?, as referred to in this Agreement, shall be the binary software package ?Sun VirtualBox,? which Product allows for creating multiple virtual computers, each with different operating systems (?Guest Computers?), on a physical computer with a specific operating system (?Host Computer?), to allow for installing and executing these Guest Computers simultaneously. The Product consists of executable files in machine code for the Solaris, Windows, Linux, and Mac?OS?X operating systems as well as other data files as required by the executable files at run-time and documentation in electronic form. The Product includes all documentation and updates provided to You by Sun under this Agreement and the terms of this Agreement will apply to all such documentation and updates unless a different license is provided with an update or documentation."""
+res0: RandomAccessSeq[Char] = 
+license: java.lang.String = ...
+
+scala> license count (_ == 'u')
+res1: Int = 37
+
+scala> license split ' ' count {_ == "and"} 
+res3: Int = 6
+scala> license ++ " this is silly!"
+res0: RandomAccessSeq[Char] = ...
+
+scala> license dropWhile { _ != 'y'} drop 1 takeWhile { _ != 'y'}
+res6: Seq[Char] = RandomAccessSeqTW( , s, o, ...
+
+scala> license forall {_ != 'z'}
+res8: Boolean = true
+
+scala> (1 until 5).init
+res0: scala.collection.immutable.Range = Range(1, 2, 3)
+
+scala> (1 until 5).head
+res1: Int = 1
+
+scala> (1 until 5).tail
+res2: scala.collection.immutable.IndexedSeq[Int] = Range(2, 3, 4)
+
+scala> (1 until 5).last
+res3: Int = 4
+
+scala> (1 until 5).headOption
+res4: Option[Int] = Some(1)
+
+scala> (1 until 5).lastOption
+res6: Option[Int] = Some(4)
+
+scala> license max   
+res8: Char = y
+
+scala> license min
+res9: Char =  
+
+scala> List() nonEmpty 
+res10: Boolean = false
+
+scala> List() isEmpty 
+res11: Boolean = true
+
+scala> license partialMap {case c if ('a' to 'z' contains c) => c}
+res13: scala.collection.immutable.IndexedSeq[Any] = IndexedSeq(u, b, j, e, c ...)
+
+scala> 1 to 10000 by 2 product 
+res19: Int = 481029393
+
+scala> 1 to 10000 by 2 sum                   
+res23: Int = 25000000
+
+scala> license partition {"aeiou" contains _}
+res20: (String, String) = (ueoeeeouaeeeoiieeeaeeia ....
+
+scala> license span {_ != 'a'}
+res22: (String, String) = (Subject of Agreement. ?Product?, ,as referred to in this Agreement, shall be the binary software package ?Sun VirtualBox,? which Product allows for creating multiple virtual computers, each with differ ...
+
+scala> val consonants = license withFilter {c => !("aeiuo" contains c)}
+consonants: scala.collection.immutable.StringOps#WithFilter = scala.collection.TraversableLike$WithFilter@78e8a591
+
+scala> consonants foreach print _                                      
+Sbjct f Agrmnt. ?Prdct?, s rfrrd t n ths Agrmnt, shll b th bnry sftwr pckg ?Sn VrtlBx,? whch Prdct llws fr crtng mltpl vrtl cmptrs, ch wth dffrnt prtng systms (?Gst Cmptrs?), n  physcl cmptr wth  spcfc prtng systm (?Hst Cmptr?), t llw fr nstllng nd xctng ths Gst Cmptrs smltnsly. Th Prdct cnssts f xctbl fls n mchn cd fr th Slrs, Wndws, Lnx, nd Mc?OS?X prtng systms s wll s thr dt fls s rqrd by th xctbl fls t rn-tm nd dcmnttn n lctrnc frm. Th Prdct nclds ll dcmnttn nd pdts prvdd t Y by Sn ndr ths Agrmnt nd th trms f ths Agrmnt wll pply t ll sch dcmnttn nd pdts nlss  dffrnt lcns s prvdd wth n pdt r dcmnttn.
+</code>
+
+IndexedSequense additions to Traversable:
+<code>
+scala> '!' +: license    
+res33: String = !Subject of Agreement
+
+scala> "hello" +: license
+res32: scala.collection.immutable.IndexedSeq[Any] = IndexedSeq(hello, S, u, b, j, e, c, t,  , o, f,  , A, g, r, e, e, m, e, n, t, .,  , ?, P, r, o, d, u, c, t, ?, ,,  , a, s,  , r, e, f, e, r, r, e, d,  , t, o,  , i, n,  , t, h, i, s,  , A, g, r, e, e, m, e, n, t, ,,  , s, h, a, l, l,  , b, e,  , t, h, e,  , b, i, n, a, r, y,  , s, o, f, t, w, a, r, e,  , p, a, c, k, a, g, e,  , ?, S, u, n,  , V, i, r, t, u, a, l, B, o, x, ,, ?,  , w, h, i, c, h,  , P, r, o, d, u, c, t,  , a, l, l
+
+scala> license(11)
+res35: Char = A
+
+scala> license diff ("aeiou")
+res47: String = Sbjct f Agreement. ?Product?, s referred to n this Agreement, shall be the binary software package ?Sun VirtualBox,? which Product allows for creating multiple virtual computers, each with different operating systems (?Guest Computers?), on a physical computer with a specific operating system (?Host Computer?), to allow for installing and executing these Guest Computers simultaneously. The Product consists of executable files in machine code for the Solaris, Windows, Linux, and Mac?OS?X operating systems as well as other data files as required by the executable files at run-time and documentation in electronic form. The Product includes all documentation and updates provided to You by Sun under this Agreement and the terms of this Agreement will apply to all such documentation and updates unless a different license is provided with an update or documentation.
+
+scala> license dropRight(30)
+res48: String = Subject of Agreement. ?Product?, as referred to in this Agreement, shall be the binary software package ?Sun VirtualBox,? which Product allows for creating multiple virtual computers, each with different operating systems (?Guest Computers?), on a physical computer with a specific operating system (?Host Computer?), to allow for installing and executing these Guest Computers simultaneously. The Product consists of executable files in machine code for the Solaris, Windows, Linux, and Mac?OS?X operating systems as well as other data files as required by the executable files at run-time and documentation in electronic form. The Product includes all documentation and updates provided to You by Sun under this Agreement and the terms of this Agreement will apply to all such documentation and updates unless a different license is provided wi
+
+scala> license takeRight(10)
+res49: String = mentation.
+
+scala> license indexWhere { "aeiou" contains _} 
+res4: Int = 1
+
+scala> license lastIndexWhere { "aeiou" contains _}
+res6: Int = 873
+
+scala> List(1,2,3) flatten {0 to _}
+res7: List[Int] = List(0, 1, 0, 1, 2, 0, 1, 2, 3)
+
+scala> ' ' +: license zip license indexWhere {case (last, c) => "" + last + c == "an"}       
+res14: Int = 343
+
+scala> license indexOfSlice ("and")
+res17: Int = 342
+
+scala> ('a' to 'z') ++ ('A' to 'Z') 
+res25: scala.collection.IndexedSeqView[Char,IndexedSeq[_]] = IndexedSeqViewA(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z)
+
+scala> license intersect res25
+res26: String = SubjectofAgrmnPdasihlywpkVBxvGCHTWLMOXqY
+
+scala> license diff res25     
+res27: String =   eeet. ?rouct?,  referred to n tis Agreement, shal be the binar softare acage ?Sun irtualo,? which Product allows for creating multiple irtual computers, each with different operating systems (?uest omputers?), on a physical computer with a specific operating system (?ost Computer?), to allow for installing and executing these Guest Computers simultaneously. he Product consists of executable files in machine code for the Solaris, indows, inux, and ac?S? operating systems as well as other data files as reuired by the executable files at run-time and documentation in electronic form. The Product includes all documentation and updates provided to ou by Sun under this Agreement and the terms of this Agreement will apply to all such documentation and updates unless a different license is provided with an update or documentation.
+
+scala> license filter res25
+&lt; console>:7: error: type mismatch;
+ found   : scala.collection.IndexedSeqView[Char,IndexedSeq[_]]
+ required: (Char) => Boolean
+       license filter res25
+                      ^
+
+scala> license filter {res25 contains _}
+res29: String = SubjectofAgreementProductasreferredtointhisAgreementshallbethebinarysoftwarepackageSunVirtualBoxwhichProductallowsforcreatingmultiplevirtualcomputerseachwithdifferentoperatingsystemsGuestComputersonaphysicalcomputerwithaspecificoperatingsystemHostComputertoallowforinstallingandexecutingtheseGuestComputerssimultaneouslyTheProductconsistsofexecutablefilesinmachinecodefortheSolarisWindowsLinuxandMacOSXoperatingsystemsaswellasotherdatafilesasrequiredbytheexecutablefilesatruntimeanddocumentationinelectronicformTheProductincludesalldocumentationandupdatesprovidedtoYoubySununderthisAgreementandthetermsofthisAgreementwillapplytoallsuchdocumentationandupdatesunlessadifferentlicenseisprovidedwithanupdateordocumentation
+
+scala> license filterNot {res25 contains _}
+res30: String =   . ??,      ,       ? ,?        ,      (? ?),          (? ?),          .            , , ,  ??                -     .                                        .
+
+scala> license removeDuplicates
+res31: String = Subject ofAgrmn.?Pd,asihlywpkVBxv(GC)HTWLMOXq-Y
+
+scala> license segmentLength ({_ > 'A'},2) 
+res37: Int = 5
+
+scala> license drop 2 span {_ > 'A'} _1
+res41: String = bject
+
+scala> license sortWith Ordering.Char          
+res45: String =                                                                                                                                   (()),,,,,,,,,-....??????????AAAABCCCGGHLMOPPPPSSSSSTTVWXYaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbccccccccccccccccccccccccccccccddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffggggggggggghhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijkllllllllllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnoooooooooooooooooooooooooooooooooooooooooooooooopppppppppppppppppppqrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrsssssssssssssssssssssssssssssssssssssssssssssssttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuvvvwwwwwwwwwwxxxxxyyyyyyyyy
+
+scala> 'a' to 'z' union ('A' to 'Z')
+
+scala> "hello world" patch (6, "goof", 5)
+res51: String = hello goof
+
+scala> "hello world" updated(0,'H')
+res54: String = Hello world
+</code>

@@ -1,0 +1,145 @@
+Scala has only a handful of built-in control structures: for, while, try-catch, if, etc...  However it is quite simple to define custom control structures. There are several good examples in the Scala 2.8 library.  For some examples look at the classes in the scala.util.control package. 
+
+For this topic, we will develop a simplified version of the Exception class. First a demonstration of the 2.8 version.
+<code>
+scala> import scala.util.control.Exception._
+import scala.util.control.Exception._
+
+scala> val numberFormat = catching(classOf[NumberFormatException])
+numberFormat: util.control.Exception.Catch[Nothing] = Catch(java.lang.NumberFormatException)
+
+scala> val result = numberFormat opt { "10".toInt }               
+result: Option[Int] = Some(10)
+
+scala> result match {
+     | case Some(n) => // do something
+     | case None => // handle this situation
+     | 
+</code>
+A question that often arises when presented with the Exception control flow is why not use try-catch. There are two main reasons in my opinion. 
+
+First, people coming from certain functional style languages find that form more comfortable (so I have heard.) So in this case it is a style issue. 
+
+The other reason (and the one more pertinent to Java developers), is that it provides a nice way to handle common exceptions. Why do I say nice?  First it declares when exceptions are handled before the code and that provides more context while reading the code.  In addition, if you create the Catch object and assign it to a nicely named variable then it is clear what the intent is. For example there may be several reasons to catch a runtime exception and they should be handled differently. A few well-named variables can really assist in readability. A final point is that several of these variables can be defined in on object and shared throughout a project adding some consistency to a project. 
+
+Back to the topic at hand. 
+
+We will develop a simplified version: a catching method that will return Some(...) if no exception occurs or None if one of the declared exceptions has occurred or throw exception if the exception is not one we declare as handling.  Now this is not what I would necessarily call a custom control flow because it does not offer a choice of execution flows. To do that I would add more components like int the Exceptions object.  However, this is a good demonstration of the parts required to create a custom control struction.  The key is the => in <code>def method(arg: => T)</code>  This is a special type construct which means that a no param function is passed in but is not executed until called within the method.  A few comparisons:
+<code>
+scala> def method(arg: =>Int) = println(arg)
+method: (arg: => Int)Unit
+
+scala> def method2(arg: =>Int) = println("not calling arg")
+method2: (arg: => Int)Unit
+
+scala> var x = 1
+x: Int = 1
+
+// when method is called x is incremented because method calls the argument
+scala> method { x += 1; x }                                
+2
+
+scala> println(x)          
+2
+
+// when method2 is called x is not incremented because 
+// the argument is not called/referenced
+scala> method2 { x += 1; x }
+not calling arg
+
+scala> println(x)           
+2
+
+// arg is referenced 2 times in method three so x is incremented 2 times
+scala> def method3(arg: => Int) = println("first call="+arg+" second call="+arg)
+method3: (arg: => Int)Unit
+
+scala> method3 { x += 1; x }                                                   
+first call=3 second call=4
+
+// Now demonstrate the standard way of defining arguments
+// the value passed is calculated before calling the method
+// so is at most called once
+scala> def byValue(arg: Int) = println(arg)
+byValue: (arg: Int)Unit
+
+scala> def byValue2(arg: Int) = println("not calling arg")
+byValue2: (arg: Int)Unit
+
+scala> def byValue3(arg: Int) = println("first call="+arg+" second call="+arg)
+byValue3: (arg: Int)Unit
+
+scala> byValue{ x += 1; x }
+5
+
+scala> byValue2{ x += 1; x }
+not calling arg
+
+scala> println(x)
+6
+
+scala> byValue3{ x += 1; x }
+first call=7 second call=7
+
+// And finally show the normal way to pass in a function. 
+// This has the benefit of allowing the reader of the code to
+// realize that the argument is a function
+// but is not a nice syntax for control flow
+scala> def stdFunc(arg: ()=>Int) = println(arg())
+stdFunc: (arg: () => Int)Unit
+
+scala> def stdFunc2(arg: ()=>Int) = println("not calling arg")
+stdFunc2: (arg: () => Int)Unit
+
+scdef stdFunc3(arg: ()=>Int) = println("first call="+arg()+" second call="+arg()) 
+stdFunc3: (arg: () => Int)Unit
+
+scala> stdFunc {() => x += 1; x }  
+8
+
+scala> stdFunc2 {() => x += 1; x }
+not calling arg
+
+scala> println(x)
+8
+
+scala> stdFunc3 {() => x += 1; x }
+first call=9 second call=10
+</code>
+Now for the complete catching example:
+<code>
+scala> def catching[T](exceptions: Class[_]*)(body: => T) = {
+     | try {                                                 
+     | Some (body)                                           
+     | } catch {
+     | case e if (exceptions contains e.getClass) => None
+     | }                
+     | }
+catching: [T](exceptions: Class[_]*)(body: => T)Option[T]
+
+scala> val runtime = catching[Number](classOf[NullPointerException], classOf[NumberFormatException])_
+runtime: (=> java.lang.Number) => Option[java.lang.Number] = &lt; function1>
+
+scala> runtime { "".toInt }                                                                          
+res2: Option[java.lang.Number] = None
+
+scala> runtime { "10".toInt }
+res3: Option[java.lang.Number] = Some(10)
+
+scala> runtime { throw new NullPointerException }
+res6: Option[java.lang.Number] = None
+
+scala> runtime { throw new RuntimeException }
+java.lang.RuntimeException
+        at $anonfun$1.apply(&lt; console>:10)
+        at $anonfun$1.apply(&lt; console>:10)
+        at .catching(&lt; console>:9)
+        at $anonfun$1.apply(&lt; console>:8)
+        at $anonfun$1.apply(&lt; console>:8)
+        at .&lt; init>(&lt; console>:10)
+        at .&lt; clinit>(&lt; console>)
+        at RequestResult$.&lt; init>(&lt; console>:4)
+        at RequestResult$.&lt; clinit>(&lt; console>)
+        at RequestResult$result(&lt; console>)
+        ...
+</code>

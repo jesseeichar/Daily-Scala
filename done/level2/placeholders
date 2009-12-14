@@ -1,0 +1,57 @@
+Good grief, what is with all the underscores?
+<code>
+scala> import java.io._ // 1
+import java.io._
+
+scala> import java.io.{ File => _ } // 2
+import java.io.{File=>_}
+
+scala> object MyObj{ def count=(1 to 10) }
+defined module MyObj
+
+scala> import MyObj._ // 3
+import MyObj._
+
+scala> class MyClass { def countDown= 10 to 5 by -1} 
+defined class MyClass
+
+scala> val instance = new MyClass()
+instance: MyClass = MyClass@69ebcd0
+
+scala> import instance._ // 4
+import instance._
+
+scala> def multiply(by:Int,x:Int)=2*x
+multiply: (Int,Int)Int
+
+scala> val double=multiply(2, _:Int) // 5 
+double: (Int) => Int 
+
+scala> count foreach {i => double(i)}
+
+scala> val double2:Int=>Int = multiply(2,_)
+double2: (Int) => Int = &amp; function>
+
+
+scala> count foreach {i => double2(i)}
+
+scala> count reduceLeft {_+_} // 6
+res3: Int = 55
+
+class Generic[T](val t:T)
+
+val generic:Generic[_] = new Generic(2) // 7
+</code>
+
+While at a glance the underscores do not seem related, in fact the general rule is fill in the blank. Sca_la what goes in the blank?
+
+Going through the examples:
+<ol>
+<li>import anything/everything in package</li>
+<li>this seems to be an exception. Assign File to oblivion. (It is no longer imported)</li>  
+<li>import all methods in object</li>  
+<li>same thing. Import all methods in instance object</li>  
+<li>creat a new method where the first parameter is defined but all others will be defined later. In this case a special syntax is required so the compiler knows that a new method is desired and the missing parameters was not simply a mistake. There is another syntax for defining methods that do not require the _ for currying</li>  
+<li>reduceLeft takes method with 2 parameters. <code>_ + _</code> creates a function of 2 parameters: the first '_' represents the first parameter and the second '_' represents the second parameter.</li>
+<li>the '_' represents any value. This syntax is frowned upon since Scala has such a rich type system but can be useful when interoperating with Java. Perhaps a better declaration would be <code>Generic[Any]</code></li>
+</ol>

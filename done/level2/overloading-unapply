@@ -1,0 +1,30 @@
+This topic is related to previous posts on matching.  I recommend reading some of them as well:
+<ul><li><a href="http://daily-scala.blogspot.com/2009/08/basic-matching.html">Basic Matching</a></li><li><a href="http://daily-scala.blogspot.com/2009/09/extractors-1.html">Extractors 1</a></li><li><a href="http://daily-scala.blogspot.com/2009/09/extract-sequences-unapplyseq.html">Extracting Sequences</a></li><li><a href="http://daily-scala.blogspot.com/2009/10/extractors-3-operator-style-matching.html">Operator Style Extractors</a></li></ul>
+Since an Extactor is just an object with an unapply method it logically follows that an Extractor can have an overloaded unapply method.  In other words can have an unapply(String) and an unapply(Int); allowing matching Strings and Ints.
+
+<code>
+scala> object T{                                                         
+     |  def unapply(v:String)= if(v== "s") Some("yay") else None
+     |  def unapply(v:Int) = if(v==1) Some("hmmm") else None
+     | }
+defined module T
+
+scala> 1 match { case T(x) => println(x) }
+hmmm
+
+scala> "s" match { case T(x) => println(x) }
+yay
+
+
+scala> object T{                                 
+     | def unapplySeq(v:String) = if (v=="x") Some(List(1,2,3)) else None
+     | def unapplySeq(v:Int) = if (v==1) Some(List("one","two")) else None
+     | }
+defined module T
+
+scala>  "x"  match { case T(x,y,z) => println(x,y,z) }
+(1,2,3)
+
+scala>  1  match { case T(x,y) => println(x,y) }  
+(one,two)
+</code>

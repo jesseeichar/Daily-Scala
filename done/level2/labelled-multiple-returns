@@ -1,0 +1,61 @@
+A cool idea I found at <a href="http://stackoverflow.com/questions/1827672/is-there-a-way-to-have-tuples-with-named-fields-in-scala-similar-to-anonymous-cl">http://stackoverflow.com/questions/1827672/is-there-a-way-to-have-tuples-with-named-fields-in-scala-similar-to-anonymous-cl</a>.  A very simple idea but very useful.
+To summarize, you want to return multiple values but want to assign names to the values rather than use a tuple which more or less assigns indices to the different values.  Here are a couple of solutions:
+
+Using structured types.  Simplest solution with the least extra code.
+<code>
+scala> def multipleReturns1 = {
+     | new { val first = 1; val second = 2 }
+     | }
+multipleReturns1: java.lang.Object{def first: Int; def second: Int}
+
+scala> multipleReturns1
+res0: java.lang.Object{def first: Int; def second: Int} = $anon$1@549b6976
+
+scala> res0.first
+res1: Int = 1
+
+scala> res0.second
+res2: Int = 2
+
+scala> import res0._
+import res0._
+
+scala> first
+res3: Int = 1
+
+scala> second
+res4: Int = 2
+</code>
+Using case classes.  Returns a product which has properties that may be useful.
+<code>
+scala> def moreReturns = {
+     | case class Returns (one:Int, two:Int)
+     | Returns(1,2)
+     | }
+moreReturns: java.lang.Object with ScalaObject with Product{def one: Int; def two: Int}
+
+scala> moreReturns
+res5: java.lang.Object with ScalaObject with Product{def one: Int; def two: Int} = Returns(1,2)
+
+scala> res5.one
+res6: Int = 1
+
+scala> res5.two
+res7: Int = 2
+
+scala> import res5._
+import res5._
+
+scala> one
+res8: Int = 1
+
+scala> two
+res9: Int = 2
+
+scala> res5.productIterator foreach println _
+1
+2
+
+scala> res5.productPrefix
+res15: java.lang.String = Returns
+</code>

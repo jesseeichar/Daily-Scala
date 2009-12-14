@@ -1,0 +1,72 @@
+Both Java and Scala have varargs. In Scala the syntax for a varargs argument is <code>def method (param:String*)</code>.  In the off-chance you are not aware of what varargs are; they allow an arbitrary number of values to be passed to the method. Some restrictions on when varargs can be used are:<ul><li>The vararg parameter must be the last parameter in the list</li><li>There can not be default values for any parameters in the method containing the varargs (Scala 2.8+)</li></ul>
+
+From the caller's point of view; varargs can be called as follows: <code>method("p1", "p2", "p3")</code> where the number of values is not limited.  However, the () <em>must</em> be used.  
+
+In Java (if I remember right) only arrays can be passed in place of varargs: 
+<code class="java">
+class C {
+  public static void main(String... args) {
+    System.out.println(args.length)
+  }
+}
+String[] args = new String[]{"arg1", "arg2"}
+C.main (args)
+</code>
+However Scala is more general and allows any sequence to be passed to varargs, with a caveat.  When a sequence is passed to varargs a hint must be provided to indicate that you are intending to have the sequence be expanded to be the varargs.
+<code>
+def method (args:Int*) = println(args)
+val list = List(1,2,3)
+method (list:_*)  // note the use of _*
+</code>
+Examples:
+<code>
+scala> def method(varargs:Int*)(more:String*) = println(varargs,more)
+method: (Int*)(String*)Unit
+
+scala> method(1,2,3,4)("one")
+(Array(1, 2, 3, 4),Array(one))
+
+scala> method(1,2,3,4)       
+&lt; console>:6: error: missing arguments for method method in object $iw;
+follow this method with &#39;_&#39; if you want to treat it as a partially applied function
+       method(1,2,3,4)
+       ^
+
+scala> method(1,2,3,4)()
+(Array(1, 2, 3, 4),Array())
+
+scala> method()("one")  
+(Array(),Array(one))
+
+scala> method("one")  
+&lt; console>:6: error: type mismatch;
+ found   : java.lang.String("one")
+ required: Int
+       method("one")
+              ^
+
+scala> method()()     
+(Array(),Array())
+
+scala> val method2 = method(1,2,3)_  
+method2: (String*) => Unit = &lt; function>
+
+scala> val paramList = List("hi","ho")
+paramList: List[java.lang.String] = List(hi, ho)
+
+scala> method2(paramList)
+&lt; console>:8: error: type mismatch;
+ found   : List[java.lang.String]
+ required: String
+       method2(paramList)
+               ^
+
+scala> method2(paramList:_*)
+(Array(1, 2, 3),List(hi, ho))
+
+scala> val range = (1 to 5) map {_.toString} 
+range: RandomAccessSeq.Projection[java.lang.String] = RangeM(1, 2, 3, 4, 5)
+
+scala> method2(range:_*)                     
+(Array(1, 2, 3),RangeM(1, 2, 3, 4, 5))
+</code>

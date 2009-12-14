@@ -1,0 +1,55 @@
+This topic is a continuation of <a href="http://daily-scala.blogspot.com/2009/12/xml-transformation-1.html">XML Transformations 1</a>.  The previous topic showed a method of creating transformation rules then combining the rules to create a transformation that could be applied to an XML datastructure.  This topic takes a different approach of
+using a match statement an a recursive method to iterate through the tree.
+
+<code>
+scala&gt; val xml = &lt;library&gt;
+     | &lt;videos&gt;
+     | &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+     | &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+     | &lt;video type="hardcover"&gt;Gardens of the moon&lt;/video&gt;
+     | &lt;/videos&gt;
+     | &lt;books&gt;
+     | &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+     | &lt;/books&gt;
+     | &lt;/library&gt;
+xml: scala.xml.Elem = 
+&lt;library&gt;
+       &lt;videos&gt;
+       &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+       &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+       &lt;video type="hardcover"&gt;Gardens of the moon&lt;/video&gt;
+       &lt;/videos&gt;
+       &lt;books&gt;
+       &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+       &lt;/books&gt;
+       &lt;/library&gt;
+
+scala&gt; import scala.xml._
+import scala.xml._
+
+scala&gt; def moveElements (node:Node) : Node = node match {
+     | case n:Elem if (n.label == "videos") =&gt; 
+     |   n.copy( child = n.child diff mislabelledBooks)
+     | case n:Elem if (n.label == "books") =&gt;
+     |   val newBooks = mislabelledBooks map { case e:Elem => e.copy(label="book") }
+     |   n.copy( child = n.child ++ newBooks)
+     | case n:Elem =&gt; 
+     |   val children = n.child map {moveElements _}
+     |   n.copy(child = children)
+     | case n =&gt; n
+     | }
+moveElements: (node: scala.xml.Node)scala.xml.Node
+
+scala&gt; moveElements(xml)
+res1: scala.xml.Node = 
+&lt;library&gt;
+              &lt;videos&gt;
+              &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+              &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+              
+              &lt;/videos&gt;
+              &lt;books&gt;
+              &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+              &lt;book type="hardcover"&gt;Gardens of the moon&lt;/book&gt;&lt;/books&gt;
+              &lt;/library&gt;
+</code>

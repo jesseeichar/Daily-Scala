@@ -1,0 +1,7 @@
+This topic is a bit of a departure from the normal but is very important.  The goal of these posts has not been(necessarily) to introduce good coding style, instead to introduce the different tools at your disposal.  There have been some good styles to follow and some bad ones (hopefully more good than bad.)  Today is mainly a link to a project and document that is documenting a style guide for Scala programming.  I highly recommend taking a look at it and a big thanks to Daniel Spiewak for spearheading this project, although I think it has now grown beyond just Daniel so thanks to the other contributors as well.
+
+Github project: <a href="http://github.com/davetron5000/scala-style">http://github.com/davetron5000/scala-style</a>
+HTML - http://davetron5000.github.com/scala-style
+PDF - http://davetron5000.github.com/scala-style/ScalaStyleGuide.pdf
+
+Thanks again for a wonderful resource.

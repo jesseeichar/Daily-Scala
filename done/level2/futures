@@ -1,0 +1,109 @@
+Futures are mainly tokens returned by an actor that promises a result sometime in the future.  The typical place one encounters a future is from an actor.  The !! method of an actor returns a future.  However in addition the Futures object provides several methods for doing parallel processing without having to write actors (or threads for that matter.)
+
+Note:  My use of scala.util.Random requires Scala 2.8 but I think the rest is 2.7.7.  
+<code>
+scala> import scala.actors.Futures._                
+import scala.actors.Futures._
+
+/* 
+The most basic future example.  
+Just runs the function in a seperate thread and returns a Future object
+for the result
+*/
+scala> future {Thread.sleep(10000);println("hi");10}
+res2: scala.actors.Future[Int] = &lt; function0>
+
+/* 
+Use one of the future methods for obtaining the actual result
+this one blocks tile ready, but other can check if result is ready and so on
+*/
+scala> res2()
+hi
+res3: Int = 10
+
+/*
+This is more interesting. 
+The method creates several futures and the using the awaitAll method 
+waits for all the futures to complete before continuing
+*/
+scala> def bubbles = {                                                                                                             
+     | val bubbles = for( i &lt;- 1 to 20) yield {
+     |   future {
+     |     Thread.sleep(scala.util.Random.nextInt(20)*500)
+     |     println("pop "+i)
+     |     "pop "+i
+     |   }
+     | }
+     | awaitAll(30000, bubbles:_*) foreach println _                                                                               
+     | }
+bubbles: Unit
+
+scala> bubbles
+pop 9
+pop 12
+pop 11
+pop 5
+pop 3
+pop 14
+pop 20
+pop 10
+pop 1
+pop 4
+pop 16
+pop 6
+pop 7
+pop 2
+pop 8
+pop 18
+pop 15
+pop 19
+pop 17
+pop 13
+Some(pop 1)
+Some(pop 2)
+Some(pop 3)
+Some(pop 4)
+Some(pop 5)
+Some(pop 6)
+Some(pop 7)
+Some(pop 8)
+Some(pop 9)
+Some(pop 10)
+Some(pop 11)
+Some(pop 12)
+Some(pop 13)
+Some(pop 14)
+Some(pop 15)
+Some(pop 16)
+Some(pop 17)
+Some(pop 18)
+Some(pop 19)
+Some(pop 20)
+
+scala> import java.net._                                                                                        
+import java.net._
+
+scala> import scala.io._
+import scala.io._
+
+/*
+A kind of funny example.  We set off two futures to download the google page
+and print the first that finishes
+*/
+scala> def load = {
+     | val com = future {
+     |   val comStream = new URL("http:&#47;&#47;www.google.com").openStream()                                                                       
+     |   Source.fromInputStream(comStream).getLines().mkString("\n")
+     | }
+     | val ch = future {
+     |   val chStream = new URL("http:&#47;&#47;www.google.ch").openStream()
+     |   Source.fromInputStream(chStream).getLines().mkString("\n")
+     | }  
+     | awaitEither(ch,com)                                                                                               
+     | }
+load: Any
+
+scala> load
+res0: Any = 
+&amp; !doctype html...
+</code>
