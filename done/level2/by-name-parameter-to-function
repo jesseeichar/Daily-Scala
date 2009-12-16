@@ -1,0 +1,50 @@
+Today's topic is related to <a href="http://daily-scala.blogspot.com/2009/11/defining-custom-control-structures.html">Defining Custom Control Structures</a>.  By name parameters are not function objects in the same way as other functions.  Normally you need to invoke a function: <code>
+scala> def exec(func: () => Int) = func()
+exec: (() => Int)Int
+
+// exec invokes the function so 10 is the result
+scala> exec (() => 10)  
+res1: Int = 10
+
+scala> def exec(func: () => Int) = func
+exec: (() => Int)() => Int
+
+// here exec returns the function:
+scala> exec (() => 10)                 
+res2: () => Int = &lt;function>
+</code>
+Compare that to a by-name-parameter function:
+<code>
+scala> def exec(func: => Int) = func   
+exec: (=> Int)Int
+
+// by-name-parameters are executed when they are referenced
+// so the result is 10
+scala> exec {10}                    
+res3: Int = 10
+
+// This is not legal because by-name-parameters
+// are not normal functions
+scala> def exec(func: => Int) = func()
+&lt;console>:4: error: func of type Int does not take parameters
+       def exec(func: => Int) = func()
+</code>
+So the issue is how can you pass a by-name-parameter to a method that takes a function as a parameter without having to do: 
+<code>
+scala> def takesFunc(func: () => Int) = println(func())
+takesFunc: (() => Int)Unit
+
+scala> def send(x: => Int) = takesFunc(() => x) 
+send: (=> Int)Unit
+
+scala> send{2}
+2
+</code>
+the alternative syntax is:
+<code>
+scala> def send(x: => Int) = takesFunc (x _)   
+send: (=> Int)Unit
+
+scala> send {2}
+2
+</code>
