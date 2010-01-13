@@ -1,0 +1,104 @@
+This is the first of a series on Regular expression use in Scala.  There was a previous post related that is also worth looking at but the same tips will be revisited in this series: <a href="http://daily-scala.blogspot.com/2009/09/matching-regular-expressions.html">Matching Regular Expressions</a>.
+
+Perhaps the most important thing for regular expressions in Scala is to be aware of the raw string syntax:
+<code>
+/* 
+normal strings treat the \ character as the escape character 
+so this fails
+*/
+scala> val normalString = "\.+((xyz)|(abc))"
+&lt; console>:1: error: invalid escape character
+       val normalString = "\.+((xyz)|(abc))"
+                            ^
+
+/*
+raw strings a great for regular expressions so you don't have 
+escape \ characters
+*/
+scala> val rawString = """\.+((xyz)|(abc))"""
+rawString: java.lang.String = \.+((xyz)|(abc))
+</code>
+The next thing is to realize that one can easily create a Regex object from any string with the <code>r</code> method:
+<code>
+scala> val regex = """\.+((xyz)|(abc))""".r
+regex: scala.util.matching.Regex = \.+((xyz)|(abc))
+</code>
+A regex has the standard matching methods one might expect but lets look at findAllIn and the associated MatchData for now.  findAllIn returns a MatchIterator which is an Iterator[String] with MatchData.  When iterating over the MatchIterator the full matched string will be returned, if you need the subgroups you will need to convert the MatchIterator to an Iterator[Match].  
+<code>
+// findAllIn returns an iterator over the matches.  
+scala> "l|he".r findAllIn "hello xyz" foreach {println _}
+he
+l
+l
+
+// Each match can have multiple groups
+// Note: Each element in MatchIterator are strings (no Match objects)
+scala> ("(h)(e)|(l)".r findAllIn "hello xyz").matchData foreach { m => println(m.matched mkString ",")}   
+h,e
+l
+l
+
+// to access subgroups use the matchData method
+// Note: there are 3 subgroups in the regex
+scala> ("(h)(e)|(l)".r findAllIn "hello xyz").matchData foreach { m => println( m.subgroups mkString ",")}
+h,e,null
+null,null,l
+null,null,l
+
+/*
+if matched is called the full match is returned (as if you did not convert the iterator to an Iterator[Match])
+/*
+scala> ("(h)(e)|(l)".r findAllIn "hello xyz").matchData foreach { m => println(m.matched)}
+he
+l
+l
+
+/*
+The following demonstrates more of the methods on Match
+Essentially the elements are:
+(start index of match, end index of match, string before match, string after match, string the match was performed on)
+*/
+scala> ("(h)(e)|(l)".r findAllIn "hello xyz").matchData foreach { m => println(m.start, m.end, m.before, m.after, m.source)}
+(0,2,,llo xyz,hello xyz)
+(2,3,he,lo xyz,hello xyz)
+(3,4,hel,o xyz,hello xyz)
+</code>
+The last methods to look at for this topic are findFirstIn, findFirstMatchIn and the Regex constructor:
+<code>
+/*
+Groups names can be assigned if the Regex constructor is used
+*/
+scala> val withNames = new util.matching.Regex("(h)(e)|(l)", "h", "e", "l")
+withNames: scala.util.matching.Regex = (h)(e)|(l)
+
+scala> withNames findFirstIn "hello xyz"
+res28: Option[String] = Some(he)
+
+/*
+I know a match will be found so I am extracting the value from the Option by assigning it to Some(he)
+*/
+scala> val Some(he) = withNames findFirstMatchIn "hello xyz"  
+he: scala.util.matching.Regex.Match = he
+
+scala> he.groupNames
+res29: Seq[String] = Array(h, e, l)
+
+scala> he.group("h")
+res30: String = h
+
+scala> he.group("e") 
+res31: String = e
+
+scala> he.group(1)
+res32: String = h
+
+scala> he.group(2)
+res33: String = e
+
+// Uh oh. NullPointer warning!
+scala> he.group(3)
+res34: String = null
+
+scala> he.groupCount
+res35: Int = 3
+</code>

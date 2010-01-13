@@ -1,0 +1,131 @@
+This post covers basically the same things as <a href="http://daily-scala.blogspot.com/2009/09/matching-regular-expressions.html">Matching Regular Expressions</a> but goes into a bit more detail.  I recommend reading both posts since there is unique information in each.  
+
+The primary new item I show here is that more advanced matching techniques can be used but more importantly <em>all</em> groups are matched even groups that are within another group.
+
+Note: The examples use Scala 2.8.  Most examples will work with 2.7 but I believe the last example is Scala 2.8 only.
+
+<code>
+scala> val date = "11/01/2010"
+date: java.lang.String = 11/01/2010
+
+scala> val Date = """(\d\d)/(\d\d)/(\d\d\d\d)""".r
+Date: scala.util.matching.Regex = (\d\d)/(\d\d)/(\d\d\d\d)
+
+/*
+When a Regex object is used in matching each group is assigned to a variable
+*/
+scala> val Date(day, month, year) = date          
+day: String = 11
+month: String = 01
+year: String = 2010
+
+scala> val Date = """(\d\d)/((\d\d)/(\d\d\d\d))""".r
+Date: scala.util.matching.Regex = (\d\d)/((\d\d)/(\d\d\d\d))
+
+/*
+This example demonstates how all groups must be assigned, if not there will be a matchError thrown
+*/
+scala> val Date(day, monthYear, month, year) = date
+day: String = 11
+monthYear: String = 01/2010
+month: String = 01
+year: String = 2010
+
+scala> val Date(day, month, year) = date           
+scala.MatchError: 11/01/2010
+	at .&lt; init>(&lt; console>:5)
+	at .&lt; clinit>(&lt; console>)
+
+
+// but placeholders work in Regex matching as well:
+scala> val Date(day, _, month, year) = date
+day: String = 11
+month: String = 01
+year: String = 2010
+
+scala> val Names = """(\S+) (\S*)""".r             
+Names: scala.util.matching.Regex = (\S+) (\S*)
+
+scala> val Names(first, second) = "Jesse Eichar"
+first: String = Jesse
+second: String = Eichar
+
+/*
+If you want to use Regex's in assignment you must be sure the match will work.  Otherwise you should do real matching
+*/
+scala> val Names(first, second) = "Jesse"       
+scala.MatchError: Jesse
+	at .&lt; init>(&lt; console>:5)
+	at .&lt; clinit>(&lt; console>)
+
+scala> val M = """\d{3}""".r
+M: scala.util.matching.Regex = \d{3}
+
+/*
+There must be a group in the Regex or match will fail
+*/
+scala> val M(m) = "Jan"
+scala.MatchError: Jan
+	at .&lt; init>(&lt; console>:5)
+	at .&lt; clinit>(&lt; console>)
+</code>
+The following are a few more complex examples
+<code>
+scala> val Date = """((\d\d)/(\d\d)/(\d{4}))|((\w{3}) (\d\d),\s?(\d{4}))""".r         
+Date: scala.util.matching.Regex = ((\d\d)/(\d\d)/(\d{4}))|((\w{3}) (\d\d),\s?(\d{4}))
+
+/*
+The Regex has an or in it.  So only 1/2 of the groups will be non-null.
+If the first group is a String then it is non-null and the next three elements
+the pattern will be day/month/year
+
+Otherwise if the 5th group is a String then the patter will be month day, year
+
+Lastly a catch all
+*/
+scala> def printDate(date:String) = date match {                                      
+     | case Date(_:String,day,month,year,_,_,_,_) => (day,month,year)                 
+     | case Date(_,_,_,_,_:String,month,day,year) => (day,month,year) // process month
+     | case _ => ("x","x","x")                                                        
+     | }
+printDate: (date: String)(String, String, String)
+
+scala> printDate("Jan 01,2010") 
+res0: (String, String, String) = (01,Jan,2010)
+
+scala> printDate("01/01/2010") 
+res1: (String, String, String) = (01,01,2010)
+
+/*
+A silly example which drops the first element of the date string
+not useful but this demonstrates that we are matching agains a sequence so 
+the _* can be used to match the rest of the groups
+*/
+scala> def split(date:String) = date match {         
+     | case d @ Date(_:String ,_*) => d drop 3       
+     | case d @ Date(_,_,_,_,_:String,_*) => d drop 4
+     | case _ => "boom"                              
+     | }
+split: (date: String)String
+
+scala> split ("Jan 31,2004")
+res5: String = 31,2004
+
+scala> split ("11/12/2004") 
+res6: String = 12/2004
+
+/*
+This is just a reminder that the findAllIn returns an iterator which (since it is probably a short iterator) can be converted to a sequence and processed with matching
+*/
+scala> val Seq(one,two,_*) = ("""\d\d/""".r findAllIn "11/01/2010" ).toSeq  
+one: String = 11/
+two: String = 01/
+
+scala> val Seq(one,two) = ("""\d\d/""".r findAllIn "11/01/2010" ).toSeq   
+one: String = 11/
+two: String = 01/
+
+// drop the two first matches and assign the rest to d
+scala> val Seq(_,_,d @ _*) = ("""\d\d/""".r findAllIn "11/01/20/10/" ).toSeq
+d: Seq[String] = ArrayBuffer(20/, 10/)
+</code>

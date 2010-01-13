@@ -1,0 +1,35 @@
+A fact of life when working with Java are nulls.  This topic presents several strategies and tidbits of information regarding nulls.  See <a href="">Matching Nulls</a> for information on using matching to handle nulls.
+
+<code>
+// scala2.8 Option will turn a null into a None:
+scala> Option(null)
+res14: Option[Null] = None
+
+// a couple strategies for stripping out nulls
+scala> List (1,2,null,4) filter {Option (_).isDefined}      
+res16: List[Any] = List(1, 2, 4)
+
+scala> List (1,2,null,4) filter {_ !=  null} 
+res18: List[Any] = List(1, 2, 4)
+
+scala> object NotNull { def unapply(a:Any) = Option(a) }
+defined module NotNull
+
+// obviously just yielding is not very useful since filter is more concise
+// but if you want to do something with it then this is useful
+scala> for ( NotNull(a) <- List (1,2,null,4)) yield a
+res19: List[Any] = List(1, 2, 4)
+
+/* 
+a VERY common problem is demonstrated by File.listFiles
+a collection is returned so the expectation is the collection
+will be empty if there are no files to be listed.  But in fact
+there is a third option.  The collection is null if the file does 
+not exist.
+*/
+scala> new File("asdfajdkjl").listFiles
+res20: Array[java.io.File] = null
+
+scala> new File("asdfajdkjl").listFiles mkString{" "}  
+java.lang.NullPointerException
+

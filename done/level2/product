@@ -1,0 +1,50 @@
+As a response to a comment on a previous post about about <a href="http://daily-scala.blogspot.com/2009/12/tuples-are-not-collections.html">Tuples</a> this topic is about Products and the most common subclasses of Tuples.
+
+I should preface this post by saying that I am not going to attempt any scholastic style discussions, instead I am going to try to explain Product in practical terms and stay away from theory. That said on can think of Products as (potentially) heterogenous collections (non-resizable collections).  There are several Product classes (Product, Product1, Product2...). All Product classes extend Product, which contains the common methods. Product has the methods for accessing the Product members and the subclass adds type information about the Members. 
+
+A good way to think about Product is to look at Tuple which is a Product. There is a good <a href="http://stackoverflow.com/questions/1301907/how-should-i-think-about-scalas-product-classes">stack overflow question that is worth looking at.</a>
+
+To give more context consider other well known subclasses of Product:
+<ul><li>All case classes</li><li>List</li><li>Option</li></ul>
+<code>
+scala> val product : Product = (1,'2',3)
+product: Product = (1,2,3)
+
+scala> product.productIterator.foreach {println _}
+1
+2
+3
+
+scala> product.productArity                       
+res1: Int = 3
+
+scala> product.productElement(2)
+res2: Any = 3
+
+scala> product.productPrefix    
+res3: java.lang.String = Tuple3
+
+scala> product.toString
+res4: java.lang.String = (1,2,3)
+
+scala> val product3 = product.asInstanceOf[Product3[Int,Char,Int]]
+product3: Product3[Int,Char,Int] = (1,2,3)
+
+scala> product3._2
+res5: Char = 2
+
+scala> product3._3
+res6: Int = 3
+
+scala> case class Test(name:String, passed:Boolean, error:String)
+defined class Test
+
+scala> Test("Chicken Little", false, "the sky is falling")
+res7: Test = Test(Chicken Little,false,the sky is falling)
+
+scala> res7.productArity
+res8: Int = 3
+
+scala> res7.productIterator mkString ", "   
+res9: String = Chicken Little, false, the sky is falling
+</code>

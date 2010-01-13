@@ -167,7 +167,7 @@ val Scala = Lang("Scala",
                       Block("""\[""", """\]""", "type-param",false, true,true),
                       Block("""/\*""", """\*/""", "comment",false, true,true),
                       Block("@", sepCharacters, "annotation",true, true,false),
-                      Block("'","'", "char",false, true,true)
+                      Block("'","'", "char",true, true,true)
                     ),
                  Map("val" -> "key",
                      "var" -> "key",

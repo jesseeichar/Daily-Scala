@@ -1,0 +1,46 @@
+Scala has what are called symbolic literals. A symbol is very similar to a String except that they are cached.  So symbol 'hi will be the same object as 'hi declared a second time.  In addition there is special syntax for creating symbols that requires only a single quote.  
+
+As odd as this may appear at first glance there are some good use cases for symbols.  
+<ul><li>Save memory</li><li>Extra semantics. Semantically they are the same object where "hi" is not necessarily the same as "hi" so 'hi has some extra semantics meaning this is the one an only 'hi object.</li><li>Shorter syntax.  This can be useful when designing DSLs</li><li>Indentifier syntax. When using the simpler syntax the symbol will be a valid Scala identifier so it can be good when intending to reference methods or variable, perhaps in a heavily reflection based framework</li></ul>
+<code>
+// This is the long way to create a symbol object
+scala> Symbol("hi")
+res10: Symbol = 'hi
+
+// This is the short way.  The symbol must be a legal Scala symbol (like a method name or value/variable name)
+scala> 'hi
+res11: Symbol = 'hi
+
+// If you *need* characters in a symbol that are not legal in Scala identifiers the Symbol 
+// object has a factory method for that purpose
+scala> Symbol("hi there")
+res12: Symbol = 'hi there
+
+// Not legal
+scala> 'hi there
+&lt; console>:5: error: value there is not a member of Symbol
+       'hi there
+           ^
+
+// quotes are not legal for identifiers
+scala> '"hi there"
+&lt; console>:1: error: unclosed character literal
+       '"hi there"
+       ^
+&lt; console>:1: error: unclosed string literal
+       '"hi there"
+                 ^
+
+scala> 'hi\ there 
+&lt; console>:5: error: value \ is not a member of Symbol
+       'hi\ there
+       ^
+
+// You can extract out the string from the symbol if desired quite easily
+scala> 'hi match { case Symbol(b) => b}        
+res14: String = hi
+
+// A simpler way to get the string
+scala> 'hi.toString drop 1
+res0: String = hi
+</code>

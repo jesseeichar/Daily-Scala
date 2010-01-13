@@ -1,0 +1,56 @@
+This is the second Scala test framework topic and focuses on the excellent <a href="http://code.google.com/p/specs/">Specs</a> framework.  The other topic was on <a href="http://daily-scala.blogspot.com/2009/11/scalatest-bdd-testing-dsl.html">ScalaTest</a>, another excellent testing framework for Scala.
+
+Specs is focussed on BDD testing (Behaviour Driven Design) and is the inspiration for ScalaTests WordSpec. From what I understand Specs was in-turn inspired by RSpec the Ruby BDD testing framework.
+
+Specs has some truly unique features to it which we will encounter in future topics. But for now just the basics. The following example tests a couple of Scala's XML support in order to demonstract the general pattern followed when writing Specs' tests.
+
+<code>
+# scala -classpath ~/.m2/repository/org/scala-tools/testing/specs/1.6.1/specs-1.6.1.jar
+
+scala> import org.specs._
+import org.specs._
+
+scala> object XmlSpec extends Specification {
+     |  val sample = &lt;library&gt;
+     |         &lt;videos&gt;
+     |         &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+     |         &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+     |         &lt;video type="hardcover"&gt;Gardens of the moon&lt;/video&gt;
+     |         &lt;/videos&gt;
+     |         &lt;books&gt;
+     |         &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+     |         &lt;/books&gt;
+     |         &lt;/library&gt;
+     |  "Scala XML" should {
+     |   "allow xpath-like selection" in {
+     |    (sample \\ "video").size must be (3)    
+     |   }
+     |   "select child nodes" in {
+     |    // This test fails because child is a sequence not a string
+     |    // See the results of the tests
+     |    sample.child must contain (&lt;videos/&gt;)
+     |   }
+     |  }
+     |  }
+defined module XmlSpec
+
+scala&gt; XmlSpec.main(Array[String]())
+Specification "XmlSpec"
+  Scala XML should
+  + allow xpath-like selection
+  x select child nodes &lt;-- x indicates failure.
+    'ArrayBuffer(
+                   , &lt;videos&gt;
+                   &lt;video type="dvd"&gt;Seven&lt;/video&gt;
+                   &lt;video type="blue-ray"&gt;The fifth element&lt;/video&gt;
+                   &lt;video type="hardcover"&gt;Gardens of the moon&lt;/video&gt;
+                   &lt;/videos&gt;, 
+                   , &lt;books&gt;
+                   &lt;book type="softcover"&gt;Memories of Ice&lt;/book&gt;
+                   &lt;/books&gt;, 
+                   )' doesn't contain '&lt;videos&gt;&lt;/videos&gt;' (&lt; console>:24)
+
+Total for specification "XmlSpec":
+Finished in 0 second, 52 ms
+2 examples, 2 expectations, 1 failure, 0 error
+</code>

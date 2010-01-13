@@ -1,0 +1,90 @@
+Manifests are Scala's solution to Java's type erasure.  It is not a complete solution as of yet but it does have several useful applications.  Manifests were originally added to Java 2.7 in an extremely limited form but have been improved a great deal for Scala 2.8.  Now more powerful comparisons of manifests are possible.  For another introduction to Manifests (2.7 manifests) see <a href="http://daily-scala.blogspot.com/2009/11/manifests-s.html">Manifests</a>.
+
+This post looks at a few ways to create manifests as well as how to compare manifests.  The goal is to create a method that can be used in testing to require that a certain exception is thrown during a code block:
+<code>
+scala> intercepts[Exception] {println("hi :)")}                                            
+hi :)
+Expected java.lang.Exception but instead no exception was raised
+</code>
+The code snippet above is a failure because println does not throw an exception.  In addition to requiring manifests this code snippet also is a custom control structure, for more information on those see <a href="http://daily-scala.blogspot.com/search/label/control%20structure">Control Structure Tag</a>
+
+But before writing the intercepts methods a short inspection of the new manifest comparison operators:
+<code>
+scala> import scala.reflect.{
+     |   Manifest, ClassManifest
+     | }
+import scala.reflect.{Manifest, ClassManifest}
+
+// from class creates a manifest object given a class object
+scala> import ClassManifest.fromClass
+import ClassManifest.fromClass
+
+// several comparisons using &lt;:&lt;
+scala> fromClass(classOf[Exception]) &lt;:&lt; fromClass(classOf[Exception])
+res4: Boolean = true
+
+scala> fromClass(classOf[Exception]) &lt;:&lt; fromClass(classOf[RuntimeException])
+res5: Boolean = false
+
+scala> fromClass(classOf[Exception]) &lt;:&lt; fromClass(classOf[AssertionError])         
+res6: Boolean = false
+
+// now the opposite operator >:>
+scala> fromClass(classOf[Exception]) >:> fromClass(classOf[AssertionError])
+res7: Boolean = false
+
+scala> fromClass(classOf[Exception]) >:> fromClass(classOf[RuntimeException])
+res8: Boolean = true
+
+scala> fromClass(classOf[Exception]) >:> fromClass(classOf[Error])           
+res9: Boolean = false
+
+scala> fromClass(classOf[Exception]) >:> fromClass(classOf[Throwable])
+res10: Boolean = false
+
+// the method singeType creates a manifest given an object
+scala> ClassManifest.singleType(new RuntimeException())
+res12: scala.reflect.Manifest[Nothing] = java.lang.RuntimeException.type
+
+scala> ClassManifest.singleType(new RuntimeException()) &lt;:&lt; fromClass(classOf[Throwable])
+res13: Boolean = true
+
+scala> fromClass(classOf[Exception]) &lt;:&lt; fromClass(classOf[Throwable])                   
+res14: Boolean = true
+</code>
+Now the implementation of intercepts:
+<code>
+scala> import scala.reflect.{
+     |   Manifest, ClassManifest
+     | }
+import scala.reflect.{Manifest, ClassManifest}
+
+scala> 
+
+scala> import ClassManifest.singleType
+import ClassManifest.singleType
+
+scala>  def intercepts[E &lt;: Throwable](test : => Unit)(implicit m:Manifest[E]) : Unit = {
+     |     import Predef.{println => fail}
+     |     try {
+     |       test
+     |       // this is a failure because test is expected to throw an exception
+     |       fail("Expected "+m.toString+" but instead no exception was raised")
+     |     }catch{
+     |       // this checks that the expected type (m) is a superclass of the class of e
+     |       case e if (m >:> singleType(e)) => ()
+     |       // any other error is handled here
+     |       case e => fail("Expected "+m.toString+" but instead got "+e.getClass)
+     |     }
+     |   }
+intercepts: [E &lt;: Throwable](test: => Unit)(implicit m: scala.reflect.Manifest[E])Unit
+
+scala> intercepts[Exception] {println("hi :)")}                                            
+hi :)
+Expected java.lang.Exception but instead no exception was raised
+
+scala> intercepts[Exception] { throw new IllegalArgumentException("why not throw this :)")}
+
+scala> intercepts[Exception] { throw new AssertionError("The method should complain")}     
+Expected java.lang.Exception but instead got class java.lang.AssertionError
+</code>

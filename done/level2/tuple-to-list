@@ -1,0 +1,88 @@
+Tuples are quite handy but a potential annoyance is that at a glance they seem list-like but appearances can be deceiving. The normal collection methods are not supported by Tuples.  For example suppose you like the simple syntax: <code>(1,2,3)</code> better than <code>List(1,2,3)</code>.  With the Tuple you cannot do the maps, filters, etc... (with good reason) but there is a use-case for being able to convert a Tuple to a Traversable.  
+
+Word of warning.  Unlike collections Tuples are very often not homogeneous.  IE you do not have <code>Tuple2[Int]</code> you have <code>Tuple2[A,B]</code>.  So the best you can do is to map a tuple to an Iterator[Any].  
+
+Note: this was done with Scala 2.8 so results may be slightly different with 2.7.  But I believe the syntax is valid.
+<code>
+// the productIterator method gives access to an iterator over the elements
+scala> (1,2,3).productIterator.map {_.toString} mkString (",")
+res1: String = 1,2,3
+
+scala> (1,2,3).productIterator foreach {println _}            
+1
+2
+3
+
+// if you know the tuple is heterogeneous then you can use partial functions
+// for casting the elements to a particular type.  
+scala> (1,2,3).productIterator map {case i:Int => i + 2} foreach {println _}
+3
+4
+5
+
+// To get a full Traversable out of the deal you use one of the many
+// to* methods to convert to Seq, List, Array, etc...
+scala> (1,2,3).productIterator.toList map {case i:Int => i + 2}      
+res15: List[Int] = List(3, 4, 5)
+
+// and if you want you can use an implicit to clean up the syntax a bit
+
+// Problem with this is you need an implicit for each Tuple length
+scala> implicit def tupleToTraversable[T](t:(T,T,T)) = t.productIterator.toList map { case e:T => e}
+warning: there were unchecked warnings; re-run with -unchecked for details
+tupleToTraversable: [T](t: (T, T, T))List[T]
+
+scala> (1,2,3) foreach {println _}
+1
+2
+3
+
+/* 
+EDIT:  Dan pointed out that the methods I am using are inherited from the
+Product super class of Tuple.  So you can do something similar as follows.
+
+Note:  I am using the same name as the previous method so that they don't interfer 
+with one another
+*/
+scala> implicit def tupleToTraversable[T](t:Product) = t.productIterator.toList map { case e:T => e} 
+warning: there were unchecked warnings; re-run with -unchecked for details
+tupleToTraversable: [T](t: Product)List[T]
+
+scala> (1,2,3) foreach {println _}
+1
+2
+3
+
+// this is interesting... it does cast to int unless required
+scala> (1,2,'t') foreach {println _}
+1
+2
+t
+
+// lets verify we are getting correct conversion
+scala> def inc(l:List[Int]) = l map {_ + 1} 
+inc: (l: List[Int])List[Int]
+
+
+scala> inc ( (1,2,3))                              
+res4: List[Int] = List(2, 3, 4)
+
+// yep this I expected
+scala> inc ( (1,2,'t'))
+java.lang.ClassCastException: java.lang.Character cannot be cast to java.lang.Integer
+	at scala.runtime.BoxesRunTime.unboxToInt(Unknown Source)
+	at $anonfun$inc$1.apply(&lt; console>:7)
+	at scala.collection.TraversableLike$$anonfun$map$1.apply(TraversableLike.scala:238)
+	at .&lt; clinit>(&lt; console>)
+
+scala> def inc(l:List[Int]) = l foreach {println _}
+inc: (l: List[Int])Unit
+
+scala> def p(l:List[Int]) = l foreach {println _}  
+p: (l: List[Int])Unit
+
+scala> p ( (1,2,'t'))                              
+1
+2
+t
+</code>

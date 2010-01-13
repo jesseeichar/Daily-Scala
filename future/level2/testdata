@@ -1,0 +1,24 @@
+Generating test data
+
+<code>
+scala> 1 to 3 filter {_ => util.Random.nextBoolean}
+res13: scala.collection.immutable.IndexedSeq[Int] = IndexedSeq()
+
+scala> object Options extends Enumeration {                       
+     | val ONE, TWO, THREE, FOUR = Value                          
+     | }
+defined module Options
+
+scala> Options.values.filter {_ => util.Random.nextBoolean} mkString ", "
+res2: String = TWO, FOUR
+
+scala> util.Random.nextString(10)
+res5: String = ??????????
+
+scala> util.Random.nextASCIIString(13)
+res6: java.lang.String = RVPD\#_HqJ8[o
+
+scala> 1 to 10 map {_ => util.Random.nextASCIIString(13)}
+res7: scala.collection.immutable.IndexedSeq[java.lang.String] = IndexedSeq(;E8|Q8H8RI;Q[, vM&X;"ksBr\:c, SKyz{uXNQ5E&X, =Jd8_ll08)s%e, gRCs)6wj%C-YF, `x;2Zru?l*c%@, XE/*Rx9:qPfpm, s|u,e<un+-Xm(, M,TpX9Dq-6$+^, w;exER'#0|}Ya)
+
+</code>

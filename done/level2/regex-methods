@@ -1,0 +1,84 @@
+This is the second installment of Regular expressions in Scala.  In the first installment the basics were shown and a few of the methods in the Regex class were inspected.  This topic will look at the rest of the methods in the Regex class.
+
+Regex.findPrefixMatchOf
+<code>
+/*
+returns the match if the regex is the prefix of the string
+*/
+scala> "(h)(e)|(l)".r findPrefixMatchOf "hello xyz"  
+res2: Option[scala.util.matching.Regex.Match] = Some(he)
+
+scala> "lo".r findPrefixMatchOf "hello xyz"  
+res3: Option[scala.util.matching.Regex.Match] = None
+
+/*
+The method is essentially the same as adding the boundary regex character
+*/
+scala> "^ab".r findFirstMatchIn "ababab"
+res8: Option[scala.util.matching.Regex.Match] = Some(ab)
+
+scala> "^ab".r findFirstMatchIn "hababab"
+res9: Option[scala.util.matching.Regex.Match] = None
+
+/*
+findPrefixOf is the same but returns the matched string instead
+*/
+scala> "ab".r findPrefixOf "haababab"       
+res11: Option[String] = None
+
+scala> "ab".r findPrefixOf "ababab"    
+res12: Option[String] = Some(ab)
+</code>
+Regex.replaceAllIn -- Essentially the same as using String.replaceAll
+Regex.replaceFirstIn -- Essentially the same as using String.replaceFirst
+<code>
+scala> "(h)(e)|(l)".r replaceAllIn ("hello xyz","__")
+res13: String = ______o xyz
+
+scala> "hello xyz" replaceAll ("(h)(e)|(l)","__")    
+res14: java.lang.String = ______o xyz
+
+scala> "hello xyz" replaceFirst ("(h)(e)|(l)","__")  
+res16: java.lang.String = __llo xyz
+
+scala> "(h)(e)|(l)".r replaceFirstIn ("hello xyz","__")
+res17: String = __llo xyz
+</code>
+
+This next section is not Scala specific but because Regex does not provide a way to set the flags CASE_INSENSITIVE, DOTALL, etc... The section is useful to demonstrate how to do it as part of the standard regex syntax.
+<code>
+// examples based on java blog at: <a href="http://www.javaranch.com/journal/2003/04/RegexTutorial.htm#flags">http://www.javaranch.com/journal/2003/04/RegexTutorial.htm#flags</a>
+scala> val input = """Hey, diddle, diddle,      
+     | |The cat and the fiddle,                 
+     | |The cow jumped over the moon.           
+     | |The little dog laughed                  
+     | |To see such sport,                      
+     | |And the dish ran away with the spoon.""".stripMargin
+input: String = 
+Hey, diddle, diddle,
+The cat and the fiddle,
+The cow jumped over the moon.
+The little dog laughed
+To see such sport,
+And the dish ran away with the spoon.
+
+// by default regex is case sensitive
+scala> """the \w+?(?=\W)""".r findAllIn input foreach (println _)
+the fiddle
+the moon
+the dish
+the spoon
+
+/* the (?i) makes the match case insensitive the complete set of options are:
+(?idmsux)
+<ul><li>i - case insensitive</li><li>d - only unix lines are recognized as end of line</li><li>m - enable multiline mode</li><li>s - . matches any characters including line end</li><li>u - Enables Unicode-aware case folding</li><li>x - Permits whitespace and comments in pattern</li></ul>
+*/
+scala> """(?i)the \w+?(?=\W)""".r findAllIn input foreach (println _)
+The cat
+the fiddle
+The cow
+the moon
+The little
+the dish
+the spoon
+</code>

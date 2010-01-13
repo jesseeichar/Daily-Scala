@@ -1,0 +1,3 @@
+scala> try { assume(false) } catch { case e @ (_:AssertionError | _:IllegalArgumentException) => println (1) }
+1
+

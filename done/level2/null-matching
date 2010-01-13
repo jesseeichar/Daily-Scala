@@ -1,0 +1,57 @@
+As a bit of explanation of one of the techniques in <a href="http://daily-scala.blogspot.com/2010/01/regular-expression-3-regex-matching.html">Regex Matching</a> this topic reviews matching nulls.
+
+<code>
+// No surprise _ matches everything
+scala> null match { case _ => println("null") }
+null
+
+// again null matches null
+scala> null match { case null => println("null") }
+null
+
+// a is bound to anything including null
+scala> null match { case a => println("matched value is: "+a) }
+matched value is: null
+
+scala> val a:String = null
+a: String = null
+
+// basically same as last example
+scala> a match {case a => println( a + " is null")}          
+null is null
+
+// Any matches any non-null object
+scala> null match {                                                
+     | case a:Any => println("matched value is: "+a)               
+     | case _ => println("null is not Any")
+     | }
+null is not Any
+
+scala> val d:String = null                             
+d: String = null
+
+// In fact when matching null does not match any type
+scala> d match {                                       
+     | case a:String => println("matched value is: "+a)
+     | case _ => println("no match")                   
+     | }
+no match
+
+scala> val data:(String,String) = ("s",null)         
+data: (String, String) = (s,null)
+
+// matching can safely deal with nulls but don't forget the catch all
+// clause or you will get a MatchError
+scala> data match {                                  
+     | case (a:String, b:String) => "shouldn't match"
+     | case (a:String, _) => "should match"          
+     | }
+res10: java.lang.String = should match
+
+// again null is all objects but will not match Any
+scala> data match {                            
+     | case (a:String, b:Any) => "shouldn't match"   
+     | case (a:String, _) => "should match"       
+     | }
+res12: java.lang.String = should match
+</code>

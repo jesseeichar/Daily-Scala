@@ -1,0 +1,70 @@
+At a glance a for-comprehension appears to be equivalent to a Java for-loop, but it is much much more than that.  As shown in post: <a href="http://daily-scala.blogspot.com/2009/08/for-comprehensions.html">for-comprehensions</a>, for-comprehensions can have guards which filter out which elements are processed:
+<code>
+scala> for ( x &lt;- 1 to 10; if (x >4) ) println(x)
+5
+6
+7
+8
+9
+10
+</code>
+
+They can be used to construct new collections:
+<code>
+scala> for( i &lt;- List( "a", "b", "c") ) yield "Word: "+i
+res1: List[java.lang.String] = List(Word: a, Word: b, Word: c)
+</code>
+
+They can contain multiple <em>generators</em>:
+<code>
+scala> for {x &lt;- 1 to 10                           
+     |      if(x%2 == 0)
+     |      y &lt;- 1 to 5} yield (x,y)
+res1: scala.collection.immutable.IndexedSeq[(Int, Int)] = IndexedSeq((2,1), (2,2), (2,3), (2,4), (2,5), (4,1), (4,2), (4,3), (4,4), (4,5), (6,1), (6,2), (6,3), (6,4), (6,5), (8,1), (8,2), (8,3), (8,4), (8,5), (10,1), (10,2), (10,3), (10,4), (10,5))
+</code>
+
+What has not been covered is that the assignments also does pattern matching:
+<code>
+scala> for ( (x,y) &lt;- (6 to 1 by -2).zipWithIndex) println (x,y) 
+(6,0)
+(4,1)
+(2,2)
+</code>
+
+This is not surprising as this also occurs during normal assignment.  But what is interesting is that the pattern matching can act as a guard as well.  See <a href="http://daily-scala.blogspot.com/search/label/extractor">Extractor examples</a> and <a href="http://daily-scala.blogspot.com/2009/08/assignment-and-parameter-objects.html">Assignment and Parameter Objects</a> for more information of pattern matching and extractors.
+
+<code>
+scala> val args = Array( "h=2", "b=3")
+args: Array[java.lang.String] = Array(h=2, b=3)
+
+scala> val Property = """(.+)=(.+)""".r 
+Property: scala.util.matching.Regex = (.+)=(.+)
+
+scala> for {Property(key,value) &lt;- args } yield (key,value)
+res0: Array[(String, String)] = Array((h,2), (b,3))
+
+scala> Map(res0:_*)
+res1: scala.collection.immutable.Map[String,String] = Map(h -> 2, b -> 3)
+
+scala> res1("h")
+res3: String = 2
+</code>
+
+Now just for fun here is a similar example but using symbols instead of strings for the key values:
+
+<code>
+scala> val args = Array( "h=2", "b=3")
+args: Array[java.lang.String] = Array(h=2, b=3)
+
+scala> val Property = """(.+)=(.+)""".r 
+Property: scala.util.matching.Regex = (.+)=(.+)
+
+scala> for {Property(key,value) &lt;- args } yield (Symbol(key),value)
+res0: Array[(Symbol, String)] = Array(('h,2), ('b,3))
+
+scala> Map(res0:_*)
+res1: scala.collection.immutable.Map[Symbol,String] = Map('h -> 2, 'b -> 3)
+
+scala> res1('h)
+res2: String = 2
+</code>
