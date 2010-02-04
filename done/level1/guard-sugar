@@ -1,0 +1,64 @@
+This topic is a simple tip for a cleaner syntax for guards.  Guards/filters are statements in for-comprehensions and case statements that guard or filter matches.  Often you will see them as follows:
+<code>
+scala> for (i &lt;- 1 to 10; if (i % 2 == 1)) yield i
+res0: scala.collection.immutable.IndexedSeq[Int] = IndexedSeq(1, 3, 5, 7, 9)
+
+scala> util.Random.nextInt(10) match {
+     | case i if(i>5) => println("hi")
+     | case _ => println("low")
+     | }
+low
+</code>
+However you have the option to apply a little sugar to the statements cleaning them up a little:
+<code>
+scala> for (i &lt;- 1 to 10; if i % 2 == 1) yield i  
+res2: scala.collection.immutable.IndexedSeq[Int] = IndexedSeq(1, 3, 5, 7, 9)
+
+scala> util.Random.nextInt(10) match {       
+     | case i if i>5 => println("hi")           
+     | case _ => println("low")                 
+     | }
+hi
+</code>
+As you can see the brackets are optional. That is because in both cases the brackets are not required for the parser to determine the start and end of the guard statements.  They are added so that the "normal" syntax used in the typical if statements will compile.
+<code>
+scala> 10 match { case i if i == 1 || i == 10 => "obviously this is a match"} 
+res4: java.lang.String = obviously this is a match
+
+/*
+In case statements you can split the if almost any way you want because it is very clearly bound by the if and the => that is required for all case statements with a guard
+*/
+scala> 10 match { case i if i == 1 ||                                        
+     | i == 10 => "obviously this is a match"}
+res5: java.lang.String = obviously this is a match
+
+scala> 10 match {        
+     | case i
+     | if
+     | i == 1
+     | ||
+     | i == 10 
+     | => "matched"
+     | }
+res6: java.lang.String = matched
+
+/*
+For-comprehensions are not as flexible since it is harder for the compiler to determine where the guard ends. So try to keep it on one line or otherwise make it a function.  That is probably good advice for case statements as well.
+*/
+scala> for { 
+     | x &lt;- 1 to 10
+     | if
+     | x > 10
+     | || x == 2 } yield x
+&lt; console>:5: error: '<-' expected but integer literal found.
+       || x == 2 } yield x
+               ^
+&lt; console>:5: error: illegal start of simple expression
+       || x == 2 } yield x
+                 ^
+
+scala> for {              
+     | x &lt;- 1 to 10       
+     | if x == 1 || x == 10 } yield x
+res7: scala.collection.immutable.IndexedSeq[Int] = IndexedSeq(1, 10)
+</code>

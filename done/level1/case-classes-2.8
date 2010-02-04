@@ -1,0 +1,33 @@
+Thanks to Scala 2.8's default parameters case classes have a couple wonderful new features in Scala 2.8.  Specifically the copy method and the ability to have case classes with default parameters.
+<code>
+// constructor methods have defaults defined
+scala> case class Node (name:String, left : Option[Node] = None, right : Option[Node] = None)                          
+defined class Node
+
+// the name is the only required parameter because it does not have a default
+scala> val child = Node("leaf") 
+child: Node = Node(leaf,None,None)
+
+// left is being assigned here because the name of the parameter is not explicit
+scala> val parent = Node("parent", Some(res0))
+parent: Node = Node(parent,Some(Node(leaf,None,None)),None)
+
+// now the left node is not defined just the right
+scala> val node = Node("node", right=Some(res0))
+node: Node = Node(node,None,Some(Node(leaf,None,None)))
+
+/* 
+The real power is the copy constructor that is automatically generated in the case class.  I can make a copy with any or all attributes modifed by using the copy constructor and declaring which field to modify
+*/
+scala> parent.copy(right = Some(node))
+res4: Node = Node(parent,Some(Node(leaf,None,None)),Some(Node(node,None,Some(Node(leaf,None,None)))))
+
+scala> parent.copy(left=None)         
+res5: Node = Node(parent,None,None)
+
+scala> parent.copy(name="hoho")
+res6: Node = Node(hoho,Some(Node(leaf,None,None)),None)
+
+scala> parent.copy(name="hoho", left=None)
+res7: Node = Node(hoho,None,None)
+</code>

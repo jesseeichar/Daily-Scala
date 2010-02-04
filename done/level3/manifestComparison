@@ -1,4 +1,4 @@
-Manifests are Scala's solution to Java's type erasure.  It is not a complete solution as of yet but it does have several useful applications.  Manifests were originally added to Java 2.7 in an extremely limited form but have been improved a great deal for Scala 2.8.  Now more powerful comparisons of manifests are possible.  For another introduction to Manifests (2.7 manifests) see <a href="http://daily-scala.blogspot.com/2009/11/manifests-s.html">Manifests</a>.
+Manifests are Scala's solution to Java's type erasure.  It is not a complete solution as of yet but it does have several useful applications.  Manifests were originally added to Scala 2.7 in an extremely limited form but have been improved a great deal for Scala 2.8.  Now more powerful comparisons of manifests are possible.  For another introduction to Manifests (2.7 manifests) see <a href="http://daily-scala.blogspot.com/2009/11/manifests-s.html">Manifests</a>.
 
 This post looks at a few ways to create manifests as well as how to compare manifests.  The goal is to create a method that can be used in testing to require that a certain exception is thrown during a code block:
 <code>
@@ -42,7 +42,7 @@ res9: Boolean = false
 scala> fromClass(classOf[Exception]) >:> fromClass(classOf[Throwable])
 res10: Boolean = false
 
-// the method singeType creates a manifest given an object
+// the method singleType creates a manifest given an object
 scala> ClassManifest.singleType(new RuntimeException())
 res12: scala.reflect.Manifest[Nothing] = java.lang.RuntimeException.type
 

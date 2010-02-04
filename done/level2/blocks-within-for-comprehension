@@ -1,0 +1,40 @@
+In another example of uniformity it is possible to use blocks within a for-comprehension when creating a generator or making an assignment.  The basic form of a for-comprehension is 
+<code>
+for {i &lt;- generator 
+     if guard
+     j = assignment } yield result
+</code>
+The <em>generator</em>, <em>guard</em>, <em>assignment</em> and <em>result</em> are all expressions which means they can all be blocks or simple statements.  Most commonly you will see them as simple statements:
+<code>
+scala> for {i &lt;- 1 to 10
+     |      if i % 2 == 0
+     |      j = i } yield j
+res50: scala.collection.immutable.IndexedSeq[Int] = IndexedSeq(2, 4, 6, 8, 10)
+</code>
+But since they are expressions they can be more complex:
+<code>
+scala> for {  
+     |  i &lt;- { 
+     |     val start = nextInt(3)
+     |     val end = nextInt(10)+start
+     |     start to end
+     |  }
+     |  if {
+     |    val cut = nextInt(3)+1
+     |    i % cut == 0
+     |  }
+     |  j = {
+     |    val x = i+1
+     |    x / 2
+     |  }
+     |  }  yield {
+     |    // do a debug println
+     |    println(j)
+     |  j
+     |  }
+1
+1
+2
+3
+res53: scala.collection.immutable.IndexedSeq[Int] = IndexedSeq(1, 1, 2, 3)
+</code>

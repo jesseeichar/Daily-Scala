@@ -1,0 +1,5 @@
+I have done some research and the main uses cases that I have found for using a Stream are as follows:
+<ul>
+<li>Infinite series, examples include prime numbers.  The benefit of stream over iterator is that stream keeps the results and is reusable, so the same stream can be passed safely to any number of methods
+<p>From what I understand there is a fair number of algorithms which can be greatly simplified by using infinite series</p></li>
+<li>If there is a large set of data or a computationally expensive series and there is a high probability that the items you need will not require visiting all of the elements.  For example there you might have a set of files and often only </li>

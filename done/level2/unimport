@@ -1,0 +1,60 @@
+I can't remember if I posted this tip yet so I will do it again (or not :-P ).  
+
+If you want to import all classes in a package or object exception for one or two there is a neat trick to unimport the unwanted elements:
+<code>
+/*
+The File class is aliased to _ (oblivion) and then everything is imported (except File since it does not exist in that scope)
+Note: File can be imported later
+*/
+scala> import java.io.{File=>_,_}
+import java.io.{File=>_, _}
+
+scala> new File("it is a file")      
+&lt; console>:8: error: not found: type File
+       new File("it is a file")
+
+scala> object O {
+     | def one = 1
+     | def two = 2
+     | def o = 0
+     | }
+defined module O
+
+/*
+Same tricks can apply to importing methods and fields from objects
+*/
+scala> import O.{o=>_, _}
+import O.{o=>_, _}
+
+scala> one
+res2: Int = 1
+
+scala> two
+res3: Int = 2
+
+scala> o
+&lt; console>:15: error: not found: value o
+       o
+
+// Once a class is imported into scope it can not be removed
+scala> import java.io.File
+import java.io.File
+
+scala> import java.io.{File=>_}
+import java.io.{File=>_}
+
+/*
+this still works because the previous import statement only adds an alias it does not remove the alias
+*/
+scala> new File("..")          
+res6: java.io.File = ..
+
+// There can be multiple aliases in a scope
+scala> import java.io.{File=>jfile}
+import java.io.{File=>jfile}
+
+scala> new jfile("..")
+res0: java.io.File = ..
+
+
+</code>

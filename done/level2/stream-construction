@@ -1,0 +1,147 @@
+This post just adds to the information about streams in the previous post <a href="http://daily-scala.blogspot.com/2010/01/introducing-streams.html">Introducing Streams</a>.  In this topic the methods in the Stream object are looked at a little closer:
+(standard warning.  Examples were done in Scala 2.8 so some examples may need to be modified for Scala 2.7)
+<code>
+scala> import Stream._
+import Stream._
+
+// the empty stream.  good for terminating a stream
+scala> empty        
+res0: scala.collection.immutable.Stream[Nothing] = Stream()
+
+// one way to declare a stream. 
+scala> 1 #:: 2 #:: empty foreach (println _)
+1
+2
+ // the other main way to create a stream
+scala> cons(1, cons(2, empty)) foreach println
+1
+2
+
+/*
+Neither of the previous methods of stream creation are particularily useful because they are explicit and therefore they may as well be Lists or some other collection.  There is very little benefit in those cases.  However when the cons of a stream (tail) is defined as a function then things get a bit more interesting
+*/
+scala> def i(x:Int,y:Int):Stream[Int] = (x*y) #:: i(x+1,y*2)
+i: (x: Int,y: Int)Stream[Int]
+
+scala> i(2,3) take 3 foreach println
+6
+18
+48
+
+// now lets visit a few more methods in the Stream object
+
+
+// create an infinite stream starting at 10
+scala> from (10) take 3 foreach println     
+10
+11
+12
+
+// an infinite stream starting at 10 an increasing by 3
+scala> from (10,3) take 3 foreach println
+10
+13
+16
+
+// converting an interator to a stream
+scala> (1 until 4).iterator.toStream foreach println
+1
+2
+3
+
+// creating an Iterable to a stream
+scala> (1 until 4).toStream foreach println         
+1
+2
+3
+
+// a stream that always returns 7
+// the following is a pretty convoluted way to compute 7*49 :-P
+scala> continually(7) take 49 reduceLeft {_ + _}
+res10: Int = 343
+
+// create a stream of 6 streams
+scala> fill(6)(1 to 2 toStream) foreach println
+Stream(1, ?)
+Stream(1, ?)
+Stream(1, ?)
+Stream(1, ?)
+Stream(1, ?)
+Stream(1, ?)
+
+/*
+create the same stream as the last example but flatten it out so instead of being a stream of 6 streams it is a stream of 12 elements. Each element in each of the streams are visited in order
+*/
+scala> fill(6)(1 to 2 toStream).flatten take 6 foreach println
+1
+2
+1
+2
+1
+2
+
+/*
+equivalent to:
+(1 until 20 by 3).toStream foreach println
+*/
+scala> range(1, 20, 3) foreach println
+1
+4
+7
+10
+13
+16
+19
+
+/*
+equivalent to
+(1 until 3).toStream foreach println
+*/
+scala> range(1,3) foreach println          
+1
+2
+
+/*
+iterate is fun! 
+signature is iterator(start)(elem)
+basically starting at 3 execute the function on the previous value in the stream.
+
+This is an infinite stream
+*/
+scala> iterate(3){i => i-10} take 5 foreach println _               
+3
+-7
+-17
+-27
+-37
+
+/*
+Another example
+*/
+scala> iterate(3){i => i*2} take 5 foreach println _ 
+3
+6
+12
+24
+48
+
+/*
+A final example
+*/
+scala> iterate(3){i => i} take 5 foreach println _  
+3
+3
+3
+3
+3
+
+/*
+The real final,final example.  This example uses the optional length parameter.   So the stream is restricted to 5 elements
+*/
+scala> iterate(3,5){i => i} foreach println       
+3
+3
+3
+3
+3
+</code>

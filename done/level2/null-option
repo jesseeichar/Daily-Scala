@@ -1,0 +1,34 @@
+I have seen requests for a simpler way of dealing with nulls than Option(x) so here are a couple ideas:
+
+Note: This only works with Scala 2.8+
+
+<code>
+// create an alias from Option.apply to ?
+scala> import Option.{apply => ?} 
+import Option.{apply=>$qmark}
+
+scala> ?(null)
+res0: Option[Null] = None
+
+scala> ?(3)
+res1: Option[Int] = Some(3)
+
+scala> ?(3).getOrElse(10)
+res2: Int = 3
+
+scala> ?(null).getOrElse(10)
+res3: Any = 10
+
+// create an implicit conversion to Option
+scala> implicit def toOption[T](x:T) : Option[T] = Option(x)
+toOption: [T](x: T)Option[T]
+
+scala> 3 getOrElse (10)
+res4: Int = 3
+
+scala> val i:String = null
+i: String = null
+
+scala> i getOrElse "hi"
+res6: String = hi
+</code>

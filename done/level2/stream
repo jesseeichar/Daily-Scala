@@ -1,0 +1,130 @@
+Streams are a special type of Iterable/Traversable whose elements are not evaluated until they are requested.  Streams are normally constructed as functions.  
+
+A Scala List basically consists of the head element and the rest of the list.  A Scala Stream is the head of the stream and a function that can construct the rest of the Stream.  It is a bit more than this because each element is evaluated only once and stored in memory for future evaluations.  That should be more clear after some examples.
+
+As usual I created these examples with the Scala 2.8 REPL but I think most if not all should work in 2.7.
+
+<code>
+scala> import Stream.cons          
+import Stream.cons
+/*
+Because streams are very functional in nature it is recommended that methods from the Stream object are used for creation
+
+This is a real boring example of creating a Stream.  Anything this simple should be a list.
+
+The important part is that cons take the value at the point and a function to return the rest of the
+stream NOT another stream.  
+*/
+scala> val stream1 = cons(0,cons(1,Stream.empty))
+stream1: Stream.Cons[Int] = Stream(0, ?)
+
+scala> stream1 foreach {print _}                 
+01
+
+/*
+This illustrates the similarity in design between Stream and list, again the difference is the entire list is created in a stream the second argument of cons is not evaluated until it is requested
+*/
+scala> new ::(0, new ::(1,List.empty))
+res35: scala.collection.immutable.::[Int] = List(0, 1)
+
+
+/*
+To drive home the point of the similarities.  Here is an alternative declaration of a
+stream most similar to declaring a list
+*/
+scala> val stream2 = 0 #:: 1 #:: Stream.empty    
+stream2: scala.collection.immutable.Stream[Int] = Stream(0, ?)
+
+scala> stream2 foreach {print _}
+01
+
+scala> 0 :: 1 :: Nil
+res36: List[Int] = List(0, 1)
+
+/*
+A little more interesting now.  The accessing the second element will run the function.  Notice it is not evaluated until request
+*/
+scala> val stream3 = cons (0, {    
+     | println("getting second element")
+     | cons(1,Stream.empty)
+     | })
+stream3: Stream.Cons[Int] = Stream(0, ?)
+
+scala> stream3(0)
+res56: Int = 0
+
+// function is evaluated
+scala> stream3(1)
+getting second element
+res57: Int = 1
+
+/* 
+Function is only evaluated once.  
+
+Important! This means that all elements in a Stream are loaded into a memory so
+it can cause a OutOfMemoryError if the stream is large
+*/
+scala> stream3(1)
+res58: Int = 1
+
+scala> stream3(1)
+res59: Int = 1
+
+/*
+This creates an infinate stream then forces resolution of all elements
+*/
+scala> Stream.from(100).force            
+java.lang.OutOfMemoryError: Java heap space
+
+// Alternative demonstration of laziness
+scala> val stream4 = 0 #:: {println("hi"); 1} #:: Stream.empty
+stream4: scala.collection.immutable.Stream[Int] = Stream(0, ?)
+
+scala> stream4(1)
+hi
+res2: Int = 1
+</code>
+A very common way to construct a Stream is to define a recursive method.  Each recursive call constructs a new element in the stream.  The method may or may not have a guard condition that terminates the stream.
+<code>
+// construct a stream of random elements
+scala> def make : Stream[Int] = Stream.cons(util.Random.nextInt(10), make)
+make: Stream[Int]
+
+scala> val infinate = make                                                
+infinate: Stream[Int] = Stream(3, ?)
+
+scala> infinate(5)                                  
+res10: Int = 6
+
+scala> infinate(0)
+res11: Int = 3
+
+// Once evaluated each element does not change
+scala> infinate(5)
+res13: Int = 6
+
+// this function makes a stream that does terminate
+scala> def make(i:Int) : Stream[String] = {                  
+     | if(i==0) Stream.empty                                 
+     | else Stream.cons(i + 5 toString, make(i-1))           
+     | }
+make: (i: Int)Stream[String]
+
+scala> val finite = make(5)                       
+finite: Stream[String] = Stream(10, ?)
+
+scala> finite foreach print _                     
+109876
+
+// One last demonstration of making a stream object
+scala> Stream.cons("10", make(2))
+res18: Stream.Cons[String] = Stream(10, ?)
+
+/*
+This method is dangerous as it forces the entire stream to be evaluated
+*/
+scala> res18.size
+res19: Int = 3
+</code>
+
+This is only an introduction.  I hope to add a few more topics that focus on Streams because they can be very powerful but are also more challenging to recognize where they should be used instead of a standard collection.

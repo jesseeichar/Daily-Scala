@@ -1,0 +1,51 @@
+A couple new methods have just been added to Scala 2.8 Regex.  You will need to download a version of Scala 2.8 more recent than Scala2.8-Beta1.  
+
+The methods are related to replacing text using a regular expression and to say they are useful is an understatement.  Lets take a look:
+<code>
+scala> val quote = """I don&apos;t like to commit myself about heaven and hell - you see, I have friends in both places. 
+     | Mark Twain"""                                                                                                
+quote: java.lang.String = 
+I don&apos;t like to commit myself about heaven and hell - you see, I have friends in both places. 
+Mark Twain
+
+scala> val expr = "e".r    
+expr: scala.util.matching.Regex = e
+
+/* 
+This first method is not new or is it interesting.  But the new methods are both related
+so lets start with the basic form of replaceAllIn
+*/
+scala> expr.replaceAllIn(quote, "**")
+res1: String = 
+I don&apos;t lik** to commit mys**lf about h**av**n and h**ll - you s****, I hav** fri**nds in both plac**s. 
+Mark Twain
+
+// this does the same thing
+scala> quote.replaceAll("e","**")
+res2: java.lang.String = 
+I don&apos;t lik** to commit mys**lf about h**av**n and h**ll - you s****, I hav** fri**nds in both plac**s. 
+Mark Twain
+
+/*
+Now things get interesting.  Using this form of replaceAllIn we can determine the replacement on a case by case basis.
+
+The method takes a String => String function.  Very powerful. But even more powerful is the next method...
+*/
+scala> expr.replaceAllIn(quote, s => if(util.Random.nextBoolean) "?" else "*")
+res5: String = 
+I don&apos;t lik? to commit mys?lf about h?av?n and h?ll - you s*?, I hav? fri*nds in both plac*s. 
+Mark Twain
+
+/*
+This method is fantastic.  It gives the Match object as the parameter so you have complete access to all
+the matched groups, the location of the match etc...  
+
+Using this method I have trimmed 20 lines of code down to 3 or 4.  I don&apos;t know how I survived without it
+
+This example is simple.  The replacement is the location of the match
+*/
+scala> expr.replaceAllMatchesIn(quote, m => m.start.toString)                        
+res6: String = 
+I don&apos;t lik11 to commit mys26lf about h37av40n and h48ll - you s5960, I hav68 fri73nds in both plac90s. 
+Mark Twain
+</code>

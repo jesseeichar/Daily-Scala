@@ -1,0 +1,101 @@
+In Java a common pattern with class constructors is to assign field values and often there are several intermediate values used for the calculation.  If the code is ported to Scala the resulting class will have the intermediate values as fields, which take up space in the object.  However the issue is easily worked around.  Lets look at a couple examples.
+
+Example 1: Assigning a single field
+<code class="Java">
+//  Java
+import java.io.File
+
+/** 
+No real logic behind class.  But for some reason it needs the path of a tmp directory in the working directory
+*/
+class OneAssignment {
+  final String field;
+  public OneAssignment() {
+    File file = new File("tmp");
+    if(!file.exists()) {
+      file.mkdirs();
+    }
+    field = file.getAbsolutePath();
+  }
+}
+</code>
+In Scala the naive way to port this would be:
+<code>
+//  Scala
+import java.io.File
+class OneAssignment {
+  val file = new File("tmp")
+  if(!file.exists()) {
+    file.mkdirs()
+  }
+  val field = file.getAbsolutePath()
+}
+</code>
+Problem is that it has an extra field "file" now.  The correct way to port this would be as follows:
+<code>
+//  Scala
+import java.io.File
+class OneAssignment {
+/* 
+notice that assignment is in a block so file is only visible within the block
+*/
+  val field = {
+    val file = new File("tmp")
+    if(!file.exists()) {
+      file.mkdirs()
+    }
+    file.getAbsolutePath()
+  }
+}
+</code>
+
+Example 2:  Assigning multiple fields
+<code class="Java">
+//  Java
+import java.io.File
+
+/** 
+Basically the same as last example but multiple fields are assigned
+Notice that 2 fields depend on the temporary file variable but count does not
+*/
+class MultipleAssignments {
+  final String tmp,mvn_repo;
+  find int count;
+  public OneAssignment() {
+    File file = new File("tmp");
+    if(!file.exists()) {
+      file.mkdirs();
+    }
+    tmp = file.getAbsolutePath();
+    count = file.listFiles.length;
+    
+    File home = new File(System.getProperty("user.home"));
+    mvn_repo = new File(home, ".m2").getPath();
+  }
+}
+</code>
+The Scala port:
+<code>
+//  Scala
+import java.io.File
+class MultipleAssignments {
+/*
+When multiple fields depend on the same temporary variables the fields can be assigned together from one block by returning a tuple and using Scala's matching to expand the tuple during assignment.  See previous topics on assignment for details 
+*/
+  val (tmp,count) = {
+    val file = new File("tmp");
+    if(!file.exists()) {
+      file.mkdirs();
+    }
+    val tmp = file.getAbsolutePath();
+    val count = file.listFiles.length;
+    (tmp, count)
+  }
+  val mvn_repo = {
+    val home = new File(System.getProperty("user.home"));
+    new File(home, ".m2").getPath();
+  }
+}
+</code>
+In some ways the Scala port is cleaner in that it splits the constructor up and decouples the dependencies between fields.
+

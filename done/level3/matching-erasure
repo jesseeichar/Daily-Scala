@@ -1,0 +1,136 @@
+Since Scala runs on the JVM (it also runs on .NET but we this tip is aimed at Scala on the JVM) much of the type information that is available at compile-time is lost during runtime.  This means certain types of matching are not possible.  For example it would be nice to be able to do the following:
+<code>
+scala> val x : List[Any] = List(1.0,2.0,3.0)
+x: List[Any] = List(1, 2, 3)
+
+scala> x match { case l : List[Boolean] => l(0) }         
+</code>
+If you run this code the list matches the list of ints which is incorrect (I have ran the following with -unchecked so it will print the warning about erasure):
+<code>
+scala> val x : List[Any] = List(1.0,2.0,3.0)
+x: List[Any] = List(1, 2, 3)
+
+scala> x match { case l : List[Boolean] => l(0) }         
+
+&lt; console>:6: warning: non variable type-argument Boolean in type pattern List[Boolean] is unchecked since it is eliminated by erasure
+       x match { case l : List[Boolean] => l(0) }
+                          ^
+java.lang.ClassCastException: java.lang.Double cannot be cast to java.lang.Boolean
+	at scala.runtime.BoxesRunTime.unboxToBoolean(Unknown Source)
+	at .&lt; init>(&lt; console>:6)
+</code>
+Another example is trying to match on structural types.  Wouldn't it be nice to be able to do the following (We will solve this in a future post):
+<code>
+scala> "a string" match {
+     | case l : {def length : Int} => l.length
+     | }
+&lt; console>:6: warning: refinement AnyRef{def length: Int} in type pattern AnyRef{def length: Int} is unchecked since it is eliminated by erasure
+       case l : {def length : Int} => l.length
+                ^
+res5: Int = 8
+</code>
+So lets see what we can do about this.  My proposed solution is to create an class that can be used as an extractor when instantiated to do the check.
+
+This is a fairly advanced tip so make sure you have read up on Matchers and Manifests:
+<ul><li><a href="http://daily-scala.blogspot.com/2009/09/extractors-1.html">Extractor 1</a></li><li><a href="http://daily-scala.blogspot.com/2009/11/manifests-s.html">Manifests</a></li><li><a href="http://daily-scala.blogspot.com/2010/01/comparing-manifests.html">Comparing Manifests</a></li></ul>
+The key parts of the next examples are the Def class and the function 'func'.  'func' is defined in the comments in the code block. 
+
+The Def class is the definition of what we want to match.  Once we have the definition we can use it as an Extractor to match List[Int] instances.
+
+The Def solution is quite generic so it will satisfy may cases where you might want to do matching but erasure is getting in the way.
+
+The secret is to use manifests:
+<ul><li>When the class is created the manifest for the class we want is captured.</li><li>Each time a match is attempted the manifest of the class being matched is captured</li><li>In the unapply method, the two manifests are compared and when they match we can return the matched element but cast to the desired type for the compiler</li></ul>
+It is critical to notice the use of the typeArguments of the manifest.  This returns a list of the manifests of each typeArgument.  You cannot simply compare desired == m because manifest comparisons are not deep.  There is a weakness in this code in that it only handles generics that are 1 level deep. For example:
+
+List[Int] can be matched with the following code but List[List[Int]] will match anything that is List[List[_]].  Making the method more generic is an exercise left to the reader.
+<code>
+scala> import reflect._ 
+import reflect._
+
+/*
+This is the key class
+*/
+scala> class Def[C](implicit desired : Manifest[C]) {
+     | def unapply[X](c : X)(implicit m : Manifest[X]) : Option[C] = {
+     |   def sameArgs = desired.typeArguments.zip(m.typeArguments).forall {case (desired,actual) => desired >:> actual}
+     |   if (desired >:> m &amp;&amp; sameArgs) Some(c.asInstanceOf[C])
+     |   else None
+     | }
+     | }
+defined class Def
+
+// first define what we want to match
+scala> val IntList = new Def[List[Int]]
+IntList: Def[List[Int]] = Def@6997f7f4
+
+/*
+Now use the object as an extractor.  the variable l will be a typesafe List[Int]
+*/
+scala> List(1,2,3) match { case IntList(l) => l(1) : Int ; case _ => -1 }
+res36: Int = 2
+
+scala> List(1.0,2,3) match { case IntList(l) => l(1) : Int ; case _ => -1 }
+res37: Int = -1
+
+// 32 is not a list so it will fail to match
+scala> 32 match { case IntList(l) => l(1) : Int ; case _ => -1 }
+res2: Int = -1
+
+scala> Map(1 -> 3) match { case IntList(l) => l(1) : Int ; case _ => -1 }
+res3: Int = -1
+
+/*
+The Def class can be used with any Generic type it is not restricted to collections
+*/
+scala> val IntIntFunction = new Def[Function1[Int,Int]]
+IntIntFunction: Def[(Int) => Int] = Def@5675e2b4
+
+// this will match because it is a function
+scala> ((i:Int) => 10) match { case IntIntFunction(f) => f(3); case _ => -1}
+res38: Int = 10
+
+// no match because 32 is not a function
+scala> 32 match { case IntIntFunction(f) => f(3); case _ => -1}
+res39: Int = -1
+
+// Cool Map is a function so it will match
+scala> Map(3 -> 100) match { case IntIntFunction(f) => f(3); case _ => -1}
+res6: Int = 100
+
+/*
+Now we see both the power and the limitations of this solution.
+
+One might expect that:
+   def func(a:Any) = {...} 
+would work.  
+
+However, if the function is defined with 'Any' the compiler does not pass in the required information so the manifest that will be created will be a Any manifest object.  Because of this the more convoluted method declaration must be used so the type information is passed in. 
+
+I will discuss implicit parameters in some other post
+*/
+scala> def func[A](a:A)(implicit m:Manifest[A]) = {
+     |   a match {
+     |     case IntList(l) => l.head                   
+     |     case IntIntFunction(f) => f(32)             
+     |     case i:Int => i                             
+     |     case _ => -1                                
+     |   } 
+     | }
+func: [A](a: A)(implicit m: Manifest[A])Int
+
+scala> func(List(1,2,3))                           
+res16: Int = 1
+
+scala> func('i')                                   
+res17: Int = -1
+
+scala> func(4)
+res18: Int = 4
+
+scala> func((i:Int) => i+2)
+res19: Int = 34
+
+scala> func(Map(32 -> 2))
+res20: Int = 2
+</code>

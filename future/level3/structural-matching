@@ -1,0 +1,38 @@
+This topic addressed the second type of reflective based matching mentioned in <a href="http://daily-scala.blogspot.com/2010/01/overcoming-type-erasure-in-matching-1.html">Overcoming Type Erasure in Matching 1</a>.  In the previous topic I mentioned that it would be nice if we could use matching as follows:
+<code>
+scala> "a string" match {
+     | case l : {def length : Int} => l.length
+     | }
+</code>
+Unfortunately, thanks to erasure, this is not possible.  So I propose another solution.  It is based on a similar pattern as the previous two posts: A Def class that when instantiated can be used as a matcher.  I would have liked to be able to instantiate the Def class like: <code>new Def[{def length:Int}]</code> but sadly, at the time of this writing, it does not appear to possible.  It appears to be technical issue with the compiler so I expect it will be possible in the future.  But for now I have a simplified solution.
+
+The solution is based on standard java Reflection, with Scala Manifests and an extractor for matching
+<code>
+import reflect.ClassManifest._
+import java.lang.reflect.Method
+
+class Def[F](methodName:String)(implicit desired : Manifest[F]) {
+private def matchingArgs(m:Method) = {
+  val classes = desired.typeArguments map {_.erasure}
+  val paramTuples = classes zipAll (m.getParameterTypes, classOf[Nothing], null)
+  paramTuples forall {
+    case (desired,actual) => actual isAssignableFrom desired
+  }
+}
+def unapply[C <% AnyRef](c:C) : Option[F] = {
+  val methods = c.getClass.getMethods
+  val method = methods filter {_.getName == methodName} find matchingArgs
+  method map {_.asInstanceOf[F]}  // This doesn't work as desired :(
+}
+}
+
+class A {
+  def length = 0
+}
+class B extends A {
+  override def length = 3
+}
+
+val LengthFunction = new Def[()=>Int]("length")
+</code>
+I believe the Def class can be extended to handle multiple methods as part of the definition but I will leave that as an exercise.  Something along the lines of: <code>class Def[T <: Product](names:String*)(implicit m:Manifest[T])</code>.  This could be used as follows: <code>new Def[(()=>Int,Int=>Char)]("length","apply")</code>

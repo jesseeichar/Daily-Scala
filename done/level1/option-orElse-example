@@ -1,0 +1,24 @@
+A simple but handy use for Option is to select the first valid option from a selection of possible choices.  Sound vague? Well it is because it can be used in many different situations.  The one presented here is: the program needs a directory that can be set by the user either as a system variable, and environment variable or the default value.  The java code is a nightmare of if (xxx == null) statements.  The Scala code is beautiful.
+<code>
+scala> val propsTemplates = Option(System getProperty "MVN_CREATOR_TEMPLATES")
+propsTemplates: Option[java.lang.String] = None
+
+scala> val envTemplates = Option(System getenv "MVN_CREATOR_TEMPLATES")
+envTemplates: Option[java.lang.String] = None
+
+scala> val defaultHome = Some(System getProperty "user.home")
+defaultHome: Some[java.lang.String] = Some(/Users/jeichar)
+
+/* 
+chain the different options together in order of priority and get the value
+
+I am taking a small liberty here because I am assuming that user.home is always available
+*/
+
+scala> propsTemplates.orElse(envTemplates).orElse(defaultHome).get
+res0: java.lang.String = /Users/jeichar
+
+// alternative form:
+scala> propsTemplates orElse envTemplates orElse defaultHome get
+res1: java.lang.String = /Users/jeichar
+</code>

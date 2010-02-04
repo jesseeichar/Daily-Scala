@@ -1,0 +1,9 @@
+Writing Delegate classes in Scala is certainly not as nice as in Languages like C# or dynamic languages but it is substantially easier than in languages in Java because 
+<code>
+scala> class MF extends Proxy {        
+     | val self = new java.io.File(".")
+     | def listFiles = self.listFiles  
+     | val compareTo = self compareTo _
+     | }
+defined class MF
+</code>

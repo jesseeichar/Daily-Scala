@@ -1,0 +1,55 @@
+There is a common case where several expressions in a match statement need to have the same result.  For example:
+
+<code>
+scala> "word" match {
+     | case a @ "word" => println(a)
+     | case a @ "hi" => println(a)
+     | }
+word
+</code>
+this could be changed to:
+<code>
+scala> "word" match {               
+     | case a if(a == "word" || a == "hi") => println(a)
+     | }
+word
+</code>
+but this is rather verbose.  Another option is to use or matching:
+<code>
+scala> "word" match { case a @ ("word" | "hi") => println(a)}
+word
+</code>
+
+<code>
+/*
+it is possible to provide alternatives in matching
+Anything more advanced needs to be handled with a guard
+See the last examples
+*/
+scala> 1 match { case _:Int | _:Double => println(v)}
+1
+
+// v will be the value if v is either an Int or a Double
+scala> 1.0 match { case v @ ( _:Int | _:Double) => println(v)}
+1.0
+
+// Having variables as part of the patterns is not permitted
+scala> 1.0 match { case v:Int | d:Double => println(v)} 
+&lt; console>:5: error: illegal variable in pattern alternative
+       1.0 match { case v:Int | d:Double => println(v)}
+                        ^
+&lt; console>:5: error: illegal variable in pattern alternative
+       1.0 match { case v:Int | d:Double => println(v)}
+                                                    ^
+
+/*
+Variables are not permitted not even when the name is the same.
+*/
+scala> 1.0 match { case d:Int | d:Double => println(d)}
+&lt; console>:5: error: illegal variable in pattern alternative
+       1.0 match { case d:Int | d:Double => println(d)}
+                        ^
+&lt; console>:5: error: illegal variable in pattern alternative
+       1.0 match { case d:Int | d:Double => println(d)}
+                                ^
+</code>
