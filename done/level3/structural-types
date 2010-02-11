@@ -1,4 +1,70 @@
-Structural types allows one to declare types based on the methods the type has.  For example you could define a method that takes a class containing a close method.  This is failry analogous to duck-typing in dynamic languages.  Except that it is statically enforced.  Because of the fact that it is statically enforced it is not quite as flexible as dynamic language's version of duck typing.  For example you cannot do:
-<code>
+Structural types allows one to declare types based on the methods the type has.  For example you could define a method that takes a class containing a close method.  This is fairy analogous to duck-typing in dynamic languages.  Except that it is statically enforced.  
 
+The main example used here was from a comment on the <a href="http://codemonkeyism.com/scala-goodness-structural-typing/">Code Monkeyism Blog</a>.  The commenter further explains that this example is in fact from Beginning Scala chapter 4 (which I would like to read but have not yet had the time.)
+<code>
+/*
+A can be any object that has a close method.  
+
+This is statically typed which makes some restrictions which are explained later
+*/
+scala> def using[A <: {def close(): Unit}, B](param: A)(f: A => B): B = 
+     | try {
+     |     f(param)
+     |   } finally {
+     |     try {
+     |        param.close()
+     |     } catch { case _ => () }
+     |   }
+using: [A <: AnyRef{def close(): Unit},B](param: => A)(f: (A) => B)B
+
+scala> using(new java.io.ByteArrayInputStream("hello world".getBytes)){ in => 
+     | io.Source.fromInputStream(in) foreach (print)                          
+     | }
+hello world
+
+scala> using(new java.io.ByteArrayInputStream("hello world".getBytes)){ in => 
+     | io.Source.fromInputStream(in) mkString ""                              
+     | }
+res8: String = hello world
+</code>
+That is extremely powerful and the consequences will be visited more in the future.  But because structural typing is statically enforced it is not quite as flexible as dynamic language's version of duck typing.  For example you cannot do:
+<code>
+scala> val i:Any = new java.io.ByteArrayInputStream("hello world".getBytes)
+i: Any = java.io.ByteArrayInputStream@145a25f3
+
+/*
+This does not work because 'i' is defined as type Any.  Not a type that is closeable.  
+
+Casting can be used to get around this issue.  I will address that in its own post
+*/
+scala> using(i){ in => 
+     | io.Source.fromInputStream(in) mkString ""
+     | }
+&lt; console>:8: error: inferred type arguments [Any,B] do not conform to method using's type parameter bounds [A <: AnyRef{def close(): Unit},B]
+       using(i){ in =>
+</code>
+An alternative to the first using example is to use call by name to construct the closeable.  The reason one might want to do that is because it allows currying of the method:
+<code>
+scala> def using[A <: {def close(): Unit}, B](param: =>A)(f: A => B): B = 
+     | val closeable = param  // notice param is only referenced once
+     | try {
+     |     f(closeable)
+     |   } finally {
+     |     try {
+     |        closeable.close()
+     |     } catch { case _ => () }
+     |   }
+using: [A <: AnyRef{def close(): Unit},B](param: => A)(f: (A) => B)B
+
+/*
+if this was accessing a database a new connection would be made automatically each time this function was used
+*/
+scala> val usingTheWorld = using[BStream,Int](new java.io.ByteArrayInputStream("hello world".getBytes))_
+usingTheWorld: ((java.io.ByteArrayInputStream) => Int) => Int = &lt; function1>
+
+scala> usingTheWorld { s => io.Source.fromInputStream(s).length}  
+res3: Int = 11
+
+scala> usingTheWorld { s => io.Source.fromInputStream(s).getLines().length}
+res5: Int = 0
 </code>

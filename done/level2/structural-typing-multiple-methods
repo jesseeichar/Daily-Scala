@@ -1,0 +1,43 @@
+There are two more aspects related to structural typing that are useful to look at.  Structural types with multiple methods and type aliases.
+
+For background on this topic also look at:
+<ul><li><a href="http://daily-scala.blogspot.com/2010/02/introducing-structural-types.html">Introducing Structual Types</a></li><li><a href="http://daily-scala.blogspot.com/2010/02/dynamic-calls-using-structural-types.html">Dynamic Calls Using Structural Types</a></li></ul>
+
+Structural Types are not limited to defining a single method.  In that regard they are very similar to interfaces without the binary incompatibility issues.  However do not be fooled into thinking they are the same thing.  For one reason reflection is used so performance can be an issue in certain cases and also interfaces/traits have semantics that structural types do not.
+<code>
+/*
+Defining a types that has both a length and charAt method.  
+
+Just a warning.  If you leave off the () after length this will not work.  This is not a bug.  Martin kindly left a comment on why it is not.
+*/
+scala> def foreach(t : {def length():Int; def charAt(i:Int):Char}, f : Char => Unit) = {
+     | 0 until t.length foreach {i => f(t.charAt(i))}  
+     | }
+foreach: (t: AnyRef{def length(): Int; def charAt(i: Int): Char},f: (Char) => Unit)Unit
+
+// A string matches the structural type
+scala> foreach ("hello", println _)
+h
+e
+l
+l
+o
+</code>
+Pretty unexpected I would say.  A feature of Scala which complements Structural types are type aliases.  They are useful in many situations and one is with use with Structural Types:
+<code>
+/*
+With type aliasing you can assign a structural type a name
+*/
+scala> type IChar = {def length():Int
+     |               def charAt(i:Int):Char}
+defined type alias IChar
+
+scala> def print( t : IChar) = 0 until t.length() foreach {i => println(t.charAt(i))}
+print: (t: IChar)Unit
+
+scala> print("gurk")
+g
+u
+r
+k
+</code>

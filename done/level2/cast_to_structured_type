@@ -1,0 +1,71 @@
+Using reflection can be a real pain in Java since the API is a Java API and consists of many gets and searches through collections not to mention so many exceptions that need to be handled.  In Scala there is a wonderful way to clean up a reflective call down to a single line (assuming you don't want to worry about handling exceptions.)  Here structural typing can really be a pleasure.  
+<code>
+// I am assigning a string to an Any reference
+scala> val s:Any = "hello :D"
+s: Any = hello :D
+
+// Any does not have a length method
+scala> s.length
+&lt; console>:6: error: value length is not a member of Any
+       s.length
+         ^
+
+/*
+But I can cast it to a structural type with a length method
+*/
+scala> s.asInstanceOf[{def length:Int}].length
+res2: Int = 8
+</code>
+There are restrictions to this.  For example implicits will not work:
+<code>
+/*
+The method r is part of StringLike (or RichString in Scala 2.7) 
+and there is an implicit conversion from String to RichString/StringLike.
+The structural type does not try to apply the implicits because implicits are a
+compile time artifact and that information is not kept at run time.  Perhaps this
+will be added in the future but it is not present now.
+*/
+scala> s.asInstanceOf[{def r:util.matching.Regex}].r
+java.lang.NoSuchMethodException: java.lang.String.r()
+</code>
+More examples:
+<code>
+scala> val s:Any = "hello :D"
+s: Any = hello :D
+
+scala> s.asInstanceOf[{def charAt(x:Int):Char}].charAt(2)
+res9: Char = l
+
+/*
+This is interesting.  The actual method returns Char, but Char is
+compatible with Any so this cast works.
+*/
+scala> s.asInstanceOf[{def charAt(x:Int):Any}].charAt(2) 
+res10: Any = l
+
+// Now lets test to see if that lenience is available for parameters:
+scala> class X 
+defined class X
+
+scala> class Y extends X
+defined class Y
+
+scala> class T {
+     | def x(x:X):Int = 1
+     | }
+defined class T
+
+scala> val a:Any = new T()
+a: Any = T@687c3b99
+
+scala> a.asInstanceOf[{def x(x:X):Any}].x(new Y())
+res11: Any = 1
+
+/*
+Ok so return values can be subclasses but not params
+*/
+scala> a.asInstanceOf[{def x(x:Y):Any}].x(new Y())
+java.lang.NoSuchMethodException: T.x(Y)
+	at java.lang.Class.getMethod(Class.ja
+</code>
+Use with care :-D

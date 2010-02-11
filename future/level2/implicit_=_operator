@@ -1,0 +1,36 @@
+scala> var i = 1
+i: Int = 1
+
+scala> i += 1
+
+scala> i
+res3: Int = 2
+
+svar l = Set(1,2,3) 
+l: scala.collection.immutable.Set[Int] = Set(1, 2, 3)
+
+scala> l += 10
+
+scala> l
+res7: scala.collection.immutable.Set[Int] = Set(1, 2, 3, 10)
+
+scala> var seq = Seq(5,6,3)
+seq: Seq[Int] = List(5, 6, 3)
+
+scala> seq :+= 10
+
+scala> seq                 
+res9: Seq[Int] = List(5, 6, 3, 10)
+
+scalseq +:= 10   
+
+scala> seq       
+res11: Seq[Int] = List(10, 5, 6, 3, 10)
+
+scala> var list = List(32)
+list: List[Int] = List(32)
+
+scala> list ::= 12
+
+scala> list
+res13: List[Int] = List(12, 32)

@@ -1,0 +1,51 @@
+This tip is a cool tip based on Daniel's <a href="http://dcsobral.blogspot.com/2009/06/using-implicits-to-select-types.html">Use Implicits to Select Types</a> post.  That post goes into more detail.
+
+The idea is that depending on a given parameter of type T a particular type of object is required.  There are several ways to do this.  One would be to use matching to match the type T and create the correct object.  Most likely the biggest draw back to matching is caused by type erasure.  The following solution gets around that issue. 
+
+Two very interesting points.  
+<ol><li>Implicit methods do not require parameters.  They can be selected based only on type parameters</li><li>Implicit methods are not subject to type erasure</li></ol>
+<code>
+// the base class we need
+scala> abstract class X[T] { def id :Unit }
+defined class X
+
+/*
+One of the types we need created.  It is the catch all case
+*/
+scala> implicit def a[T] =new X[T] { def id =println("generic") }
+a: [T]X[T]
+
+/*
+A specific subclass for integers
+*/
+scala> implicit def b =new X[Int] { def id =println("Int") }
+b: X[Int]
+
+/*
+One simple usage.  The most specific implicit will be used to 
+create the object to be passed to g.  
+*/
+scala> def f[T](a :T)(implicit g :X[T]) = g.id
+f: [T](a: T)(implicit g: X[T])Unit
+
+scala> f(5)
+Int
+
+scala> f('c')
+generic
+
+/*
+This example demonstrates how erasure is not an issue because 
+the selection of the implicit is done at compile time so 
+the correct type is selected.  If a match was used instead 
+then a more complicated solution would be required
+*/
+scala> def g[T](l:List[T])(implicit i:X[T]) = i.id          
+g: [T](l: List[T])(implicit i: X[T])Unit
+
+scala> g(List(1,2,3))
+Int
+
+scala> g(List("a",2,3))
+generic
+</code>
