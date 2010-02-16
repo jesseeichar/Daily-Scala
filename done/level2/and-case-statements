@@ -1,0 +1,20 @@
+Recently I encountered a good question on Stack Overflow about matching.
+<a href="http://stackoverflow.com/questions/2261358/pattern-matching-with-conjunctions-patterna-and-patternb">http://stackoverflow.com/questions/2261358/pattern-matching-with-conjunctions-patterna-and-patternb</a>.  
+
+As mentioned in an earlier post <a href="http://daily-scala.blogspot.com/2010/01/matching-with-or.html">Matching with Or</a> case expressions suppose 'or' expression combination using the '|' character.  However 'and' combinations are not possible.
+
+One solution is to build an &amp;&amp; extractor object as follows:
+<code>
+scala> case object &amp;&amp; {  def unapply[A](a: A) = Some((a, a))}
+defined module $amp$amp
+
+scala> object StartsWith {  def unapply(s: String) = s.headOption}
+defined module StartsWith
+
+scala> object EndsWith {  def unapply(s: String) = s.reverse.headOption}
+defined module EndsWith
+
+scala> "foo" match {  case StartsWith('f') &amp;&amp; EndsWith('o') => println("f*o") }
+f*o
+</code>
+Note: this is a scala 2.7 solution Scala 2.8 can be used to improve the EndsWith extractor by using the method lastOption instead of s.reverse.headOption.

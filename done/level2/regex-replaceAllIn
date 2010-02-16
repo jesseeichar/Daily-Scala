@@ -29,7 +29,10 @@ Mark Twain
 /*
 Now things get interesting.  Using this form of replaceAllIn we can determine the replacement on a case by case basis.
 
-The method takes a String => String function.  Very powerful. But even more powerful is the next method...
+It provides the Match object as the parameter so you have complete access to all 
+the matched groups, the location of the match etc...
+
+The method takes a Match => String function.  Very, <em>very</em> powerful.
 */
 scala> expr.replaceAllIn(quote, s => if(util.Random.nextBoolean) "?" else "*")
 res5: String = 
@@ -37,15 +40,20 @@ I don&apos;t lik? to commit mys?lf about h?av?n and h?ll - you s*?, I hav? fri*n
 Mark Twain
 
 /*
-This method is fantastic.  It gives the Match object as the parameter so you have complete access to all
-the matched groups, the location of the match etc...  
-
-Using this method I have trimmed 20 lines of code down to 3 or 4.  I don&apos;t know how I survived without it
-
-This example is simple.  The replacement is the location of the match
+Another example using some of the matcher functionality
 */
-scala> expr.replaceAllMatchesIn(quote, m => m.start.toString)                        
+scala> expr.replaceAllIn(quote, m => m.start.toString)                        
 res6: String = 
 I don&apos;t lik11 to commit mys26lf about h37av40n and h48ll - you s5960, I hav68 fri73nds in both plac90s. 
+Mark Twain
+
+/*
+Another crazy useful method is the replaceSomeIn.  It is similar to the replaceAllIn that takes a function except that the function in replaceSomeIn returns an Option.  If None then there is no replacement.  Otherwise a replacement is performed.  Very nice when dealing with complex regular expressions.
+
+In this example we are replacing all 'e's start are before the 50th character in the string with -
+*/
+scala> expr.replaceSomeIn(quote, m => if(m.start > 50) None else Some("-"))
+res3: String = 
+I don't lik- to commit mys-lf about h-av-n and h-ll - you see, I have friends in both places.
 Mark Twain
 </code>

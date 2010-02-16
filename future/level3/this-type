@@ -1,0 +1,16 @@
+trait Snippet[C <: Addition] {
+  val path : String
+}
+
+trait Addition {
+  def snippets : Snippet[this.type]
+}
+
+class SAddition extends Addition{
+  def snippets = new SSnippet()
+  
+  class SSnippet extends Snippet[this.type] {
+    val path = "the road goes ever on"
+  }
+}
+

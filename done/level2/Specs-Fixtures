@@ -1,0 +1,93 @@
+This topic revisits the <a href="http://code.google.com/p/specs/">Specs BDD testing library.</a>  It is a continuation of the previous post <a href="http://daily-scala.blogspot.com/2009/12/specs-bdd-testing-framework.html">Specs BDD Testing Framework</a>.
+
+This topic will look at how to setup fixtures in Specs.  This is only a sample to give a feeling of Specs a much more complete guide is available on the Specs website.
+<code>
+jeichar: git-src$ scala -classpath ~/.m2/repository/org/scala-tools/testing/specs/1.6.1/specs-1.6.1.jar
+
+scala> import org.specs._
+import org.specs._
+
+/*
+This example demonstrates before and after actions similar to what is found in XUnit.
+*/
+scala> object mySpec extends Specification {           
+     | "my system" should {
+     | doFirst{println("before")}  // ran once
+     | 
+     | doBefore{println("before")} // ran for each test
+     | doAfter{println("after")} // ran for each test
+     | 
+     | "test spec 1" in { println("test1"); 1 must_== 1}
+     | "test spec 2" in { println("test2"); 1 must_== 2}
+     | 
+     | doLast{println("last")} // ran once
+     | }}
+defined module mySpec
+
+scala> mySpec.main(Array())                             
+Specification "mySpec"
+  my system should
+before
+before
+test1
+after
+  + test spec 1
+before
+test2
+after
+last
+  x test spec 2
+    '1' is not equal to '2' (&lt; console>:14)
+
+Total for specification "mySpec":
+Finished in 0 second, 307 ms
+2 examples, 2 expectations, 1 failure, 0 error
+</code>
+Example using Contexts there many more examples at: <a href="http://code.google.com/p/specs/wiki/DeclareSpecifications#Shared_contexts">Shared contexts</a>
+<code>
+scala> import org.specs._
+import org.specs._
+
+/*
+This specification uses contexts instead of before and after actions.
+
+My personal preference is to use contexts because they are more flexible and can have names associated with them.  In addition contexts can be shared between specifications and multiple contexts can be used within a single specification.  This example is kept very simple for demonstration purposes
+*/
+scala> object StackSpecification extends Specification {
+     |   var list : List[Int] = _
+     |   val empty = beforeContext(list = Nil)  
+     |   val nonEmpty = beforeContext(list = List(1,2,3))
+     |   
+     |   "A full stack" definedAs nonEmpty should { 
+     |     "size of 3" in {
+     |       list must haveSize (3)
+     |     }
+     |   }
+     |   "A stack" when empty should { 
+     |     "is empty" in {
+     |       list must beEmpty
+     |     }
+     |   }
+     | }
+defined module StackSpecification
+
+scala> StackSpecification.main(Array())
+Specification "StackSpecification"
+  A full stack should
+  + size of 3
+
+  Total for SUS "A full stack":
+  Finished in 0 second, 42 ms
+  1 example, 1 expectation, 0 failure, 0 error
+
+  A stack should
+  + is empty
+
+  Total for SUS "A stack":
+  Finished in 0 second, 4 ms
+  1 example, 1 expectation, 0 failure, 0 error
+
+Total for specification "StackSpecification":
+Finished in 0 second, 85 ms
+2 examples, 2 expectations, 0 failure, 0 error
+</code>

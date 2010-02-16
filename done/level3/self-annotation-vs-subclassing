@@ -1,0 +1,98 @@
+At first glance the "sself annotation" declaration seems similar to extending another class.  (For a look at self annotations read the topic: <a href="http://daily-scala.blogspot.com/search/label/self-type">Self Type</a>.)  They are completely different but the comparison is understandable since both of them provide access to the functionality of referenced class.  
+
+For example both of the following compile:
+<code>
+class Base {
+  def magic = "bibbity bobbity boo!!"
+}
+
+trait Extender extends Base {
+  def myMethod = "I can "+magic
+}
+
+trait SelfTyper {
+  self : Base => 
+  
+  def myMethod = "I can "+magic
+}
+</code>
+But the two are completely different.  Extender can be mixed in with any class and adds both the "magic" and "myMethod" to the class it is mixed with.  SelfType can only be mixed in with a class that extends Base and SelfTyper only adds the method "myMethod" NOT "magic".  
+
+Why is the "self annotations" useful?  Because it allows several provides a way of declaring dependencies.  One can think of the self annotation declaration as the phrase "I am useable with" or "I require a".
+
+The following example demonstrates one possible reason to use self annotations instead of extend. 
+
+Note: These examples can be pasted into the REPL but I have shown that here because it would make the examples too long.
+<code>
+import java.io._
+import java.util.{Properties => JProps}
+
+trait Properties {
+  def apply(key:String) : String
+}
+
+trait XmlProperties extends Properties {
+  import scala.xml._
+  
+  def xml(key:String) = Elem(null,key,Null,TopScope, Text(apply(key)))
+}
+
+trait JSonProperties extends Properties {
+  def json(key:String) : String = "%s : %s".format(key, apply(key))
+}
+
+trait StreamProperties {
+  self : Properties => 
+  
+  protected def source : InputStream
+  
+  private val props = new JProps()
+  props.load(source)
+  
+  def apply(key:String) = props.get(key).asInstanceOf[String]
+}
+
+trait MapProperties {
+  self : Properties =>
+  
+  protected def source : Map[String,String]
+  def apply(key:String) = source.apply(key)
+}
+
+val sampleMap = Map("1" -> "one", "2" -> "two", "3" -> "three")
+val sampleData = """1=one
+                    2=two
+                    3=three"""
+
+val sXml = new XmlProperties() with StreamProperties{
+              def source = new ByteArrayInputStream(sampleData.getBytes)
+           }
+val mXml = new XmlProperties() with MapProperties{
+              def source = sampleMap
+           }
+
+val sJSon = new JSonProperties() with StreamProperties{
+              def source = new ByteArrayInputStream(sampleData.getBytes)
+            }
+val mJSon = new JSonProperties() with MapProperties{
+              def source = sampleMap
+            }
+
+sXml.xml("1")
+mXml.xml("2")
+sJSon.json("1")
+mJSon.json("2")
+</code>
+The justification for using self annotations here is flexibility.  A couple other solutions would be 
+<ol><li>Use subclassing - this is poor solution because there would be an explosion of classes.  Instead of having 5 traits you would need 7 traits.  Properties, XmlProperties, JSonProperties, XmlStreamProperties, XmlMapProperties, JsonStreamProperties and JsonMapProperties.  And if you later wanted to add a new type of properties or a new source like reading from a database then you need 2 new subclasses.</li><li>Composition - Another strategy is to use construct the XmlProperties with a strategy that reads from the source.  This is essentially the same mechanism except that you need to build and maintain the the dependencies.  It also makes layering more difficult.  For example:
+  <code>
+  trait IterableXmlProperties {                                            
+    self : MapProperties with XmlProperties => 
+    def xmlIterable = source.keySet map {xml _}
+  }
+  
+  new XmlProperties with MapProperties with IterableXmlProperties {def source = sampleMap}
+  </code></li></ol>
+The next question that comes to mind is why use extends then if self annotation is so flexible?  My answer (and I welcome discussion on this point) has three points.  
+<ol><li>The first is of semantics and modeling.  When designing a model it is often more logical to use inheritance because of the semantics that comes with inheriting from another object.</li><li>Another argument is pragmatism.  
+Imagine the collections library where there is no inheritance.  If you wanted a map with Iterable functionality you would have to always declare Traversable with Iterable with Map (and this is greatly simplified).  That declaration would have to be used for virtually all methods that require both the Iterable and Map functionality.  To say that is impractical is an understatement.  Also the semantics of Map is changed from what it is now.  The trait Map currently includes the concept of Iterable.</li><li>The last point is sealed traits/classes.  When a trait is "sealed" all of its subclasses are declared within the same file and that makes the set of subclasses finite which allows certain compiler checks.  This (as far as I know) cannot be done with self annotations.</li></ol>
