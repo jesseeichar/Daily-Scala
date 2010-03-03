@@ -1,0 +1,10 @@
+<code>
+scala> Stream.continually("h") zip List(1,2,3,4)
+res2: scala.collection.immutable.Stream[(java.lang.String, Int)] = Stream((h,1), ?)
+
+scala> res2 mkString ","
+res3: String = (h,1),(h,2),(h,3),(h,4)
+
+scala> List(1,2,3,4) zip Stream.continually("h")
+res4: List[(Int, java.lang.String)] = List((1,h), (2,h), (3,h), (4,h))
+</code>

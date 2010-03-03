@@ -1,0 +1,80 @@
+This tip is mainly to document a 'GOTCHA' that I got caught by recently.  It basically goes like this:
+<bq>
+Trait Y extends(or has self-type) X. Trait X defines some abstract method 'm'.  The initialization code in Y accesses 'm'.  Creation of an object new X with Y results in: *Boom* NullPointerException (on object creation).
+</bq>
+The example in code:
+<code>
+scala> trait X { val x : java.io.File }
+defined trait X
+
+scala> trait Y {self : X => ; val y = x.getName} 
+defined trait Y
+
+scala> new X with Y { val x = new java.io.File("hi")}
+java.lang.NullPointerException
+	at Y$class.$init$(&lt; console>:5)
+	at $anon$1.&lt; init>(&lt; console>:7)
+	...
+</code>
+At a glance it seems that x should override the abstract value x in trait X.  However the order in which traits are declared is important.  In this case first Y is configured then X.  Since X is not yet configured Y throws an exception.  There are several ways to work around this.
+Option 1:
+<code>
+trait X {val x : java.io.File}
+trait Y {self : X => ; val y = x.getName}
+/*
+Declaring Y with X will work because Y is initialized after X
+but remember that there may
+be other reasons that X with Y is required.  
+
+Method resolution is one such reason
+*/
+new Y with X { val x = new java.io.File("hi")}
+</code>
+Option 2:
+<code>
+trait X { val x : java.io.File }
+trait Y {self : X => ; def y = x.getName}
+/*
+Since method y is a 'def' x.getName will not be executed during initialization.
+*/
+scala> new X with Y { val x = new java.io.File("hi")}
+res10: java.lang.Object with X with Y = $anon$1@7cb9e9a3
+</code>
+Option 3:
+<code>
+trait X { val x : java.io.File }
+trait Y {self : X => ; lazy val y = x.getName}
+/*
+'lazy val' works for the same reason 'def' works: x.getName is not invoked during initialization
+*/
+scala> new X with Y { val x = new java.io.File("hi")}
+res10: java.lang.Object with X with Y = $anon$1@7cb9e9a3
+</code>
+Option 4:
+<code>
+trait X {val x : java.io.File }
+trait Y extends X {def y = x.getName}
+/*
+if Y extends X then a new Y can be instantiated
+*/
+new Y {val x = new java.io.File("hi")}
+</code>
+Two more warnings.  First, the same error will occur whether 'x' is a def or a val or a var.
+<code>
+trait X { def x : java.io.File }   
+trait Y {self : X => ; val y = x.getName}     
+new X with Y { val x = new java.io.File("hi")}
+</code>
+Second warning: In complex domain models it is easy to have a case where Y extends X but the final object is created as: new X with Y{...}. 
+
+You will get the same error here because (I think) the compiler recognized that Y is being mixed in with X and therefore the X will be initialized as after Y instead of before Y.  
+
+First the code:
+<code>
+trait X { def x : java.io.File }   
+trait Y extends X { val y = x.getName}        
+new X with Y { val x = new java.io.File("hi")}
+</code>
+If the code instantiated new Y{...} the initialization would be X then Y.  Because X can only be initialized once, the explicit declaration of new X with Y forces Y to be initialized before X.  (X can only be initialized once even when it appears twice in the hierarchy). 
+
+This is a topic called linearization and will be addressed in the future.

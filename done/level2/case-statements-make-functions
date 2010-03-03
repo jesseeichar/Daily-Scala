@@ -1,0 +1,35 @@
+A further tip regarding using case statements to construct functions.  If a case statement is assigned to a Function it will construct a Function object not a PartialFunction.
+
+I suppose the question is why do you care about this since PartialFunction is a Function.  The fact is that a PartialFunction is a Function1.  But using a case statement you can construct a Function4 very easily.
+<code>
+scala> def run(f : Function1[Any,Unit]) = println(f.isInstanceOf[PartialFunction[_,_]])
+run: (f: (Any) => Unit)Unit
+
+/*
+since run expects a Function calling run as shown here will make a 
+Function object not a PartialFunction Object
+*/
+scala> run({case f => ()}) 
+false
+
+scala> def pf(f : PartialFunction[Any,Unit]) = println(f.isInstanceOf[PartialFunction[_,_]]) 
+pf: (f: PartialFunction[Any,Unit])Unit
+
+// Now a PartialFunction will be created
+scala> pf({case f => ()})                                                                         
+true
+
+scala> def run(f : Function2[Int,String,Unit]) = f(1,"2")                                     
+run: (f: (Int, String) => Unit)Unit
+
+/*
+This demonstrates why it is important that a case creates a Function
+when assigned to a Function. PartialFunctions are Function1 objects
+but the following statement is creating a Function2 object.
+*/
+scala> run({                 
+     | case (1,b) => println(b)
+     | case (a,b) => println(a,b)
+     | })
+2
+</code>

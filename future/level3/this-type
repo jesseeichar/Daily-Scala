@@ -1,3 +1,4 @@
+<code>
 trait Snippet[C <: Addition] {
   val path : String
 }
@@ -13,4 +14,4 @@ class SAddition extends Addition{
     val path = "the road goes ever on"
   }
 }
-
+</code>

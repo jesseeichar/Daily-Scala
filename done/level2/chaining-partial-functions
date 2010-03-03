@@ -1,0 +1,53 @@
+PartialFunctions are extremely valuable  Scala constructs that are used in many APIs. Commonly you will encounter the pattern:
+<code>
+obj match {
+case "Val" => // do something
+case _ => // handle all other cases
+}
+</code>
+It is intuitive and obvious how to share the code of the right hand side if the case statement by factoring that code out to a method. But would it not be useful to be able to factor out an entire case statement (PartialFunction) and later chain them together as needed?
+
+This is indeed possible and very easy to do:
+<code>
+/*
+We need to declare Partial Functions so to add brevity I am adding this alias
+*/
+scala> import scala.{PartialFunction => PF}
+import scala.{PartialFunction=>PF}
+
+/*
+You have to explicitly declare the type because the type inferencer cannot know what type of PartialFunction to create
+ 
+A PartialFunction is Strictly type so some functions can only be used on Ints for example
+*/
+scala> val i : PF[Any, Unit] = {case x:Int => println("int found")}
+i: PartialFunction[Any,Unit] = &lt; function1>
+
+scala> val j : PF[Any, Unit] =  {case x:Double => println("Double found")}
+j: PartialFunction[Any,Unit] = &lt; function1>
+
+scala> val * : PF[Any, Unit] =  {case x=> println("Something else found")}
+*: PartialFunction[Any,Unit] = &lt; function1>
+/*
+one might think that you can do:
+1 match (i orElse j orElse *)
+but in fact (i orElse j orElse *) forms a PartialFunction not a pattern so cannot be used with match.  Instead it must be used as a function
+*/
+scala> (i orElse j orElse *)(1)
+int found
+
+scala> (i orElse j orElse *)(1.0)
+Double found
+
+scala> (i orElse j orElse *)(true)
+Something else found
+
+/*
+for specific cases it is possible to chain the an anonymous partial function with the common function
+
+This is not so nice so it is probably best to declare a val instead of inline like this
+*/
+scala> (({case s:String => println("String found")}:PF[Any,Unit]) orElse j orElse *)("hello")
+String found
+</code>
+For another example of chaining PartialFunctions the Akka tutorial has a good example in the ChatServer trait: <a href="http://jonasboner.com/2010/01/04/introducing-akka.html">http://jonasboner.com/2010/01/04/introducing-akka.html</a>

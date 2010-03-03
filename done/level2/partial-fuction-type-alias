@@ -1,0 +1,32 @@
+A big thanks to <a href="http://scalide.blogspot.com/">Ben Jackman</a> for this tip.  
+
+His tip cleans up the examples in post <a href="http://daily-scala.blogspot.com/2010/02/chaining-partial-functions-with-orelse.html">Chaining Partial Functions with orElse</a>
+The secret is to define the type alias <code>type =>?[-A, +B] = PartialFunction[A, B]</code>.  This alias may be added to Predef in the future but until it is you can add it yourself.
+<code>
+scala> type =>?[-A, +B] = PartialFunction[A, B]
+defined type alias $eq$greater$qmark
+
+scala> val i : (Any =>? Unit) = {case x:Int => println("int found")}
+i: =>?[Any,Unit] = &lt; function1>
+
+scala> val j : (Any =>? Unit) = {case x:Double => println("Double found")}
+j: =>?[Any,Unit] = &lt; function1>
+
+scala> val * : (Any =>? Unit) = {case x=> println("Something else found")}
+*: =>?[Any,Unit] = &lt; function1>
+
+scala> (i orElse j orElse *)(1)
+int found
+
+scala> (i orElse j orElse *)(1.0)
+Double found
+
+scala> (i orElse j orElse *)(true)
+Something else found
+
+scala> def =>?[A, B](id : A =>? B) = id
+$eq$greater$qmark: [A,B](id: =>?[A,B])=>?[A,B]
+
+scala> ( =>?[Any, Unit]{case s : String => println("String found")} orElse j orElse *)("hello")
+String found
+</code>

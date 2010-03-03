@@ -1,0 +1,57 @@
+This topic looks at the functionality provide in the object PartialFunction.
+
+This example uses Scala 2.8 which I believe is required.
+
+Only two methods are focused on.  PartialFunction.cond and PartialFunction.condOpt.
+As per request the signature for said methods are:
+<code>
+def cond[T](x: T)(pf: PartialFunction[T, Boolean]): Boolean
+def condOpt[T, U](x: T)(pf: PartialFunction[T, U]): Option[U]
+</code>
+Now for some examples:
+<code>
+scala>  import PartialFunction._
+import PartialFunction._
+
+scala> def strangeConditional(other: Any): Boolean = cond(other) {
+     |  case x: String if x == "abc" || x == "def"  => true
+     |  case x: Int => true
+     | }
+strangeConditional: (other: Any)Boolean
+
+scala> strangeConditional("abc")
+res0: Boolean = true
+
+scala> strangeConditional("hello")
+res1: Boolean = false
+
+scala> strangeConditional(3)      
+res2: Boolean = true
+
+scala> def onlyInt(v: Any): Option[Int] = condOpt(v) { case x: Int => x }
+onlyInt: (v: Any)Option[Int]
+
+scala> onlyInt("hi")
+res3: Option[Int] = None
+
+scala> onlyInt(3)
+res4: Option[Int] = Some(3)
+
+scala> import util.control.Exception.catching
+import util.control.Exception.catching
+
+scala> object IntNum { 
+     |  val number = catching(classOf[NumberFormatException])
+     |  def unapply(x : Any) = condOpt(x) {
+     |      case x : Int => x
+     |      case y : String if number.opt(y.toInt).isDefined => y.toInt
+     |    }
+     | }
+defined module IntNum
+
+scala> 1 match { case IntNum(x) => println(x+" i win!")}   
+1 i win!
+
+scala> 3 match { case IntNum(x) => println(x+" i win!")}
+3 i win!
+</code>

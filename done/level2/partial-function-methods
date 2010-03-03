@@ -1,0 +1,81 @@
+This topic inspects the methods defined in the PartialFunction Object.
+<code>
+scala> type PF = PartialFunction[Int,Int]
+defined type alias PF
+
+// the two partial functions that we will use for the examples
+scala> val pf1 : PF = {case 1 => 2}                      
+pf1: PF = &lt; function1>
+
+scala> val pf2 : PF = {case 2 => 3}                      
+pf2: PF = &lt; function1>
+
+/*
+As is well known, when a PartialFunction is called with a value
+it must be defined at that value or bad things will happen
+*/
+scala> pf1 isDefinedAt 1  
+res14: Boolean = true
+
+scala> pf1 isDefinedAt 2
+res15: Boolean = false
+
+scala> pf1(2)
+scala.MatchError: 2
+	at $anonfun$1.apply(&lt; console>:5)
+	at $anonfun$1.apply(&lt; console>:5)
+	at .&lt; init>(&lt; console>:7)
+    ...
+scala> pf1(1)
+res5: Int = 2
+
+/*
+It is possible to compose two partial functions so first one partialFunction is called and then the next
+*/
+scala> (pf1 andThen pf2) isDefinedAt 2 
+res16: Boolean = false
+
+scala> (pf1 andThen pf2) isDefinedAt 1
+res17: Boolean = true
+
+scala> (pf1 andThen pf2)(2)
+scala.MatchError: 2
+	at $anonfun$1.apply(&lt; console>:5)
+	at $anonfun$1.apply(&lt; console>:5)
+	at scala.PartialFunction$$anon$2.apply(PartialFunction.scala:59)
+	at .&lt; init>(&lt; console>:8)
+    ...
+scala> (pf1 andThen pf2)(1)
+res8: Int = 3
+
+/*
+An alternative way of combining PartialFunctions is to 'or' them
+*/
+scala> (pf1 orElse pf2) isDefinedAt 1
+res18: Boolean = true
+
+scala> (pf1 orElse pf2) isDefinedAt 2
+res19: Boolean = true
+
+scala> (pf1 orElse pf2) isDefinedAt 3
+res20: Boolean = false
+
+scala> (pf1 orElse pf2)(1) 
+res9: Int = 2
+
+scala> (pf1 orElse pf2)(2)
+res10: Int = 3
+
+/*
+Finally a PartialFunction can be easily converted to a function that returns 
+an Option
+*/
+scala> pf1.lift
+res21: (Int) => Option[Int] = &lt; function1>
+
+scala> pf1.lift(1)
+res11: Option[Int] = Some(2)
+
+scala> pf1.lift(2)
+res12: Option[Int] = None
+</code>

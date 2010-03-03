@@ -266,8 +266,8 @@ val Java = Lang("Java",
 
 
 
-    val source=scala.io.Source.fromFile(file)
-    val data = source.getLines.mkString("").replaceAll("""<pre>|</pre>""","")
+    val source=scala.io.Source.fromFile(new java.io.File(file))
+    val data = source.mkString.replaceAll("""<pre>|</pre>""","")
 
     val CodeBlocks = """<code( class="(\w+)")?>([\s\S]*?)</code>""".r
     logMain (CodeBlocks.findAllIn(data).mkString("\n"))
