@@ -1,3 +1,5 @@
+A simple tip for zipping a List (or other collection) with a single value.
+
 <code>
 scala> Stream.continually("h") zip List(1,2,3,4)
 res2: scala.collection.immutable.Stream[(java.lang.String, Int)] = Stream((h,1), ?)

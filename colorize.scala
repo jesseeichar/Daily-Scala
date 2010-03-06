@@ -46,9 +46,9 @@ case class Lang(name:String, blocks:List[Block], mapping:Iterable[(Regex,String)
     val valid = blocks.map {b=> (b, b indexOf line) }.
                        filter { _._2.isDefined }.
                        map {e => (e._1,e._2.get)}
-    val sorted = valid sort { _._2 <= _._2 }
+    val sorted = valid sortWith { _._2 <= _._2 }
 
-    val firstBlock = sorted.firstOption
+    val firstBlock = sorted.headOption
 
     val split = firstBlock match {
       case None => (None,line) :: Nil

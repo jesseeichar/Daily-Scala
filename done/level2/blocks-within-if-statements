@@ -1,0 +1,11 @@
+This is another topic that examines the consistency of Scala.  This topic examines blocks in if statements.  It is related to <a href="http://daily-scala.blogspot.com/2010/02/blocks-within-for-comprehensions.html">Blocks within for comprehensions</a> and <a href="http://daily-scala.blogspot.com/2010/02/temporary-variables-during-object.html">Temporary Variables during object creation</a>.
+<code>
+// standard if
+if(1 > 2) -1 else 0
+
+// since blocks return a value you can use a block within the if statement 
+// (not sure when you would want to but...)
+if ({ val x = 1
+     | val y = 2
+     | x == y }) 1 else 2
+</code>
