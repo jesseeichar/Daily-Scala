@@ -1,0 +1,69 @@
+Very simple but useful are the methods assert, require and assume which are built into the Predef object.  As you might expect they are methods for performing certain checks during runtime to verify certain conditions.  They do not use the Java assert framework and therefore are always evaluated regardless of whether or not assertions are enabled.
+
+Scala2.8
+<code>
+scala> var called = 0
+called: Int = 0
+
+scala> called
+res0: Int = 0
+
+/*
+assert, require and assume have call by name parameters so the message is only 
+calculated when the assertion fails.
+*/
+scala> assert (called == 0, {called += 1; println("called is not 0")})
+
+scala> require (called == 0, {called += 1; println("called is not 0")})
+
+scala> assume (called == 0, {called += 1; println("called is not 0")}) 
+
+scala> called = 1
+called: Int = 1
+
+// demonstrating that the method is in fact called when the assertion fails
+scala> assert (called == 0, {called += 1; println("called is not 0")}) 
+called is not 0
+java.lang.AssertionError: assertion failed: ()
+	at scala.Predef$.assert(Predef.scala:95)
+	...
+	
+scala> called
+res4: Int = 2
+
+/*
+Require is intended to be used as a precondition of a method so 
+it throws an IllegalArgumentException, not an AssertionError
+*/
+scala> require (called == 0, {called += 1; println("called is not 0")})
+called is not 0
+java.lang.IllegalArgumentException: requirement failed: ()
+	at scala.Predef$.require(Predef.scala:117)
+	...
+	
+scala> called                                                          
+res6: Int = 3
+
+scala> assume (called == 0, {called += 1; println("called is not 0")}) 
+called is not 0
+java.lang.AssertionError: assumption failed: ()
+	at scala.Predef$.assume(Predef.scala:107)
+	...
+	
+scala> called                                                         
+res8: Int = 4
+</code>
+
+scala 2.7.7
+<code>
+/*
+In Scala 2.7 the parameter is evaluated before the 
+method is called so the side effect of the message causes
+the assertion to fail
+*/
+scala> assert (called == 0, {called += 1; println("called is not 0")})
+called is not 0
+
+scala> called
+res2: Int = 1
+</code>

@@ -1,0 +1,38 @@
+_ Scala 2.8 only tip _
+
+Unzip is a handy companion to partition.  Partition divides a traversable into two traversables by a boolean predicate.  Unzip divides a traversable into two by dividing each element into two parts (each becomes an element in one traversable).  If an element is a Tuple2 then each tuple is divided into two otherwise a function is required to divide an element into two.
+
+<code>
+// basic usage
+scala> List((1,2),(2,3)).unzip
+res2: (List[Int], List[Int]) = (List(1, 2),List(2, 3))
+
+/* 
+tuples can be of different types 
+and the resulting traversables reflect the differing types
+*/
+scala> List((2,"a"),(3,"b")).unzip
+res3: (List[Int], List[java.lang.String]) = (List(2, 3),List(a, b))
+
+// Maps are Traversable[Collection] so unzip works with them
+scala> Map(1 -> 2, 3 -> 4).unzip
+res1: (scala.collection.immutable.Iterable[Int], scala.collection.immutable.Iterable[Int]) = (List(1, 3),List(2, 4))
+
+// Of course sets result in sets and duplicates are collected to a single element
+scala> Set((1,2),(2,2)).unzip
+res7: (scala.collection.immutable.Set[Int], scala.collection.immutable.Set[Int]) = (Set(1, 2),Set(2))
+
+/*
+Arbitrary elements can be unziped if a method is provided to decompose each element
+*/
+scala> List("one word", "another word").unzip {e => (e takeWhile {_ != ' '}, e dropWhile {_ != ' '})} 
+res6: (List[String], List[String]) = (List(one, another),List( word,  word))
+
+/*
+The following shows the same function 
+applied with map.  It results in a single
+ list of Tuples rather than two lists of single elements
+ */
+scala> List("one word", "another word").map {e => (e takeWhile {_ != ' '}, e dropWhile {_ != ' '})}  
+res8: List[(String, String)] = List((one, word), (another, word))
+</code>

@@ -1,0 +1,34 @@
+<code>
+// file X.scala
+package top
+
+import top.x._
+import top.y._
+
+class X {
+  val xx = new X_X()
+  val xy = new X_Y()
+}
+// file XY.scala
+
+package top.y
+
+import top._
+import top.x._
+
+class X_Y() {
+    val x = new X()
+    val xx = new X_X()
+}
+
+// file XX.scala
+package top.x
+
+import top._
+import top.y._
+
+class X_X() {
+    val x = new X()
+    val xy = new X_Y()
+    
+}

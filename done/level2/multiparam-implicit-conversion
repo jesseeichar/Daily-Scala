@@ -1,0 +1,56 @@
+Suppose you are creating a DSL and you want to implicitly convert 2 values to a particular object:
+<code>
+val v : SomeObject = (2, 3)
+</code>
+This is easily attained.  In this example we will support the previous example as well as the standard 1 object to another implicit conversion.
+<code>
+val v : SomeObject = 2
+</code>
+Example:
+<code>
+// first lets define a class
+scala> case class Randomly(x : Int, y : Double)
+defined class Randomly
+
+// the normal conversion
+scala> implicit def intToRandomly(i : Int) = new Randomly(i,0.0)
+intToRandomly: (i: Int)Randomly
+
+/*
+now a tuple for the other conversion.
+
+Important:  The two conversions must have different names. At least that is the case in Scala 2.8
+*/
+scala> implicit def tupleToRandomly(i : (Int, Double)) = new Randomly(i._1, i._2)
+tupleToRandomly: (i: (Int, Double))Randomly
+ 
+scala> val r1 : Randomly = 4                                                     
+r1: Randomly = Randomly(4,0.0)
+
+scala> val r2 : Randomly = (4, 6.0)
+r2: Randomly = Randomly(4,6.0)
+
+
+/*
+Suppose you want to do
+val r : Randomly = (4,4)
+
+you might think to implicitly convert from in to double
+*/
+scala> implicit def intToDouble(i : Int) = i.toDouble
+intToDouble: (i: Int)Double
+
+// implicit chaining is not permitted
+scala> val r3 : Randomly = (4, 6)                    
+&lt; console>:10: error: type mismatch;
+ found   : (Int, Int)
+ required: Randomly
+       val r3 : Randomly = (4, 6)
+
+// Here is the legal option
+scala> implicit def intTupleToRandomly(t: (Int,Int)) = new Randomly(t._1,t._2.toDouble) 
+intTupleToRandomly: (t: (Int, Int))Randomly
+
+scala> val r3 : Randomly = (4, 6)                                                      
+r3: Randomly = Randomly(4,6.0)
+</code>

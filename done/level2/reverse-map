@@ -1,0 +1,35 @@
+Suppose you wish to take a map and swap the keys with values.  The stackoverflow question <a href="http://stackoverflow.com/questions/2338282/elegant-way-to-reverse-a-map-in-scala">Elegant way to reverse a map in scala</a> offers some good suggestions.
+
+<code>
+scala> val nodupes = Map(1 -> "a", 2-> "b", 3 -> "c")
+nodupes: scala.collection.immutable.Map[Int,java.lang.String] = Map((1,a), (2,b), (3,c))
+
+// Scala 2.8+
+scala> nodupes map {_.swap}                          
+res4: scala.collection.immutable.Map[java.lang.String,Int] = Map((a,1), (b,2), (c,3))
+
+// Scala 2.7
+scala> Map() ++ (nodupes map {case (k,v) => (v,k)})  
+res5: scala.collection.immutable.Map[java.lang.String,Int] = Map((a,1), (b,2), (c,3))
+
+// watch out if the values have duplicates you will loose information:
+scala> val dupes = Map(1 -> "a", 2-> "b", 3 -> "b")  
+dupes: scala.collection.immutable.Map[Int,java.lang.String] = Map((1,a), (2,b), (3,b))
+
+scala> dupes map {_.swap}                          
+res6: scala.collection.immutable.Map[java.lang.String,Int] = Map((a,1), (b,3))
+
+// a way to not loose any data
+scala> dupes groupBy {_._2} map {case (key,value) => (key, value.unzip._1)}     
+res12: scala.collection.Map[java.lang.String,scala.collection.immutable.Iterable[Int]] = Map((a,List(1)), (b,List(2, 3)))
+
+
+// I wanted to do the following for performance:
+scala> dupes.view groupBy {_._2} map {case (key,value) => (key, value.unzip._1)}
+java.lang.UnsupportedOperationException: IterableView((1,a), (2,b), (3,b)).newBuilder
+	at scala.collection.TraversableViewLike$class.newBuilder(TraversableViewLike.scala:40)
+	at scala.collection.IterableLike$$anon$1.newBuilder(IterableLike.scala:363)
+	at scala.collection.TraversableLike$$anonfun$groupBy$1.apply(TraversableLike.scala:370)
+
+// but as you can see a view cannot yet be grouped.  Perhaps in the future.
+</code>

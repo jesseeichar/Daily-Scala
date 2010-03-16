@@ -1,8 +1,0 @@
-
-<code>
-scala> List((1,2),(2,3))
-res0: List[(Int, Int)] = List((1,2), (2,3))
-
-scala> res0.unzip
-res1: (List[Int], List[Int]) = (List(1, 2),List(2, 3))
-</code>

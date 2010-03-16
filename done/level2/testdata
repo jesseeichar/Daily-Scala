@@ -1,0 +1,36 @@
+A quick tip for generating some random testdata.  
+
+Note: This is a poor man's solution to using ScalaCheck.  If you can handle the dependency I would really recommend using that library.
+
+<code>
+scala> object Options extends Enumeration {                       
+     | val ONE, TWO, THREE, FOUR = Value                          
+     | }
+defined module Options
+
+/*
+Randomly select zero or more elements from the options enumeration
+*/
+scala> Options.values.filter {_ => util.Random.nextBoolean} mkString ", "
+res2: String = TWO, FOUR
+
+/*
+Select a random string.  
+
+Warning:  there is no restriction on the characters so control characters are likely
+*/
+scala> util.Random.nextString(10)
+res5: String = ??????????
+
+/*
+ASCII string is oftern more useful for test data.  This selects a random string up to 13 characters long
+*/
+scala> util.Random.nextASCIIString(13)
+res6: java.lang.String = RVPD\#_HqJ8:o
+
+/*
+This creates a sequence of 10 random strings
+*/
+scala> 1 to 10 map {_ => util.Random.nextASCIIString(13)}
+res7: scala.collection.immutable.IndexedSeq[java.lang.String] = IndexedSeq(;E8|Q8H8RI;Q=, vM-X;&quot;ksBr\:c, SKyz{uXNQ5E]X, =Jd8_ll08)s%e, gRCs)6wj%C-YF, `x;2Zru?l*c%@, XE*/Rx9:qPfpm, s|u,e.un+-Xm(, M,TpX9Dq-6$+^, w;exER&amp;#0|}Ya)
+</code>
