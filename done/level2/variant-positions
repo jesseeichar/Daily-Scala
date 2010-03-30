@@ -1,0 +1,51 @@
+An additional topic on variance to finish up the major points on the topic.  The previous two posts:
+<ul>
+<li><a href="http://daily-scala.blogspot.com/2010/03/intra-and-co-variance-of-type.html">In- and Co- variance of type parameters</a></li>
+<li><a href="http://daily-scala.blogspot.com/2010/03/contravariance.html">Contravariance</a></li>
+</ul>
+contain required information for following this post.
+
+In-, co- and contra- variance are the three types of variance expressible in Scala.  I showed how this affects assignments and arguments being pass to methods in the last two topics.  This looks at how the different types of variance influences how classes can be defined.  In the last post we saw how the compiler complained about a method definition in a covariant class because the compiler recognized that such a definition was inherently dangerous and must be prohibited.  The example was:
+
+<code>
+scala> class Output[+A] {def write(a : A) = () /*do write*/ }
+&lt; console>:5: error: covariant type A occurs in contravariant position in type A of value a
+       class Output[+A] {def write(a : A) = () /*do write*/ }
+                                   ^
+</code>
+For an class like Output it does not make sense to have A be covariant so we changed A to be contravariant.  However suppose we have a collection type class.
+<code>
+class Verified[+A] (assertion : (A) => Boolean, value : A){
+    assert(assertion(value))
+    
+    def a = value
+    def a_=(a : A) = new Verified(assertion, a)
+}
+</code>
+The previous definition is not legal because value and a in the parameter of a_= "occur in a contravariant position."  What to do? Making A contravariant isn't an option:
+<code>
+class Verified[+A <: V,V](assertion : (V) => Boolean, val value : A){
+    assert(assertion(value))
+/*
+this is the key.  Restrict possible types of
+A Since B is a super (or equal) type of A
+*/
+    def update[ B >: A <: V](a : B) = new Verified(assertion, a)
+}
+
+// example useage
+scala> def notNull(obj : AnyRef) = obj != null
+notNull: (obj: AnyRef)Boolean
+
+scala> val v = new Verified(notNull, "hi")
+v: Verified[java.lang.String,AnyRef] = Verified@307b37df
+
+scala> val newV = v update (new Object())
+newV: Verified[java.lang.Object,AnyRef] = Verified@36f72f09
+
+// 3 is not legal because the type parameter 'V' is AnyRef.  Int is a subclass of Any NOT AnyRef
+scala> val newV = v update (3)           
+&lt; console>:8: error: inferred type arguments [Any] do not conform to method update's type parameter bounds [B >: java.lang.String <: AnyRef]
+       val newV = v update (3)
+                  ^
+</code>

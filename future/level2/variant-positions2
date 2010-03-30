@@ -1,0 +1,66 @@
+
+My first attempt at the Verified was to make it a mutable object (my Java tourettes kicking in).  But it cannot be covariant and mutable.  Look at the code to see why:
+<code>
+class Verified[+A <: V,V](assertion : (V) => Boolean, private var value : A){
+    assert(assertion(value))
+    
+    def a = value
+    def a_=[ B >: A <: V](a : B) = value = a
+}
+
+def notNull(obj : AnyRef) = obj != null
+val v = new Verified(notNull, "hi")
+
+/*
+Up to this point everything looks ok but the next line
+will assign an object to value which is a reference to a String
+*/
+v update (new Object())
+</code>
+For Verified to be mutable A must be invariant.  If you look at the Mutable collections in Scala they are all invariant.  
+
+An interesting example of both invariant and covariant:
+<code>
+scala> class X[+A](val x :A)
+defined class X
+
+scala> class Y[A](var a: A) extends X[A](a)
+defined class Y
+
+scala> val x: X[Any] = new Y[String]("hi")
+x: X[Any] = Y@1732a4df
+
+scala> x.asInstanceOf[Y[String]].a="ho"
+</code>
+This example is perfectly legal because all uses of X[Any] cannot result in illegal assignment in Y.  The interesting thing is that the object can be used in covariant usecases when only X is required.  This is now the collections in Scala can work.  
+<code>
+scala> def printList(l : List[Any]) = print(l mkString " :: ")
+printList: (l: List[Any])Unit
+
+scala> val buffer = Buffer(1,2,3)
+buffer: scala.collection.mutable.Buffer[Int] = ArrayBuffer(1, 2, 3)
+
+scala> printList(buffer)
+1 :: 2 :: 3
+
+/*
+++ is part of Iterable.  Since Iterable is covariant ++ 
+returns a new buffer it does not modify the existing buffer
+All mutators are only defined on invariant traits
+*/
+scala> buffer ++ List(4)
+res16: scala.collection.mutable.Buffer[Int] = ArrayBuffer(1, 2, 3, 4)
+
+scala> res16 eq buffer
+res17: Boolean = false
+
+/*
+buffer defines += to add an element to the buffer
+so res27 is the same buffer with an extra element
+*/
+scala> buffer += 10
+res27: buffer.type = ArrayBuffer(1, 2, 3, 10)
+
+scala> res27 eq buffer
+res28: Boolean = true
+</code>

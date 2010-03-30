@@ -1,0 +1,58 @@
+Akka is an interesting library, spearheaded by Jonas Bonér, which is designed to create scalable fault-tolerant systems quickly and easily.  A quote from the website: 
+<quote>
+Akka uses the Actor Model together with Software Transactional Memory to raise the abstraction level and provide a better platform to build correct concurrent and scalable applications.
+</quote>
+Take a look at <a href="http://akkasource.org/">the Akka website</a> for more details about the project. 
+
+It is hard to demonstrate anything of 'real' here, so this post will show a very simple application consisting of one actor sending a message to a second actor which saves the data to a database. Included will be a supervisor to manage failures. 
+
+A useful point is that the Library has both a Java and Scala API.
+
+First you need to install Akka.  This takes a bit of knowledge of maven and when I tried I had to compile sjson and configgy.  But all said it is not so difficult.  Once you have Akka compiled you can run akka (from samples directory) with mvn scala:console to get the REPL with all the required jars on the classpath.
+
+You will also have to install and setup Redis (this is quite easy): http://code.google.com/p/redis/wiki/QuickStart
+
+<code>
+import se.scalablesolutions.akka.actor._
+
+case class GetLog
+
+class Storage extends Actor {
+    lifeCycle = Some(LifeCycle(Permanent))
+    private var chatLog = atomic { RedisStorage.getVector(CHAT_LOG) }
+
+    log.info("Redis-based chat storage is starting up...")
+
+    def receive = {
+        case GetLog =>
+            val messageList = atomic {
+               chatLog.map(bytes => new String(bytes, "UTF-8")).toList
+             }
+            reply(ChatLog(messageList))
+        case message => 
+            atomic {
+               chatLog + message.getBytes("UTF-8")
+             }
+    }
+
+    override def postRestart(reason: Throwable) =
+       chatLog = RedisStorage.getVector(CHAT_LOG)
+
+   override def start: Actor = {
+        super.start
+        RemoteNode.start("localhost", 9999)
+        RemoteNode.register("chat:service", this)
+        this
+      }
+
+}
+
+
+val storage = new Storage()
+storage.start
+
+storage ! "hi"
+storage ! "ho"
+
+storage !! GetLog
+</code>

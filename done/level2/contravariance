@@ -1,0 +1,62 @@
+Continuing on with variance and type parameters, this topic will discuss contravariance.  See the post <a href="http://daily-scala.blogspot.com/2010/03/intra-and-co-variance-of-type.html">In- and Co- variance of type parameters</a> for the intro material required for this topic.
+
+Covariant parameters allow for an additional dimension of type compatibility:
+<code>
+val l : List[Object] = List("this is legal")
+</code>
+Contravariance provides the opposite:
+<code>
+// If the type parameter of list was contravariant this would be legal:
+val l : List[String] = List(new Object())
+</code>
+As covariance is indicated by a '+' before the type contravariance is indicated by a '-'
+<code>
+scala> class X[-A]
+defined class X
+
+scala> val l : X[String] = new X[Object]
+l: X[String] = X@66201d6d
+</code>
+I can almost here the "cool... but why?".  Following the lead in the Programming In Scala book.  Consider OutputStream first and a method in a Collection second.  (The following code is illegal but consider it)
+<code>
+class Output[+A] {def write(a : A) = () /*do write*/ }
+
+def writeObject(out : Output[Object]) = out.write("hello")
+
+/*
+Uh oh you this only is for outputting lists not Objects 
+(certainly not the String that is actually written)
+
+Runtime error for sure!
+*/
+writeObject(new Output[List[String]])
+</code>
+The previous example (if it would compile) would explode because an Output that can only write lists is passed to the method.  In the example a String is written to the Output object.  The Output[List[String]] cannot handle that.  
+
+Fortunately the compiler sees the definition of the class and recognizes this is an error waiting to happen and makes it illegal:
+<code>
+scala> class Output[+A] {def write(a : A) = () /*do write*/ }
+&lt; console>:5: error: covariant type A occurs in contravariant position in type A of value a
+       class Output[+A] {def write(a : A) = () /*do write*/ }
+                                   ^
+</code>
+Consider the implications of making A contravariant?
+<code>
+// The definition of object is now legal
+class Output[-A] {def write(a : A) = () /*do write*/ }
+
+// this is now a safe method definition since the parameter of Output must be a Object or a super class
+def writeObject(out : Output[Object]) = out.write("hello")
+
+// Now this is illegal as it should be
+scala> writeObject(new Output[List[String]])
+&lt; console>:8: error: type mismatch;
+ found   : Output[List[String]]
+ required: Output[java.lang.Object]
+       writeObject(new Output[List[String]])
+       
+// this is legal... 
+scala> writeObject(new Output[Any]) 
+</code>
+In this example Output[Any] can be passed to the method.  This makes sense.  If the Output object knows how to write Any oject then it knows how to write an Object; its all good.  
+

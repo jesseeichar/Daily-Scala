@@ -1,0 +1,66 @@
+In Java most parameterized types are considered to be "invariant".  What does that mean?  Here is an example to explain:
+<code>
+/*
+This is an example of a parameterized class that with an invariant parameter B
+In both Scala and Java parameters are invariant by default.
+*/
+scala> class Invariant[B]
+defined class Invariant
+
+scala> var x : Invariant[Object] = new Invariant[Object]
+x: Invariant[java.lang.Object] = Invariant@2e0c5575
+
+/*
+Note: Invariant[String] cannot be assigned to Invariant[Object]
+      even though logically it seems like it should be.
+      This is the effect of invariance.  Covariant parameters do not have
+      this restriction.
+*/
+scala> var x : Invariant[Object] = new Invariant[String]
+&lt; console>:6: error: type mismatch;
+ found   : Invariant[String]
+ required: Invariant[java.lang.Object]
+ var x : Invariant[Object] = new Invariant[String]
+                             ^
+
+scala> class Sub[A] extends Invariant[A]   
+defined class Sub
+
+/*
+Since Sub is a subclass of Invariant it can be assigned
+(but not Sub[String])
+*/
+scala> val x : Invariant[Object] = new Sub[Object]
+x: Invariant[java.lang.Object] = Sub@26ced1a8
+</code>
+Assignment compatibility has multiple dimensions: the object type and the types of the parameters.  Unlike object type the compatibility of the type-parameters can be covariant, contravariant and invariant.  Java has invariant parameters and that is demonstrated by the previous example.  Covariant parameters allow subclassing.  Contravariant parameters need their own topic.
+<code>
+// The '+' indicates the parameter is covariant
+scala> class Covariant[+B]
+defined class Covariant
+
+scala> var x : Covariant[Object] = new Covariant[Object]
+x: Covariant[java.lang.Object] = Covariant@315cb235
+
+
+// Now this is legal
+scala> var x : Covariant[Object] = new Covariant[String]
+x: Covariant[java.lang.Object] = Covariant@26e2e276
+
+/*
+Warning: The following is not legal because 
+         you cannot supply an invariant parameter 
+         with a covariant value.
+*/
+scala> class Sub[+A] extends Invariant[A]
+&lt; console>:7: error: covariant type A occurs in invariant position in type [+A]Invariant[A] with ScalaObject{def this(): Sub[A]} of class Sub
+       class Sub[+A] extends Invariant[A]
+             ^
+
+scala> class Sub[+A] extends Covariant[A]
+defined class Sub
+
+scala> class Sub[A] extends Covariant[A] 
+defined class Sub
+</code>
+

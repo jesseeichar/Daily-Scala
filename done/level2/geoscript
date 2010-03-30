@@ -1,0 +1,71 @@
+This is a bit of a departure from the standard daily-scala format, but it is one of the elements I had always invisioned.  This topic takes a look at <a href="http://geoscript.org/index.html">Geoscript.scala.</a>  (Github repo is at: <a href="http://github.com/dwins/geoscript.scala">http://github.com/dwins/geoscript.scala</a>)
+
+Geoscript has been given a Scala implementation.  It is based on the Geotools Java library and thus far provides a script interface to access some of the basic spatial functions.
+
+For setting up the console with the required libraries follow the instructions at: <a href="http://geoscript.org/scala/quickstart.html#quickstart">http://geoscript.org/scala/quickstart.html#quickstart</a>
+
+Here is an example of Geoscript in action:
+
+<code>
+scala> import org.geoscript.GeoScript._
+import org.geoscript.GeoScript._
+
+scala> import org.geoscript.geometry._
+import org.geoscript.geometry._
+
+scala> val line = LineString((10, 10), (20, 20), (30, 40))
+line: org.geoscript.geometry.LineString = LINESTRING (10 10, 20 20, 30 40)
+
+/*
+create a polygon by buffering the line (essentially expanding the line by 10 units that is degrees if not otherwise specified)
+*/
+scala> val poly = line buffer 10
+poly: org.geoscript.geometry.Geometry = POLYGON ((11.781455848733053 25.923591472464004, 21.05572809000084 44.47213595499958, 22.100060210309515 46.13114600374718, 23.447982586398712 47.55453954995706, 25.04769531727891 48.68761637789669, 26.837722339831622 49.48683298050514, 28.74927391943886 49.921475911950004, 30.708890200906794 49.97484208812642, 32.64126422950409 49.6448806768120...
+
+// query the area of the polygon
+scala> poly.area
+res0: Double = 1041.9912814842407
+
+// get the centroids of the polygon and line
+scala> line.centroid
+res1: org.geoscript.geometry.Point = POINT (21.12574113277207 24.188611699158105)
+
+scala> poly.centroid
+res2: org.geoscript.geometry.Point = POINT (20.79088988611118 24.43096430943361)
+
+
+/*
+Obviously the polygon and line intersect since the polygon is a buffer of the line
+*/
+scala> poly.intersects(line)
+res3: Boolean = true
+
+scala> val poly2 = Geometry.fromWKT("POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10))")
+poly2: org.geoscript.geometry.Geometry = POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10))
+
+// less trivial intersects operation
+scala> poly intersects poly2
+res3: Boolean = true
+
+// not make a new geometry from the intersection of the two geometries
+scala> val intersecting = poly intersection poly2
+intersecting: org.geoscript.geometry.Geometry = POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10))
+
+scala> intersecting.area 
+res6: Double = 75.0
+
+
+scala> import org.geoscript.projection._
+import org.geoscript.projection._
+
+/*
+None of the previous geometries has a projection associated.  
+A new geometry can have one created with a projection by using the <strong>in(Projection)</strong> method
+*/ 
+scala> val latLongPoly = poly2 in Projection("epsg:4326")
+latLongPoly: org.geoscript.geometry.Geometry = POLYGON ((10 10, 10 20, 20 20, 20 15, 10 10))
+
+// now reproject the latlong projection to a french projection 
+scala> latLongPoly in Projection("epsg:21781")
+res12: org.geoscript.geometry.Geometry = POLYGON ((950650.7690658928 -4203986.192880551, 900363.7533498043 -2900002.601715782, 2061411.5566836582 -2774908.8442438124, 2174910.791185147 -3393231.5380846346, 950650.7690658928 -4203986.192880551))
+</code>

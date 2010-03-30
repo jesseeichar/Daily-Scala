@@ -1,0 +1,95 @@
+Continuing on with <a href="http://daily-scala.blogspot.com/2010/03/operators.html">operators</a>, There is a special type of operator in Scala.  It is an operator that ends with =.  If a class has operation (methods with an operator identifer) the = can be appended to the effectively creating a new method.  In truth a new method is not created instead the compiler rewrites the line.  
+ 
+For example.  If a method (like Int) defines + then a method call += can be used.  It can be used to mutate a variable:
+<code>
+scala> var i = 1
+i: Int = 1
+
+scala> i += 1
+
+scala> i
+res3: Int = 2
+</code>
+To illustrate this is not a special case for Int the next example defines several operations and demonstrates in place variable mutation.
+<code>
+scala> case class MyClass(i:Int) {      
+     | def +(j:Int) = new MyClass(j + i)
+     | def -(j:Int) = new MyClass(i - j)
+     | def ^(j:Int) = MyClass(j)
+     | def +|(j:Int) = new MyClass(j + i / 3)
+     | }
+defined class MyClass
+
+scala> var c = MyClass(1)
+c: MyClass = MyClass(1)
+
+scala> c+=6
+
+scala> c
+res5: MyClass = MyClass(7)
+
+scala> c -= 2
+
+scala> c
+res7: MyClass = MyClass(5)
+
+scala> c ^= 10
+
+scala> c
+res23: MyClass = MyClass(10)
+
+scala> c +|= 5
+
+scala> c
+res25: MyClass = MyClass(8)
+</code>
+Here are several more examples using existing classes in Scala.  They are all immutable examples.
+<code>
+scala> var l = Set(1,2,3) 
+l: scala.collection.immutable.Set[Int] = Set(1, 2, 3)
+
+scala> l += 10
+
+scala> l
+res7: scala.collection.immutable.Set[Int] = Set(1, 2, 3, 10)
+
+scala> var seq = Seq(5,6,3)
+seq: Seq[Int] = List(5, 6, 3)
+
+scala> seq :+= 10
+
+scala> seq                 
+res9: Seq[Int] = List(5, 6, 3, 10)
+
+scala> seq +:= 10   
+
+scala> seq       
+res11: Seq[Int] = List(10, 5, 6, 3, 10)
+
+scala> var list = List(32)
+list: List[Int] = List(32)
+
+scala> list ::= 12
+
+scala> list
+res13: List[Int] = List(12, 32)
+</code>
+Note: assignment operators can also be defined as methods to mutate an object
+<code>
+scala> case class MyClass(var i:Int) {
+     | def += (j:Int) = { i+=j ; this }
+     | }
+defined class MyClass
+
+scala> val m = MyClass(6)
+m: MyClass = MyClass(6)
+
+scala> m += 7
+res0: MyClass = MyClass(13)
+
+scala> m += 9
+res1: MyClass = MyClass(22)
+
+scala> res1 eq m
+res2: Boolean = true
+</code>

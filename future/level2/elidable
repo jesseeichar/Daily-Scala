@@ -1,0 +1,81 @@
+
+In Scala 2.8 there is a useful annotation called 'elidable'.  This annotation flags a method so that given certain compiler flags all calls to the method will be removed.  This is handy if you are writing a logger.  The log methods can be annotated so that when compiling for production all log calls below a certain level would be removed from the compiled code.  Several of the methods in Predef are annotated with elidable.  Specifically, assume, assert and require.  
+
+The elidable annotation takes an Int parameter which specifies the priority of the method.  The lower the integer the more likely the method would be removed during compilation.  The elidable object defines several values that are used in our example.
+
+When compiling with the -Xelide-below <value>, the compiler parameter will remove all calls to elidable methods value and below.
+
+To try the following example copy the example into a scala file (elidable.scala for example) and compile as indicated below:
+
+<code>
+package example
+
+import scala.annotation.elidable
+import scala.annotation.elidable._
+
+object ElidableExamples {
+    @elidable(ALL) def all = println("all")
+    @elidable(ASSERTION) def assertion = println("assertion")
+    @elidable(CONFIG) def config = println("config")
+    @elidable(FINE) def fine = println("fine")
+    @elidable(FINER) def finer = println("finer")
+    @elidable(FINEST) def finest = println("finest")
+    @elidable(INFO) def info = println("info")
+    @elidable(OFF) def off = println("off")
+    @elidable(SEVERE) def severe = println("severe")
+    @elidable(WARNING) def warning = println("warning")
+}
+
+object Main extends Application {
+println("starting")
+import ElidableExamples._
+all
+assertion
+config
+fine
+finer
+finest
+info
+off
+severe
+warning
+println("ending")
+
+assert(false, "boom!")
+}
+</code>
+
+Output from scalac elidable.scala && scala example.Main
+<quot>
+starting
+all
+assertion
+config
+fine
+finer
+finest
+info
+off
+severe
+warning
+ending
+java.lang.AssertionError: assertion failed: boom!
+	at scala.Predef$.assert(Predef.scala:79)
+	at example.Main$.<init>(elidable.scala:34)
+	at example.Main$.<clinit>(elidable.scala)
+	at example.Main.main(elidable.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at scala.tools.nsc.util.ScalaClassLoader$$anonfun$run$1.apply(ScalaClassLoader.scala:81)
+	at scala.tools.nsc.util.ScalaClassLoader$class.asContext(ScalaClassLoader.scala:24)
+	at scala.tools.nsc.util.ScalaClassLoader$URLClassLoader.asContext(ScalaClassLoader.scala:86)
+	at scala.tools.nsc.util.ScalaClassLoader$class.run(ScalaClassLoader.scala:81)
+	at scala.tools.nsc.util.ScalaClassLoader$URLClassLoader.run(ScalaClassLoader.scala:86)
+	at scala.tools.nsc.MainGenericRunner$.main(MainGenericRunner.scala:78)
+	at scala.tools.nsc.MainGenericRunner.main(MainGenericRunner.scala)
+<quot>
+
+
+

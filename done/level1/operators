@@ -1,0 +1,44 @@
+Since Scala allows one to define the behavior of operators there are some rules involving operators and assignment like +=.  One of the standard method calls in most languages is <code>i&#160;+=&#160;1.</code> 
+
+Since <code>i+=1</code>(no spaces) is also valid,  Scala has some rules regarding how statements like <code>i+=1</code> should be broken up.  Obviously we know it should be 'i' '+=' and '1'.  So there is a special class of characters called operators.  I don't know all of them but a few are: <code> + - ^ * / % ! | &amp; =  </code>( ':' is sort of part of this group but has some special properties as well). 
+ 
+These characters can be method names but they cannot be combined with other identifier characters.
+
+Update:  These characters can be combined with other identifier characters if there is an under score so:
+
+<code>
+def x+ = 3   // not valid
+def x_+ = 3  // valid
+def +x = 3   // not valid
+</code>
+
+However these characters <em>are</em> special because they can be combined in a special way with '=' for a special assignment construct as shown in the next post.
+
+(end update)
+
+<code>
+scala> case class MyClass(i:Int) {
+     | def +(j:Int) = new MyClass(j + i)
+     | def -(j:Int) = new MyClass(i - j)
+     | def ^(j:Int) = MyClass(j)
+     | def +|(j:Int) = new MyClass(j + i / 3)
+     | }
+ 
+ scala> val c = MyClass(3)
+ c: MyClass = MyClass(3)
+
+ scala> c + 4
+ res26: MyClass = MyClass(7)
+
+ scala> c-2 
+ res27: MyClass = MyClass(1)
+
+ scala> c -6
+ res28: MyClass = MyClass(-3)
+
+ scala> c ^ 3
+ res29: MyClass = MyClass(3)
+
+ scala> c+|5
+ res31: MyClass = MyClass(6)
+</code>
