@@ -1,0 +1,13 @@
+The last few topics all discussed variance in its different forms.  The following is a cheat sheet of the where the different variances exist within a class.  See <a href="http://daily-scala.blogspot.com/2010/03/variant-positions-1.html">Variant positions 1</a> for a discussion on one position in a class that is a contravariant position.  The example is:
+<code>
+scala> class Output[+A] {def write(a : A) = () /*do write*/ }
+</code>
+In this example A in the method write is an contravariant position.  Which means the previous definition is not legal because A is defined as Covariant in the class definition.  In a class there are several positions with different variance characteristics.  Here's the example from Programming in Scala:
+<code>
+abstract class Cat[-T, +U] { 
+    def meow[W<sup>-</sup>](volume: T<sup>-</sup>, listener: Cat[U<sup>+</sup>, T<sup>-</sup>]<sup>-</sup>): Cat[Cat[U<sup>+</sup>, T<sup>-</sup>]<sup>-</sup>, U<sup>+</sup>]<sup>+</sup>
+}
+</code>
+If you remove the superscript + and - the above example actually compiles.  The + and - indicate if the position is a covariant or contravariant position.  Its not critical to memorize the positions (in my opinion).  Just look it up as needed.  The rule of thumb is that each nested position is inverted (flipped) value of it enclosing position.
+
+That is all I will say about that :)

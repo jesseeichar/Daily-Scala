@@ -1,3 +1,6 @@
+This is a continuation of post: <a href="http://daily-scala.blogspot.com/2010/03/variant-positions-1.html">Variant Positions 1</a>
+
+...
 
 My first attempt at the Verified was to make it a mutable object (my Java tourettes kicking in).  But it cannot be covariant and mutable.  Look at the code to see why:
 <code>
@@ -5,7 +8,8 @@ class Verified[+A <: V,V](assertion : (V) => Boolean, private var value : A){
     assert(assertion(value))
     
     def a = value
-    def a_=[ B >: A <: V](a : B) = value = a
+// update is illegal.  See the example below
+    def update[ B >: A <: V](a : B) = value = a
 }
 
 def notNull(obj : AnyRef) = obj != null
@@ -19,7 +23,7 @@ v update (new Object())
 </code>
 For Verified to be mutable A must be invariant.  If you look at the Mutable collections in Scala they are all invariant.  
 
-An interesting example of both invariant and covariant:
+Here is an interesting example of both invariant and covariant type parameters in a class hierarchy:
 <code>
 scala> class X[+A](val x :A)
 defined class X
@@ -32,7 +36,9 @@ x: X[Any] = Y@1732a4df
 
 scala> x.asInstanceOf[Y[String]].a="ho"
 </code>
-This example is perfectly legal because all uses of X[Any] cannot result in illegal assignment in Y.  The interesting thing is that the object can be used in covariant usecases when only X is required.  This is now the collections in Scala can work.  
+This example is perfectly legal because no matter how X[Any] is used no illegal assignment in Y can occur.  The interesting thing is that the object can be used in covariant usecases when only X is required.  This is now the collections in Scala can work.  
+
+Here is a little example of collections invariance and covariance in action.  In List the parameter is covariant but in Buffer it is invariant  
 <code>
 scala> def printList(l : List[Any]) = print(l mkString " :: ")
 printList: (l: List[Any])Unit

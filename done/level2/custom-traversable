@@ -1,0 +1,133 @@
+One of the most talked about features of Scala 2.8 is the improved Collections libraries.  Creating your own implementation is trivial, however if you want your new collection to behave the same way as all the included libraries there are a few tips you need to be aware of.
+
+Note: All of these examples can either be ran in the REPL or put in a file and ran
+
+Starting with the simple implementation:
+<code>
+import scala.collection._
+import scala.collection.generic._
+
+class MyColl[A](seq : A*) extends Traversable[A] {
+    // only abstract method in traversable is foreach... easy :) 
+  def foreach[U](f: A => U) = util.Random.shuffle(seq.toSeq).foreach(f)
+}
+</code>
+This is a silly collection I admit but it is custom :).  
+
+This example works but if you test the result of a map operation (or any other operation that returns a new instance of the collection) you will notice it is not an instance of MyColl.  This is expected because unless otherwise defined Traversable will return a new instance of Traversable.  
+
+To demonstrate run the following tests:
+<code>
+val c = new MyColl(1, 2, 3)
+println (c mkString ",")
+println(c mkString ",")
+
+println(c drop 1 mkString ",")
+
+// this two next assertions fail (see following explanation)
+assert(c.drop(1).isInstanceOf[MyColl[_]])
+assert((c map {_ + 1}).isInstanceOf[MyColl[_]])
+</code>
+Both assertions will fail.  The reason for these failures is because the collection is immutable which dictates by necessity that a new object must be returned from filter/map/etc... Since the Traversable trait returns instances of Traversable these two assertions fail.  The easiest way to make these methods return an instance of MyColl is to make the following changes/additions.
+<code>
+import scala.collection._
+import scala.collection.generic._
+
+/*
+Adding GenericTraversableTemplate will delegate the creation of new
+collections to the companion object.  Adding the trait and
+companion object causes all the new collections to be instances of MyColl
+*/
+class MyColl[A](seq : A*) extends Traversable[A] 
+                             with GenericTraversableTemplate[A, MyColl] {
+  override def companion = MyColl
+  def foreach[U](f: A => U) = util.Random.shuffle(seq.toSeq).foreach(f)
+}
+
+// The TraversableFactory trait is required by GenericTraversableTemplate
+object MyColl extends TraversableFactory[MyColl] {
+/* 
+If you look at the signatures of many methods in TraversableLike they have an
+implicit parameter canBuildFrom.  This allows one to define how the returned collections
+are built.  For example one could make a list's map method return a Set
+In this case we define the default canBuildFrom for MyColl
+*/
+  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, MyColl[A]] = new GenericCanBuildFrom[A]
+/*  
+The method that builds the new collection.  This is a simple implementation
+but it works.  There are other implementations to assist with implementation if
+needed
+*/
+  def newBuilder[A] = new scala.collection.mutable.LazyBuilder[A,MyColl[A]] {
+    def result = {
+      val data = parts.foldLeft(List[A]()){(l,n) => l ++ n}
+      new MyColl(data:_*)
+    }
+  }
+}
+</code>
+Now instances of MyColl will be created by the various filter/map/etc... methods and that is fine as long as the new object is not required at compile-time.  But suppose we added a method to the class and want that accessible after applying methods like map and filter.
+
+Adding <code>val o : MyColl[Long] = c map {_.toLong}</code> to the assertions will cause a compilation error since statically the class returned is Traversable[Long].  The fix is easy.
+
+All that needs to be done is to add <code>with TraversableLike[A, MyColl[A]]</code> to MyColl and we are golden.  There may be other methods as well but this works and is simple.
+
+Note that the order in which the traits are mixed in is important.  <code>TraversableLike[A, MyColl[A]]</code> must be mixed in <em>after</em> <code>Traversable[A]</code>.  The reason is that we want methods like map and drop to return instances of MyColl (statically as well as dynamically).  If the order was reversed then those methods would return Traversable event though statically the actual instances would still be MyColl.
+<code>
+import scala.collection._
+import scala.collection.generic._
+
+class MyColl[A](seq : A*) extends Traversable[A]
+                             with GenericTraversableTemplate[A, MyColl] 
+                             with TraversableLike[A, MyColl[A]] {
+  override def companion = MyColl
+  def foreach[U](f: A => U) = util.Random.shuffle(seq.toSeq).foreach(f)
+}
+
+object MyColl extends TraversableFactory[MyColl] {  
+  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, MyColl[A]] = new GenericCanBuildFrom[A]
+  def newBuilder[A] = new scala.collection.mutable.LazyBuilder[A,MyColl[A]] {
+    def result = {
+      val data = parts.foldLeft(List[A]()){(l,n) => l ++ n}
+      new MyColl(data:_*)
+    }
+  }
+}
+</code>
+Now add in a new method to demonstrate that the new collection works as desired and we are done.
+
+The following is the complete implementation with the tests.  You can put it in a file and run scala &lt;filename> or paste it into a REPL
+<code>
+import scala.collection._
+import scala.collection.generic._
+
+class MyColl[A](seq : A*) extends Traversable[A]
+                             with GenericTraversableTemplate[A, MyColl] 
+                             with TraversableLike[A, MyColl[A]] {
+  override def companion = MyColl
+  def foreach[U](f: A => U) = util.Random.shuffle(seq.toSeq).foreach(f)
+
+  def sayhi = println("hi!")
+}
+
+object MyColl extends TraversableFactory[MyColl] {  
+  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, MyColl[A]] = new GenericCanBuildFrom[A]
+  def newBuilder[A] = new scala.collection.mutable.LazyBuilder[A,MyColl[A]] {
+    def result = {
+      val data = parts.foldLeft(List[A]()){(l,n) => l ++ n}
+      new MyColl(data:_*)
+    }
+  }
+}
+
+val c = new MyColl(1, 2, 3)
+println (c mkString ",")
+println(c mkString ",")
+
+assert(c.drop(1).isInstanceOf[MyColl[_]])
+assert((c map {_ + 1}).isInstanceOf[MyColl[_]])
+
+val o : MyColl[Int] = c filter {_ &lt; 2}
+println(o mkString "," )
+o.sayhi
+</code>

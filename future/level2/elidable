@@ -46,21 +46,13 @@ assert(false, "boom!")
 </code>
 
 Output from scalac elidable.scala && scala example.Main
-<quot>
+<blockquote>
 starting
-all
 assertion
-config
-fine
-finer
-finest
-info
 off
-severe
-warning
 ending
 java.lang.AssertionError: assertion failed: boom!
-	at scala.Predef$.assert(Predef.scala:79)
+	at scala.Predef$.assert(Predef.scala:93)
 	at example.Main$.<init>(elidable.scala:34)
 	at example.Main$.<clinit>(elidable.scala)
 	at example.Main.main(elidable.scala)
@@ -75,7 +67,71 @@ java.lang.AssertionError: assertion failed: boom!
 	at scala.tools.nsc.util.ScalaClassLoader$URLClassLoader.run(ScalaClassLoader.scala:86)
 	at scala.tools.nsc.MainGenericRunner$.main(MainGenericRunner.scala:78)
 	at scala.tools.nsc.MainGenericRunner.main(MainGenericRunner.scala)
-<quot>
+</blockquote>
 
 
+Output from scalac -Xelide-below 0 elidable.scala && scala example.Main
+<blockquote>
+starting
+assertion
+config
+fine
+finer
+finest
+info
+off
+severe
+warning
+ending
+java.lang.AssertionError: assertion failed: boom!
+	at scala.Predef$.assert(Predef.scala:93)
+	at example.Main$.<init>(elidable.scala:34)
+	at example.Main$.<clinit>(elidable.scala)
+	at example.Main.main(elidable.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at scala.tools.nsc.util.ScalaClassLoader$$anonfun$run$1.apply(ScalaClassLoader.scala:81)
+	at scala.tools.nsc.util.ScalaClassLoader$class.asContext(ScalaClassLoader.scala:24)
+	at scala.tools.nsc.util.ScalaClassLoader$URLClassLoader.asContext(ScalaClassLoader.scala:86)
+	at scala.tools.nsc.util.ScalaClassLoader$class.run(ScalaClassLoader.scala:81)
+	at scala.tools.nsc.util.ScalaClassLoader$URLClassLoader.run(ScalaClassLoader.scala:86)
+	at scala.tools.nsc.MainGenericRunner$.main(MainGenericRunner.scala:78)
+	at scala.tools.nsc.MainGenericRunner.main(MainGenericRunner.scala)
+</blockquote>
+
+
+Output from scalac -Xelide-below 1000 elidable.scala && scala example.Main
+<blockquote>
+starting
+assertion
+off
+severe
+ending
+java.lang.AssertionError: assertion failed: boom!
+	at scala.Predef$.assert(Predef.scala:93)
+	at example.Main$.<init>(elidable.scala:34)
+	at example.Main$.<clinit>(elidable.scala)
+	at example.Main.main(elidable.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at scala.tools.nsc.util.ScalaClassLoader$$anonfun$run$1.apply(ScalaClassLoader.scala:81)
+	at scala.tools.nsc.util.ScalaClassLoader$class.asContext(ScalaClassLoader.scala:24)
+	at scala.tools.nsc.util.ScalaClassLoader$URLClassLoader.asContext(ScalaClassLoader.scala:86)
+	at scala.tools.nsc.util.ScalaClassLoader$class.run(ScalaClassLoader.scala:81)
+	at scala.tools.nsc.util.ScalaClassLoader$URLClassLoader.run(ScalaClassLoader.scala:86)
+	at scala.tools.nsc.MainGenericRunner$.main(MainGenericRunner.scala:78)
+	at scala.tools.nsc.MainGenericRunner.main(MainGenericRunner.scala)
+</blockquote>
+
+
+Output from scalac -Xelide-below 3000 elidable.scala && scala example.Main
+<blockquote>
+starting
+off
+ending
+</blockquote>
 
