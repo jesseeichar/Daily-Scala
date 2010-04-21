@@ -1,0 +1,60 @@
+Scala 2.8 added the <em>break</em> control flow option.  It is not implemented as a special language feature.  Rather it is simply implemented as an object/trait using standard Scala mechanisms.  If you are interested in creating a control flow object similar to this look at the <a href="http://daily-scala.blogspot.com/2009/11/defining-custom-control-structures.html">Defining Custom Control Structures</a> post.
+
+The Break functionality is works basically how you would expect:
+<code>
+// Import the control flow methodsmethods
+scala> import util.control.Breaks._
+import util.control.Breaks._
+
+// pass a function to the breakable method
+scala> breakable {
+     | for (i &lt;- 1 to 10 ) {
+     | if(i > 5) break  // call break when done
+     | println(i)
+     | }
+     | }
+1
+2
+3
+4
+5
+</code>
+Pretty intuitive but beware, break only breaks out to the first enclosing breakable.  Here is an example of the issue:
+<code>
+scala> def loop(f : Int => Boolean) = breakable {
+     | for (i &lt;- 1 to 300) if (f(i)) break else println(i)
+     | }
+loop: (f: (Int) => Boolean)Unit
+
+// This never ends because break is caught by breakable in the loop method
+scala> breakable {
+     | while(true) {
+     | loop{ i => break; true }
+     | }
+     | }
+</code>
+Fortunately the implementers provide an elegant way to handle these sorts of cases.  The Breaks object extends the Breaks class.  By instantiating other instances of Breaks it is possible to control which breaks capture
+<code>
+scala> import scala.util.control._
+import scala.util.control._
+
+scala> def loop(f : Int => Boolean) = {
+     |   val Inner = new Breaks
+     |   Inner.breakable {
+     |     for (i &lt;- 1 to 4) if (f(i)) Inner.break else println(i)
+     |   }
+     | }
+loop: (f: (Int) => Boolean)Unit
+
+scala> val Outer = new Breaks
+Outer: scala.util.control.Breaks = scala.util.control.Breaks@1ba4806
+
+scala> Outer.breakable {
+     |   while(true) {
+     |     loop{ i => if(i==4) Outer.break; false}
+     |   }
+     | }
+1
+2
+3
+</code>

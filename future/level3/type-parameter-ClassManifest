@@ -1,0 +1,6 @@
+def even[M : ClassManifest](v : Vector[M]): Array[M] = {...}
+
+becomes
+
+def even[M](v : Vector[M])(implicit m : ClassManifest[M]): Array[M] = {...}
+

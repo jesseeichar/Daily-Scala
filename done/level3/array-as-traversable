@@ -1,0 +1,57 @@
+One performance/consistency change that has been make in Scala 2.8 is to make Scala Array always be a Java Array.  This has some consequences which we will examine in this post.  The biggest one is that Array <em>is not</em> a Scala Collection/Traversable.  It is implicitly converted to one but it is not an instance of a Traversable.  There are several reasons this was done.  Probably the biggest is for performance.  Because a Scala array <em>is</em> a Java array there is no overhead when using a Scala array.  
+
+Thanks to implicit type conversion all the normal collection methods are useable with an array.  Even better, after running a method like map the result will again be a Java array.  So the API is much more consistent.
+
+An example illustrating that an Array is not a Traversable:
+<code>
+// This does not compile (which is good) 
+// because Traversable[Int] can never be an array
+scala> def x(t:Traversable[Int]) = t match {
+     | case x : Array[Int] => true          
+     | }
+&lt; console>:13: error: pattern type is incompatible with expected type;
+ found   : Array[Int]
+ required: Traversable[Int]
+       case x : Array[Int] => true
+                ^
+&lt; console>:13: error: type mismatch;
+ found   : Array[Int]
+ required: Traversable[Int]
+       case x : Array[Int] => true
+              ^
+</code>
+Another example:
+<code>
+scala> def x(t:Traversable[Int]) = t.isInstanceOf[Array[_]]
+x: (t: Traversable[Int])Boolean
+
+/* this evaluates to false because Array is converted
+ * to WrappedArray because it has to be implicitly converted
+ * to a Traversable.  Since Array is not a Traversable the resulting 
+ * object is not an Array
+ */
+scala> x(Array(1,2,3))                                     
+res24: Boolean = false
+
+scala> def x(t:Traversable[Int]) = println(t)
+x: (t: Traversable[Int])Unit
+
+// This method call demonstrates the previous assertion
+scala> x(Array(1,2,3))                                            
+WrappedArray(1, 2, 3)
+</code>
+So suppose you want to be able to accept and use arrays and Traversables in a method but you want to be able to 
+check that the parameter is an Array.  Why not match against WrappedArray.  You probably can, but you may get performance improvements in some cases if you don't require wrapping the array.  
+
+For a more concrete example of why you may want to do this.  In a Input/Output routine I wrote I would write the data one way if the input was an Array: <code>stream.write(array)</code>.  But if the input was a traversable then I would have to handle it differently.  My particular issue was more complicated than that but that is the basic issue.
+
+So the work around is to define a Generic parameter for the method:
+<code>
+scala> def x[T <% Traversable[Int]](t:T) = t match { 
+     | case x : Array[Int] => true                                
+     | }
+x: [T](t: T)(implicit evidence$1: (T) => Traversable[Int])Boolean
+
+scala> x(Array(1,2,3))                               
+res27: Boolean = true
+</code>

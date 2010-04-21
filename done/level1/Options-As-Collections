@@ -1,0 +1,16 @@
+A cute little trick:
+<code>
+scala> List(1,2,3) ++ Some(4)
+res0: List[Int] = List(1, 2, 3, 4)
+
+scala> List(1,2,3) ++ None   
+res1: List[Int] = List(1, 2, 3)
+</code>
+Options are implicitly converted to Iterables, so Options can be appended to collections.  
+<code>
+scala> val x : Iterable[Int] = None       
+x: Iterable[Int] = List()
+
+scala> val x : Iterable[Int] = Some(4)
+x: Iterable[Int] = List(4)
+</code>
