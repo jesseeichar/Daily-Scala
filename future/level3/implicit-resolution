@@ -1,0 +1,71 @@
+<code>
+class X(val i:Int)
+class Y(val i:Int)
+
+object X {
+  implicit def xx = new X(1)
+}
+
+trait M { 
+  self : Method =>
+
+  implicit def x1 = new X(10)
+  implicit def y1 = new Y(100)
+
+  def testy = y
+  def testx = x
+}
+trait SM extends M {
+  self : Method =>
+
+  implicit def x2 = new X(20)
+  implicit def y2 = new Y(200)
+  
+  def testy2 = y  
+}
+class Method {
+  def x(implicit x:X)=println(x.i)
+  def y(implicit y:Y)=println(y.i)
+}
+
+// implicit resolved from companion object of X
+new Method().x
+// explicit applied so that value is used
+new Method().x(new X(3))
+// implicit resolved from companion object of X
+// NOT from M.  This is because the call site of x 
+// is not within M therefore does not use the implicits in M
+// for resolution.
+(new Method with M).x
+
+implicit def x = new X(30)
+// local scope overrides companion object implicit
+new Method().x
+// explicit applied so that value is used
+new Method().x(new X(3))
+// local scope overrides companion object implicit
+(new Method with M).x
+
+// testy is defined within M so the implicits within M
+(new Method with M).testy
+// testx is defined within M so the implicit within M
+// overrides the companion object implicit
+(new Method with M).testx
+// testy is within M not SM so the implicit within SM
+// is used
+(new Method with SM).testy
+// testy2 is within SM so the implicit within SM 
+// overrides the implicit in M and the companion object
+(new Method with SM).testy2
+</code>
+Output:
+1
+3
+1
+30
+3
+30
+100
+10
+100
+200

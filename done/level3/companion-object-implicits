@@ -1,0 +1,31 @@
+When a method requires an implicit there are several ways that the implicit is resolved.  One way is to search for an implicit definition in the <em>companion object</em> of the <em>required</em> type.  For example:  <code>def x(implicit m:MyClass)</code> parameter m will search local scope, class hierarchy and the MyClass companion object for an implicit val or def.  (More on implicit resolution later).
+
+To demonstrate the method put the following code block into a file and run the script:
+<code>
+class X(val i:Int) {
+  def add(implicit x:X)=println(x.i+i)
+}
+
+object X {
+  implicit def xx = new X(3)
+}
+
+// implicit is obtained from companion object of X
+new X(3).add
+
+val other = new {
+  def print(implicit x:X)=println(x.i)
+}
+
+// implicit is obtained from companion object of X
+other.print
+
+implicit def x = new X(32)
+
+// implicit is obtained local scope
+other.print
+</code>
+Running: scala impl.scala should produce:
+6
+3
+32
