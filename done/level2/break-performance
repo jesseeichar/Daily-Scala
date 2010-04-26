@@ -1,0 +1,65 @@
+In the <a href="http://daily-scala.blogspot.com/2010/04/breaks.html">Breaks</a> comments there were several questions about the performance of the Scala break command vs the Java break command.  So I decided to take a look. 
+
+The code for the tests is available on GitHub at: <a href="http://github.com/jesseeichar/Scala-Benchmarks">Scala Benchmarks</a>.  Feel free to play around with it.
+
+I personally don't think these tests say anything of particular import because they only test how fast the Java break is vs the Scala break without doing any work in the loop.  So I don't expect these number would ever been seen in the real world.  However that said if you have a tight loop with minimal processing then a Scala break may not be the correct construct to use.  
+
+Here is the Java test (labelled JavaSimpleBreak)
+<code class="Java">
+int i = 0;
+while (i &lt; 10) {
+  if(i==1) break;
+  i += 1;
+}
+</code>
+Here is the Scala test (labelled ScalaSimpleBreak)
+<code>
+var i = 0;
+breakable {
+  while (i &lt; 10) {
+    if(i==1) break;
+    i += 1;
+  }
+}
+</code>
+Out of curiosity I also added a test that created a new Exception each iteration (labelled ScalaException):
+<code>
+  var i = 0;
+  while (i &lt; 10) {
+    if(i==1) throw new Exception();
+    i += 1;
+  }
+</code>
+And also a test that just throws the same ScalaBreak exception each time.  This one is weird since Scala Simple Break also throws the same exception but is much much faster so I think there is something about popping the stack in the example compared to the ScalaSimpleBreak test.
+<code>
+var i = 0;
+breakable {
+	while (i &lt; 10) {
+		if(i==1) break;
+		i += 1;
+	}
+}
+</code>
+The results of the tests:
+
+First, don't compare the break tests to the Exception tests.  They are sufficiently different to not be worth comparing.
+Second, remember that this is a micro benchmark and has very little relationship to reality.
+<bq>
+90000000 iterations.  Swapping every 90000000 tests
+JavaSimpleBreak = 254 (0.0016279129387033098)
+ScalaSimpleBreak = 2475 (0.015862537493270438)
+ScalaBreakException = 18806 (0.12052964852462379)
+ScalaException = 156028 (1.0)
+
+90000000 iterations.  Swapping every 500000 tests
+JavaSimpleBreak = 772 (0.005138547761203965)
+ScalaSimpleBreak = 2351 (0.015648608531853004)
+ScalaBreakException = 19346 (0.12876987692778744)
+ScalaException = 150237 (1.0)
+
+90000000 iterations.  Swapping every 500 tests
+JavaSimpleBreak = 790 (0.005242446563543097)
+ScalaSimpleBreak = 2247 (0.014911110668710557)
+ScalaBreakException = 19213 (0.1274976276270298)
+ScalaException = 150693 (1.0)
+</bq>

@@ -1,0 +1,12 @@
+Scala 2.8:
+<code>
+List(1,1,2,5,5,5).groupBy{ x => x }.map { case(num, occurrences) => (num, occurances.size) }
+</code>
+Scala 2.8:
+<code>
+List(1,1,2,5,5,5) groupBy identity mapValues (_.size)
+</code>
+Scala 2.7
+<code>
+List(1,1,2,5,5,5) groupBy identity mapValues (_.size)
+</code>

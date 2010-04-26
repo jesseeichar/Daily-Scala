@@ -1,0 +1,62 @@
+Evidently the topic of implicit parameters has not yet been correctly addressed.  There have been several topic that refer to implicit parameters but none that directly discuss them.  So before I continue with the topic of implicit parameter resolution I will discuss implicit parameters.
+
+First, implicit parameters are not the same as implicit object conversions.  Implicit parameters provide a way to allow parameters of a method to be "found".  This is similar to default parameters at a glance but in fact is a different mechanism for finding the "default" value.  It differs from implicit object conversion in that it is only a way for parameters for a method to be resolved.  Implicit object conversion allows methods to appear to be called on one object when in fact that object is being converted behind the scenes to another type.  (more or less)
+
+An implicit parameter is a parameter to method or constructor that is marked as implicit.  This means that if a parameter value is not supplied then the compiler will search for an "implicit" value defined within scope (according to resolution rules.)  Implicit parameter resolution rules will be discussed soon.
+
+Example:
+<code>
+scala> def p(implicit i:Int) = print(i)
+p: (implicit i: Int)Unit
+
+// defining a val/var/def as implicit 
+// means that it will be considered during implicit resolution
+scala> implicit val v=2
+v: Int = 2
+
+// scope is searched for a implicit value to sue
+// v is found as marked implicit
+scala> p               
+2
+
+// explicit declarations always overrides implicit values
+scala> p(1)
+1
+</code>
+Implicit parameters are very nice for simplifying APIs.  For example the collections use implicit parameters to supply CanBuildFrom objects for many of the collection methods.  This is because normally the user does not need to be concerned with those parameters.  Another example is supplying an encoding to an IO library so the encoding is defined once (perhaps in a package object) and all methods can use the same encoding without having to define it for every method call.
+
+One important restriction is that there can only be a single implicit parameter per method.  I have not looked into the reasoning behind this, but I assume there is one because I have found that there are normally good reasons for these sorts of restrictions.
+
+A second restriction is that the parameter must be the first parameter in a parameter list <em>and</em> it must be in the last parameter list of the method.  Here are several illegal examples:
+<code>
+// implicit is not in last parameter list
+scala> def pp(implicit i:Int, a:Int)(b:Int) = println(a,i)                 
+&lt; console>:1: error: '=' expected but '(' found.
+       def pp(implicit i:Int, a:Int)(b:Int) = println(a,i)
+
+// there are 2 implicit parameters
+scala> def pp(implicit j:Int, a:Int)(implicit i:Int,b:Int) = println(a,i)
+&lt; console>:1: error: '=' expected but '(' found.
+      def pp(implicit j:Int, a:Int)(implicit i:Int,b:Int) = println(a,i)
+
+// implicit is not the first parameter of the parameter list
+scala> def pp(a:Int, implicit i:Int) = println(i,j)         
+&lt; console>:1: error: identifier expected but 'implicit' found.
+       def pp(a:Int, implicit i:Int) = println(i,j)
+                     ^
+</code>
+Here are several legal examples:
+<code>
+scala> def pp(a:Int)(implicit i:Int) = println(a,i)
+pp: (a: Int)(implicit i: Int)Unit
+
+scala> def pp(a:Int)(implicit i:Int, b:Long) = println(a,i,b)
+pp: (a: Int)(implicit i: Int,implicit b: Long)Unit
+
+scala> def pp(implicit i:Int, b:Long) = println(i,b)  
+pp: (implicit i: Int,implicit b: Long)Unit
+
+scala> def pp(implicit i:Int, b:Long*) = println(i,b)
+pp: (implicit i: Int,implicit b: Long*)Unit
+</code>
+A related topic is <a href="http://daily-scala.blogspot.com/2010/04/companion-object-implicits.html">Companion Object implicits</a>.

@@ -1,0 +1,9 @@
+Thanks to Daniel Spiewak's tweet.
+
+Why better than shapes.filter{_.isInstanceOf[Square]}
+<code>
+def squares(shapes: List[Shape]) = shapes flatMap {
+  case sq: Square => Some(sq)
+  case _ => None
+}
+</code>

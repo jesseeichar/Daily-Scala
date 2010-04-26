@@ -1,3 +1,7 @@
+
+
+Implicit parameter resolution has very strict rules for which implicit value is to be used.  Basically the "closest" definition will be used.  Local scope, enclosing class, parent class, companion object of the desired type.
+
 <code>
 class X(val i:Int)
 class Y(val i:Int)
