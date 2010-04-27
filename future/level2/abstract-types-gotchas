@@ -1,0 +1,22 @@
+Error 1:
+Inner class contains abstract type
+
+Error 2: 
+abstract type escapes super class
+
+Error 3:
+protected[resource] trait TraversableSource[In, A] {
+  def resource : Resource[In]
+  def skip(stream:In, count:Long) : Unit
+  def read(stream:In) : Option[Traversable[A]]
+}
+
+protected[resource] class InputStreamSource[A](val resource : Resource[InputStream], conv : Int => Traversable[A])
+    extends TraversableSource[InputStream, A] {
+      def skip(stream:InputStream, count:Long) = stream.skip(count)
+      def read(stream:InputStream) = stream.read match {
+        case -1 => None
+        case i => Some(conv(i))
+      }
+}
+

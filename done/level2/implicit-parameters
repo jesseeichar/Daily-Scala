@@ -25,9 +25,9 @@ scala> p(1)
 </code>
 Implicit parameters are very nice for simplifying APIs.  For example the collections use implicit parameters to supply CanBuildFrom objects for many of the collection methods.  This is because normally the user does not need to be concerned with those parameters.  Another example is supplying an encoding to an IO library so the encoding is defined once (perhaps in a package object) and all methods can use the same encoding without having to define it for every method call.
 
-One important restriction is that there can only be a single implicit parameter per method.  I have not looked into the reasoning behind this, but I assume there is one because I have found that there are normally good reasons for these sorts of restrictions.
+One important restriction is that there can only be a single implicit keyword per method.  It must be at the start of a parameter list (which also makes all values of that parameter list be implicit).  I further understand that only the last parameter list may be implicit.
 
-A second restriction is that the parameter must be the first parameter in a parameter list <em>and</em> it must be in the last parameter list of the method.  Here are several illegal examples:
+Here are several illegal examples:
 <code>
 // implicit is not in last parameter list
 scala> def pp(implicit i:Int, a:Int)(b:Int) = println(a,i)                 
@@ -45,18 +45,53 @@ scala> def pp(a:Int, implicit i:Int) = println(i,j)
        def pp(a:Int, implicit i:Int) = println(i,j)
                      ^
 </code>
-Here are several legal examples:
+Here are several legal examples (Updated with useage examples):
 <code>
+scala> implicit def v = 7
+v: Int
+
+scala> implicit var x = 10L
+x: Long
+
+// i is implicit
 scala> def pp(a:Int)(implicit i:Int) = println(a,i)
 pp: (a: Int)(implicit i: Int)Unit
 
-scala> def pp(a:Int)(implicit i:Int, b:Long) = println(a,i,b)
+scala> pp(3)
+(3,7)
+
+// both i and b are implicit
+scala> def pp(a:Int)(implicit i:Int, b:Long) = println(a,i,b) 
 pp: (a: Int)(implicit i: Int,implicit b: Long)Unit
 
+scala> pp(4)               
+(4,7,10)
+
+// both i and b are implicit
 scala> def pp(implicit i:Int, b:Long) = println(i,b)  
 pp: (implicit i: Int,implicit b: Long)Unit
 
+scala> pp
+(7,10)
+
+// all or none of the parameters must be supplied
+scala> pp(2)
+&lt; console>:13: error: not enough arguments for method pp: (implicit i: Int,implicit b: Long)Unit.
+Unspecified value parameter b.
+       pp(2)
+
+// This is syntactically legal but I cannot seem to implicitly invoke this
+// I would recommend: def pp(b:Long*)(implicit i:Int) = println(i,b)
 scala> def pp(implicit i:Int, b:Long*) = println(i,b)
 pp: (implicit i: Int,implicit b: Long*)Unit
+
+scala> pp(3,1,2,3)
+(3,WrappedArray(1, 2, 3))
+
+scala> def pp(b:Long*)(implicit i:Int) = println(i,b)
+pp: (b: Long*)(implicit i: Int)Unit
+
+scala> pp(1,2,3)
+(7,WrappedArray(1, 2, 3))
 </code>
 A related topic is <a href="http://daily-scala.blogspot.com/2010/04/companion-object-implicits.html">Companion Object implicits</a>.
