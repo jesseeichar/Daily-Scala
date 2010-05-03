@@ -1,9 +1,28 @@
-Thanks to Daniel Spiewak's tweet.
-
-Why better than shapes.filter{_.isInstanceOf[Square]}
+I picked up this tip from one of Daniel Spiewak's tweets.  He tweeted a pro tip that uses flatMap to create a filtered list: 
 <code>
-def squares(shapes: List[Shape]) = shapes flatMap {
-  case sq: Square => Some(sq)
+list flatMap {
+  case st: String => Some(st)
   case _ => None
 }
+</code>
+At a glance one might wonder why not simply use list.filter{_.isInstanceOf[String]}.  The difference is that the flatMap will return a List[String].
+
+However Scala 2.8 offers the collect method for doing a similar thing.
+<code>
+def strings(list: List[Any]) = list flatMap {
+  case st: String => Some(st)
+  case _ => None
+}
+
+// returned list is a List[String]
+scala> strings("hi" :: 1 :: "world" :: 4 :: Nil)
+res11: List[String] = List(hi, world)
+
+// returned list is a List[Any] (not as useful)
+scala> "hi" :: 1 :: "world" :: 4 :: Nil filter {_.isInstanceOf[String]}
+res12: List[Any] = List(hi, world)
+
+// collect returns List[String]
+scala> "hi" :: 1 :: "world" :: 4 :: Nil collect {case s:String => s}           
+res13: List[String] = List(hi, world)
 </code>

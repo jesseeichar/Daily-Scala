@@ -11,7 +11,7 @@ trait C2 {
   def doit(a:A):A
 }
 </code>
-Both implementations have similar properties.  However they are <em>NOT</em> the same.  I have at first been confused thinking I could used them equivalently.  However, consider the following examples:
+Both implementations have similar properties.  However they are <em>NOT</em> the same.  At first I thought that I could used them equivalently.  However, consider the following examples:
 <code>
 //compiles
 def p(c:C[Int]) = c.doit(c.get)
@@ -70,7 +70,7 @@ res0: Boolean = true
 // while the dynamic type of result is a string the
 // dynamic type is not so you cannot assign a string to result
 scala> result = "4"
-<console>:8: error: type mismatch;
+&lt; console> :8: error: type mismatch;
  found   : java.lang.String("4")
  required: C2#A
        result = "4"
@@ -131,7 +131,7 @@ object Foreach {
 }
 
 trait Foreach[A] {
-  type I <: java.io.Closeable
+  type I &lt;: java.io.Closeable
   trait Source {
     def in : I
     def next(in : I) : Option[A]

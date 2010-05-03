@@ -1,0 +1,10 @@
+scala> def method(a:Int, b:Int, c:String) = println(a,b,c)
+method: (a: Int,b: Int,c: String)Unit
+
+scala> val testCases = (1,2,"1") :: (2,3,"2") :: (3,4,"3") :: Nil
+testCases: List[(Int, Int, java.lang.String)] = List((1,2,1), (2,3,2), (3,4,3))
+
+scala> testCases foreach {i => (Function tupled method _)(i)} 
+(1,2,1)
+(2,3,2)
+(3,4,3)

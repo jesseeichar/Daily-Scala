@@ -20,3 +20,8 @@ protected[resource] class InputStreamSource[A](val resource : Resource[InputStre
       }
 }
 
+Error 4:
+ Concrete type has the type information included:
+ 
+ var foreach = fromStream(new ByteArrayInputStream(bytes))
+ foreach = fromReader(new StringReader(data))  // fails to compile

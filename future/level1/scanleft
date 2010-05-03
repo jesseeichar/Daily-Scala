@@ -1,0 +1,12 @@
+
+scala> (1 to 10).toList.scanLeft(2){_ + _} 
+res6: List[Int] = List(2, 3, 5, 8, 12, 17, 23, 30, 38, 47, 57)
+
+scala> (1 to 10).toList.foldLeft(2){_ + _}     
+res10: Int = 57
+
+scala> (1 to 10).toList.scanLeft(4){(_,i) => i}
+res8: List[Int] = List(4, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+scala> (1 to 10).toList.foldLeft(4){(_,i) => i}
+res9: Int = 10

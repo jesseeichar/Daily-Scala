@@ -1,0 +1,19 @@
+scala> var count = 0                                                                                                                          count: Int = 0 
+
+scala> List(1,2,3,4).map{count += 1;_.toChar}
+res17: List[Char] = List(, , , )
+
+scala> count
+res18: Int = 1
+
+scala> List(1,2,3,4).map{count += 1;_ + 1}   
+res19: List[Int] = List(2, 3, 4, 5)
+
+scala> count
+res20: Int = 2
+
+scala> List(1,2,3,4).map{i => count += 1;i + 1}
+res21: List[Int] = List(2, 3, 4, 5)
+
+scala> count
+res22: Int = 6
