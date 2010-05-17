@@ -1,3 +1,5 @@
+In a previous post about abstract types I showed one of the benefits of using abstract types over parameterized types.  This topic looks at potential pitfalls you can encounter when using abstract types.
+
 Error 1:
 Inner class contains abstract type
 

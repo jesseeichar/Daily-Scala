@@ -1,0 +1,67 @@
+My understand is that if:
+
+  type T = Foo[Bar[Baz]]
+
+then Manifest[T] represents the entire Foo[Bar[Baz]] type, whereas ClassManifest[T] only represents Foo[_].
+
+For instantiating Arrays, you only need to know whether it's a primitive array or a reference array, so only the ClassManifest is needed. (But a Manifest is also a ClassManifest...)
+
+
+
+
+scala> class Foo[T]
+defined class Foo
+
+scala> class Bar[T]
+defined class Bar
+
+scala> class Baz
+defined class Baz
+
+scala> type T = Foo[Bar[Baz]] 
+defined type alias T
+
+scala>val m = manifest[T]
+m: Manifest[T] = Foo[Bar[Baz]]
+
+scala> val cm = classManifest[T]
+cm: ClassManifest[T] = Foo[Bar[Baz]]
+
+scala> m.typeArguments
+res0: List[scala.reflect.Manifest[_]] = List(Bar[Baz])
+
+scala> cm.typeArguments
+res1: List[scala.reflect.OptManifest[_]] = List(Bar[Baz])
+
+scala> cm == m
+res2: Boolean = true
+
+scala> cm.isInstanceOf[Manifest[_]]
+res3: Boolean = false
+
+scala> m.isInstanceOf[Manifest[_]] 
+res4: Boolean = true
+
+scala> cm.isInstanceOf[ClassManifest[_]]
+res5: Boolean = true
+
+
+Yes, you're correct. I see now that ClassManifest captures as much type information as it can.
+
+The difference comes here:
+
+scala> class Foo[T]
+defined class Foo
+
+scala> type T = Foo[_]
+defined type alias T
+
+scala> val m = manifest[T]
+<console>:6: error: could not find implicit value for parameter m: Manifest[T]
+       val m = manifest[T]
+                       ^
+
+scala> val m = classManifest[T]
+m: ClassManifest[T] = Foo[<?>]
+
+In this case, you can make a ClassManifest[T], but you can't make a Manifest[T].

@@ -1,0 +1,79 @@
+In a previous post about abstract types I showed one of the benefits of using abstract types over parameterized types.  <a href="http://daily-scala.blogspot.com/2010/05/abstract-types-vs-parameter.html">Abstract Types vs Parameter</a>.  The next several posts will feature potential problems you may encounter when using Abstract Types.
+
+I should point out that abstract types are not inherently difficult to understand but they are rather different from anything you will see when you come from the Java world so if you are new to them I would use them with caution at first.
+
+In the <a href="http://daily-scala.blogspot.com/2010/05/abstract-types-vs-parameter.html#full_example">abstract types example</a> you will notice that the abstract type 'I' in Foreach is not within the trait Source rather it is outside in the Foreach trait.  At first one might consider putting the type in Source rather than Foreach.  The naive change can get you in trouble (but there is a couple easy fixes)
+<code>
+trait Foreach[A] {
+  trait Source {
+    type I &lt;: java.io.Closeable  // moved this line into Source
+    def in : I
+    def next(in : I) : Option[A]
+  }
+  def source : Source
+  
+  def foreach[U](f : A => U) : Unit = {
+    val s = source.in
+    try {
+      def processNext : Unit = source.next(s) match {
+        case None => 
+          ()
+        case Some(value) => 
+          f(value)
+          processNext
+      }
+      
+      processNext
+    } finally {
+      // correctly handle exceptions
+      s.close
+    }
+  }
+}
+</code>
+Compiling the class results in a compilation error:
+<quot>
+jeichar: tmp$ scalac XX.scala 
+XX.scala:12: error: type mismatch;
+ found   : s.type (with underlying type Foreach.this.Source#I)
+ required: _2.I where val _2: Foreach.this.Source
+      def processNext : Unit = source.next(s) match {
+                                           ^
+XX.scala:16: error: type mismatch;
+ found   : value.type (with underlying type Any)
+ required: A
+          f(value)
+            ^
+two errors found
+</quot>
+So what is the problem?  The problem is simple but subtle.  Notice that source is defined as a <em>def</em>.  So calling source 2 times may return 2 different instances of Source.  A simple change can fix this.  Either change def source : Source to val source : Source.  Or change the method foreach to assign the result from source to a val.
+<code>
+trait Foreach {
+  trait Source {
+    type I &lt;: java.io.Closeable  // moved this line into Source
+    def in : I
+    def next(in : I) : Option[Int]
+  }
+  def source : Source
+  
+  def foreach[U](f : Int => U) : Unit = {
+    // this assignment allows this example to compile
+    val sameSource = source
+    val s = sameSource.in
+    try {
+      def processNext : Unit = sameSource.next(s) match {
+        case None => 
+          ()
+        case Some(value) => 
+          f(value)
+          processNext
+      }
+      
+      processNext
+    } finally {
+      // correctly handle exceptions
+      s.close
+    }
+  }
+}
+</code>
