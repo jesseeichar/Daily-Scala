@@ -1,0 +1,59 @@
+A second "gotcha" that one might get tripped up when dealing with abstract types is the signature of the concrete class contains type information about the abstract type. So if you are not explicit when assigning a variable or defining a function you can get unexpected compiler errors.
+<code>
+scala> trait S {
+     |   type x
+     |   def get : x
+     | }
+defined trait S
+
+scala> var sample = new S{ 
+     |   type x = Int
+     |   def get = 3
+     | }
+sample: java.lang.Object with S{type x = Int} = $anon$1@397af435
+
+scala> sample = new S {
+     |   type x = Double
+     |   def get = 3.0
+     | }
+&lt; console>:7: error: type mismatch;
+ found   : java.lang.Object with S
+ required: java.lang.Object with S{type x = Int}
+       sample = new S {
+</code>
+In this example sample uses type inference so the actual type is <em>S with underlying type Int</em>.  The consequence is that sample can only be assigned with instances of S with <em>type x = Int</em>. The fix is to explicitly declare the variable type:
+<code>
+scala> var sample2 : S = new S{ 
+     |   type x = Int
+     |   def get = 3
+     | }
+sample2: S = $anon$1@31602bbc
+
+scala> sample2 = new S {
+     |   type x = Double
+     |   def get = 3.0
+     | }
+sample2: S = $anon$1@4de5ed7b
+</code>
+The same thing happens when declaring functions and allows type inference for function definition
+<code>
+scala> class Fac {
+     |   def newS = new S {
+     |     type x = Int
+     |     def get = 3
+     |   }
+     | }
+defined class Fac
+
+scala> class SubFac extends Fac{
+     |   override def newS = new S {
+     |     type x = Double
+     |     def get = 3.0
+     |   }
+     | }
+&lt; console>:8: error: type mismatch;
+ found   : java.lang.Object with S
+ required: java.lang.Object with S{type x = Int}
+         override def newS = new S {
+</code>
+The fix for this example is to be explicit in the super type

@@ -1,0 +1,31 @@
+A common misunderstanding is that a code block (without parameters) is a function.  That is not the case.  A code block is a sequence of statements that are executed and result the last statement is returned.  That sounds like a Function0, however, if the block is passed to a method/function only the last statement will be returned to the function/method.  If that function expects a function the last statement maybe returned as a function not a value, this means that the block itself is not a function.
+<code>
+scala> var count = 0                                                                                                                         
+count: Int = 0
+
+// the last statement is returned as a function so count
+// is incremented only one during the creation of the function
+scala> List(1,2,3,4).map{count += 1;_ + 1}
+res9: List[Int] = List(2, 3, 4, 5)
+
+scala> count
+res10: Int = 1
+
+// now the count increment is within the function
+scala> List(1,2,3,4).map{i => count += 1;i + 1}
+res11: List[Int] = List(2, 3, 4, 5)
+
+scala> count
+res12: Int = 5
+</code>
+The previous example demonstrates a Gotcha if I ever saw one.  Map expects a function so the block essentially constructs a function.  The last statement being the function.  The first line <code>count += 1</code> executed only once because it is part of creating the function not part of the resulting function.  This is equivalent to:
+<code>
+scala> val x = {count += 1 ; i:Int => i +1}
+x: (Int) => Int = &lt; function1>
+
+scala> List(1,2,3,4).map(x)
+res15: List[Int] = List(2, 3, 4, 5)
+</code>
+Beginning a block with the parameter list signals that the entire block is a function.
+
+Rule of thumb: Functions with placeholder parameters should be a single statement.  

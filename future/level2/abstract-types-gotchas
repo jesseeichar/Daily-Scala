@@ -7,6 +7,8 @@ Error 2:
 abstract type escapes super class
 
 Error 3:
+
+// not complete ....  missing abstract type  I think source must be within another class with the type info...
 protected[resource] trait TraversableSource[In, A] {
   def resource : Resource[In]
   def skip(stream:In, count:Long) : Unit

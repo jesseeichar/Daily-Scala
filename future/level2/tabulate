@@ -1,0 +1,11 @@
+scala> Array.tabulate[Int](3, 3)(_ * _)
+res0: Array[Array[Int]] = Array(Array(0, 0, 0), Array(0, 1, 2), Array(0, 2, 4))
+
+scala> List.tabulate[Int](3, 3)(_ * _)
+res1: List[List[Int]] = List(List(0, 0, 0), List(0, 1, 2), List(0, 2, 4))
+
+scala> Seq.tabulate[Int](3, 3)(_ * _) 
+res2: Seq[Seq[Int]] = List(List(0, 0, 0), List(0, 1, 2), List(0, 2, 4))
+
+scala> Stream.tabulate[Int](3, 3)(_ * _)
+res5: scala.collection.immutable.Stream[scala.collection.immutable.Stream[Int]] = Stream(Stream(0, ?), ?)
